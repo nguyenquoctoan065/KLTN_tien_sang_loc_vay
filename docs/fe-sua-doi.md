@@ -168,11 +168,11 @@ và V2 cho khớp.
 Dòng này không nên xuất hiện ở giao diện khách hàng.
 
 **Việc cần làm**
-- [ ] `fe/src/layouts/CustomerLayout.tsx`:
+- [x] `fe/src/layouts/CustomerLayout.tsx`:
   - Xóa toàn bộ `<Footer>…</Footer>`. Nếu muốn giữ chân trang thì chỉ để tên hệ thống và năm, không có link nội bộ.
   - Xóa luôn `<Tag>PoC</Tag>` cạnh tên hệ thống ở header.
-- [ ] Nhân viên và quản trị vào thẳng `/noi-bo/dang-nhap`; ghi đường dẫn này trong README.
-- [ ] Vẫn giữ lưu ý pháp lý “kết quả chỉ để tham khảo, quyết định thuộc về ngân hàng” (`components/Disclaimer.tsx`)
+- [x] Nhân viên và quản trị vào thẳng `/noi-bo/dang-nhap`; ghi đường dẫn này trong README.
+- [x] Vẫn giữ lưu ý pháp lý “kết quả chỉ để tham khảo, quyết định thuộc về ngân hàng” (`components/Disclaimer.tsx`)
   trên trang kết quả sàng lọc, mô phỏng và phương án. Đây là nội dung nghiệp vụ, không phải chữ “thử nghiệm”.
 
 **Tiêu chí hoàn thành.** Mọi trang khách hàng không còn chữ “thử nghiệm”, “đồ án”, “PoC”, “Đăng nhập nội bộ”.
