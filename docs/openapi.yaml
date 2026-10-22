@@ -1,0 +1,2014 @@
+openapi: 3.0.3
+info:
+  title: API hệ thống gợi ý và tiền sàng lọc hồ sơ vay tín chấp
+  version: 0.2.0
+  description: |
+    Hợp đồng API giữa frontend (React) và backend (Spring Boot).
+    Frontend đang chạy với API giả lập (fe/src/mocks/handlers/*.ts, fe/src/mocks/ctx.ts) đúng theo tài liệu này;
+    backend cài đặt đúng các đường dẫn, dữ liệu vào/ra là frontend dùng được ngay (đặt VITE_USE_MOCK=false).
+    Danh sách lời gọi của frontend: fe/src/api/endpoints.ts; kiểu dữ liệu: fe/src/api/types.ts.
+
+    Quy ước:
+    - Tiền tố mọi đường dẫn: /api
+    - Xác thực: header `Authorization: Bearer <token>` (JWT). Vai trò: CUSTOMER (khách hàng), BRANCH_STAFF (nhân viên chi nhánh), ADMIN (quản trị).
+      Mỗi thao tác ghi vai trò được phép trong phần mở rộng `x-roles` (rỗng = không cần đăng nhập).
+      Tài khoản bị khóa (LOCKED) coi như chưa đăng nhập; khóa tài khoản sẽ thu hồi mọi token của tài khoản đó.
+    - Lỗi trả về `{ "message": "..." }` bằng tiếng Việt, mã HTTP:
+      400 dữ liệu không hợp lệ / OTP sai; 401 chưa đăng nhập hoặc sai vai trò khách hàng; 403 không có quyền (sai vai trò nội bộ, khác chi nhánh);
+      404 không tìm thấy (kể cả khi tài nguyên tồn tại nhưng không thuộc người gọi); 409 xung đột trạng thái nghiệp vụ; 422 phương án vay không đạt ngưỡng.
+    - Tiền tệ là số nguyên VNĐ; tỷ lệ (DTI, lãi suất) là số thập phân theo %.
+    - Thời điểm theo ISO 8601 (date-time), ngày theo yyyy-MM-dd.
+    - Môi trường thử: mã OTP cố định `123456`, mật khẩu tạm của nhân viên `123456`.
+    - Quy tắc tính toán: xem docs/quy-tac-tinh-toan.md.
+servers:
+  - url: http://localhost:8080/api
+security:
+  - bearer: []
+tags:
+  - name: Xác thực
+  - name: Danh mục
+  - name: Sàng lọc (QT01)
+  - name: Mô phỏng và phương án (QT02)
+  - name: Hồ sơ vay (QT03)
+    description: Lập hồ sơ, tải giấy tờ, xác nhận MB06, lập giấy đề nghị MB15, nộp/nộp lại bằng OTP, hủy hồ sơ.
+  - name: Thông báo
+  - name: Dữ liệu cá nhân
+  - name: Nhân viên chi nhánh
+  - name: Quản trị chính sách (QT07)
+  - name: Quản trị hệ thống
+    description: Tài khoản nhân viên, chi nhánh, tác vụ định kỳ, danh mục, nhật ký.
+  - name: Báo cáo (QT08)
+paths:
+  # ============================ Xác thực ============================
+  /auth/login:
+    post:
+      tags: [Xác thực]
+      operationId: login
+      summary: 1.2 Đăng nhập (khách hàng bằng số điện thoại, nội bộ bằng email)
+      security: []
+      x-roles: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResponse' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '403':
+          description: Tài khoản đang bị khóa
+          content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+  /auth/logout:
+    post:
+      tags: [Xác thực]
+      operationId: logout
+      summary: Đăng xuất (thu hồi token hiện tại)
+      description: Luôn trả 200 kể cả khi token không còn hiệu lực.
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+  /auth/otp:
+    post:
+      tags: [Xác thực]
+      operationId: sendOtp
+      summary: Gửi mã OTP tới số điện thoại (đăng ký, xác nhận giấy đề nghị, rút đồng ý)
+      description: |
+        Hai cách dùng:
+        - Chưa đăng nhập (đăng ký): gửi `{ "phone": "0901234567" }`.
+        - Khách hàng đang đăng nhập (`authApi.myOtp`): gửi `{}` kèm token, OTP gửi tới số điện thoại của tài khoản.
+        400 nếu số điện thoại không hợp lệ (phải dạng 0 + 9 chữ số).
+      security: [{}, { bearer: [] }]
+      x-roles: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone: { type: string, pattern: '^0\d{9}$', example: '0901234567', description: Bỏ trống khi khách hàng đã đăng nhập }
+      responses:
+        '200':
+          description: Đã gửi. Môi trường thử có thể trả devOtp để hiển thị.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OtpSent' }
+        '400': { $ref: '#/components/responses/Error' }
+  /auth/register:
+    post:
+      tags: [Xác thực]
+      operationId: register
+      summary: 1.1 Đăng ký tài khoản khách hàng
+      description: 400 nếu OTP sai; 409 nếu số điện thoại đã đăng ký. Thành công trả token như đăng nhập.
+      security: []
+      x-roles: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResponse' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /auth/me:
+    get:
+      tags: [Xác thực]
+      operationId: me
+      summary: Thông tin người dùng hiện tại
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AuthUser' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/change-password:
+    post:
+      tags: [Xác thực]
+      operationId: changePassword
+      summary: 1.4 Đổi mật khẩu
+      description: |
+        400 khi: mật khẩu hiện tại không đúng; mật khẩu mới dưới 6 ký tự; mật khẩu mới trùng mật khẩu hiện tại.
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangePasswordRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ============================ Danh mục ============================
+  /products:
+    get:
+      tags: [Danh mục]
+      operationId: listProducts
+      summary: Danh sách gói vay đang áp dụng (status = ACTIVE)
+      security: []
+      x-roles: []
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/LoanProduct' } } } } }
+  /products/{code}/checklist:
+    get:
+      tags: [Danh mục]
+      operationId: productChecklist
+      summary: Danh mục giấy tờ cần chuẩn bị của gói
+      security: []
+      x-roles: []
+      parameters: [{ name: code, in: path, required: true, schema: { $ref: '#/components/schemas/ProductCode' } }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ChecklistItem' } } } } }
+  /cross-sell-products:
+    get:
+      tags: [Danh mục]
+      operationId: listCrossSells
+      summary: Sản phẩm bán chéo đang áp dụng (status = ACTIVE)
+      security: []
+      x-roles: []
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CrossSellProduct' } } } } }
+  /branches:
+    get:
+      tags: [Danh mục]
+      operationId: listBranches
+      summary: Chi nhánh đang hoạt động (để khách hàng chọn nơi nộp hồ sơ)
+      security: []
+      x-roles: []
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Branch' } } } } }
+
+  # ============================ Sàng lọc ============================
+  /screenings:
+    post:
+      tags: [Sàng lọc (QT01)]
+      operationId: createScreening
+      summary: 2.1 + 2.2 Khai báo MB01 và tiền sàng lọc, trả về MB03
+      security: [{}, { bearer: [] }]
+      x-roles: []
+      description: |
+        Không bắt buộc đăng nhập. Nếu có token khách hàng thì lượt sàng lọc được gắn vào tài khoản.
+        Ghi nhận đồng ý MB02 phần (a). 400 nếu chưa đồng ý phần (a) hoặc thu nhập/số tiền không hợp lệ.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScreeningRequest' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/ScreeningResponse' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+  /screenings/{id}:
+    get:
+      tags: [Sàng lọc (QT01)]
+      operationId: getScreening
+      summary: Xem lại MB03 của một lượt sàng lọc
+      security: []
+      x-roles: []
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ScreeningResponse' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /screenings/{id}/save:
+    post:
+      tags: [Sàng lọc (QT01)]
+      operationId: saveScreening
+      summary: 2.3 Lưu kết quả gợi ý vào tài khoản
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ScreeningResponse' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /me/screenings:
+    get:
+      tags: [Sàng lọc (QT01)]
+      operationId: myScreenings
+      summary: Các lượt sàng lọc đã lưu của khách hàng
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ScreeningResponse' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ============================ Mô phỏng và phương án ============================
+  /simulations:
+    post:
+      tags: [Mô phỏng và phương án (QT02)]
+      operationId: simulate
+      summary: 3.1 Mô phỏng kế hoạch trả nợ (MB04), kiểm tra ngưỡng và đề xuất điều chỉnh ngược
+      security: [{}, { bearer: [] }]
+      x-roles: []
+      description: |
+        Không lưu dữ liệu; frontend gọi lại mỗi khi người dùng đổi số tiền, kỳ hạn, bán chéo.
+        404 nếu không có lượt sàng lọc; 422 nếu hồ sơ không đạt điều kiện loại trừ của gói.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SimulationRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SimulationResponse' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Error' }
+  /plans:
+    post:
+      tags: [Mô phỏng và phương án (QT02)]
+      operationId: createPlan
+      summary: 3.2 Lưu phương án vay (MB07, trạng thái DRAFT)
+      description: Backend tính lại bằng tham số đang áp dụng; từ chối (422) nếu phương án vượt ngưỡng.
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SimulationRequest' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/LoanPlan' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Error' }
+  /plans/{id}:
+    get:
+      tags: [Mô phỏng và phương án (QT02)]
+      operationId: getPlan
+      summary: Xem phương án của chính khách hàng
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoanPlan' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /plans/{id}/confirm:
+    post:
+      tags: [Mô phỏng và phương án (QT02)]
+      operationId: confirmPlan
+      summary: 3.2 Xác nhận phương án (DRAFT -> CONFIRMED)
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoanPlan' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /me/plans:
+    get:
+      tags: [Mô phỏng và phương án (QT02)]
+      operationId: myPlans
+      summary: Các phương án của khách hàng
+      security: [{ bearer: [] }]
+      x-roles: [CUSTOMER]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/LoanPlan' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ============================ Hồ sơ vay (khách hàng) ============================
+  /me/applications:
+    get:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: myApplications
+      summary: Các hồ sơ vay của khách hàng (mới nhất trước)
+      x-roles: [CUSTOMER]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ApplicationSummary' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /applications:
+    post:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: createApplication
+      summary: 4.1 Tạo hồ sơ vay từ phương án đã xác nhận (chọn chi nhánh, đồng ý MB02 phần b, lập MB05)
+      description: |
+        Tạo hồ sơ trạng thái DRAFTING, sinh danh mục giấy tờ (MB05) theo cấu hình giấy tờ của gói, ghi nhận đồng ý phần (b).
+        Lỗi:
+        - 401 chưa đăng nhập tài khoản khách hàng.
+        - 400 chưa đồng ý phần (b) (`consentB.agreed=false`); chi nhánh không hợp lệ hoặc đã ngừng hoạt động.
+        - 404 không tìm thấy phương án của khách hàng.
+        - 409 phương án chưa CONFIRMED; phương án đã có hồ sơ (chưa hủy).
+      x-roles: [CUSTOMER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateApplicationRequest' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /applications/{id}:
+    get:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: getApplication
+      summary: Chi tiết hồ sơ (kèm các thao tác được phép trong `can`)
+      description: |
+        Người xem được: khách hàng chủ hồ sơ; nhân viên chi nhánh tiếp nhận hồ sơ; quản trị viên. Người khác nhận 404.
+        Lượt xem của nhân viên/quản trị được ghi nhật ký "Xem hồ sơ".
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /applications/{id}/personal:
+    put:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: updatePersonal
+      summary: Khai thông tin cá nhân của hồ sơ
+      description: |
+        Chỉ chủ hồ sơ, khi hồ sơ ở DRAFTING / NEED_MORE / EXPIRED (ngược lại 409 "Hồ sơ đã khóa").
+        `phone` luôn lấy theo tài khoản (bỏ qua giá trị gửi lên). 400 nếu số CCCD không đủ 12 chữ số.
+        Xóa bản nháp giấy đề nghị (nếu có) và chạy lại đối chiếu (warnings, recalc).
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PersonalInfo' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /applications/{id}/documents/{docId}:
+    post:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: uploadDocument
+      summary: Tải lên một giấy tờ (kiểm tra chất lượng, lưu phiên bản, trích xuất MB06)
+      description: |
+        multipart/form-data gồm `file` (bắt buộc) và `issuedDate` (tùy chọn, yyyy-MM-dd).
+        Chỉ chủ hồ sơ, hồ sơ ở DRAFTING / NEED_MORE / EXPIRED (409 nếu đã khóa). 404 nếu không có giấy tờ
+        hoặc là giấy đề nghị vay vốn do hệ thống tự lập. 400 nếu thiếu tệp.
+        Mỗi lần tải tăng `versionNo`, xóa kết quả đối chiếu cũ của giấy tờ. Kiểm tra chất lượng (vẫn trả 200, ghi vào tài liệu):
+        - Định dạng không thuộc `allowedFormats` → status REJECTED_QUALITY, qualityStatus WRONG_FORMAT.
+        - Lớn hơn 10 MB → REJECTED_QUALITY / TOO_LARGE.
+        - Ảnh (không phải PDF) dưới 25 KB → REJECTED_QUALITY / BLURRY.
+        - Đạt → status UPLOADED, qualityStatus OK, sinh `fields` (OCR) chờ khách hàng xác nhận.
+        Xóa bản nháp giấy đề nghị và chạy lại đối chiếu.
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/DocId' }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary, description: 'Ảnh JPG/PNG hoặc PDF, tối đa 10 MB' }
+                issuedDate: { type: string, format: date, description: Ngày cấp/ngày phát hành giấy tờ }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /applications/{id}/documents/{docId}/fields:
+    put:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: confirmFields
+      summary: Xác nhận/sửa thông tin trích xuất của giấy tờ (MB06)
+      description: |
+        Trường không gửi lên được xác nhận bằng giá trị máy đọc (`ocrValue`). Giấy tờ chuyển CONFIRMED.
+        Với CCCD, điền sẵn họ tên, số CCCD, địa chỉ vào thông tin cá nhân nếu còn trống.
+        409 nếu hồ sơ đã khóa hoặc giấy tờ chưa có thông tin trích xuất (MISSING / REJECTED_QUALITY).
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/DocId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmFieldsRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /applications/{id}/plan:
+    put:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: updateApplicationPlan
+      summary: Điều chỉnh phương án ngay trong hồ sơ (khi giá trị kiểm chứng làm phương án không đạt)
+      description: |
+        Tính lại theo tham số đang áp dụng, dùng thu nhập kiểm chứng (`recalc.verifiedIncome`) nếu có.
+        409 nếu hồ sơ đã khóa hoặc không còn dữ liệu sàng lọc gốc; 422 nếu phương án mới vẫn không đạt ngưỡng.
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePlanRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /applications/{id}/request-form:
+    post:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: createRequestForm
+      summary: 4.2 Lập giấy đề nghị vay vốn (MB15) tự điền, trạng thái DRAFT
+      description: |
+        409 nếu hồ sơ đã khóa, hoặc chưa đủ điều kiện nộp (message liệt kê: thiếu thông tin cá nhân,
+        giấy tờ bắt buộc chưa tải/chưa xác nhận, còn cảnh báo BLOCKING).
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    put:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: updateRequestForm
+      summary: Sửa các ô được phép sửa (editable) của bản nháp giấy đề nghị
+      description: Chỉ áp dụng cho các khóa có `editable=true`; khóa khác bị bỏ qua. 409 nếu chưa có bản nháp DRAFT.
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRequestFormRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /applications/{id}/submit:
+    post:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: submitApplication
+      summary: Xác nhận giấy đề nghị bằng OTP và nộp hồ sơ (cũng dùng để nộp lại sau bổ sung / hết hạn)
+      description: |
+        Nộp lần đầu: DRAFTING → WAITING_VERIFY.
+        Nộp lại (resubmit, `can.resubmit`): NEED_MORE → WAITING_VERIFY; EXPIRED → NEED_MORE → WAITING_VERIFY.
+        Frontend không có đường dẫn riêng cho nộp lại; dùng chính thao tác này.
+
+        Kiểm tra theo thứ tự:
+        - 400 OTP sai.
+        - 409 trạng thái không phải DRAFTING / NEED_MORE / EXPIRED.
+        - 409 chưa đủ điều kiện (thiếu thông tin cá nhân, giấy tờ bắt buộc chưa CONFIRMED, cảnh báo BLOCKING);
+          khi nộp lại còn yêu cầu tải lại giấy tờ có kết quả đối chiếu MISMATCH/MISSING, và (với EXPIRED) giấy tờ
+          tải lên quá DOC_VALIDITY_DAYS ngày.
+
+        Khi thành công: lập giấy đề nghị nếu chưa có, chuyển CONFIRMED (`otpConfirmedAt`); sinh tệp giấy đề nghị hệ thống;
+        khóa nội dung (`contentHash` SHA-256, `lockedAt`), cấp `qrToken` (giữ mã cũ nếu đã có), `expiresAt` = now + DOC_VALIDITY_DAYS
+        (mặc định 30 ngày), `versionNo` = phiên bản tham số đang áp dụng. Thông báo cho chi nhánh và khách hàng.
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OtpRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /applications/{id}/cancel:
+    post:
+      tags: [Hồ sơ vay (QT03)]
+      operationId: cancelApplication
+      summary: 6.2 Hủy hồ sơ
+      description: |
+        Chỉ khi hồ sơ ở DRAFTING / WAITING_VERIFY / NEED_MORE / EXPIRED → CANCELLED. Trạng thái khác: 409
+        ("không hủy trực tuyến được, liên hệ chi nhánh"). Thông báo cho chi nhánh. Thân yêu cầu có thể rỗng.
+      x-roles: [CUSTOMER]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancelRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ============================ Thông báo ============================
+  /notifications:
+    get:
+      tags: [Thông báo]
+      operationId: listNotifications
+      summary: 5.4 Thông báo trong ứng dụng (tối đa 50, mới nhất trước)
+      description: |
+        Khách hàng nhận thông báo của chính mình; nhân viên chi nhánh nhận thông báo gửi tới chi nhánh;
+        quản trị viên nhận danh sách rỗng.
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AppNotification' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /notifications/{id}/read:
+    post:
+      tags: [Thông báo]
+      operationId: readNotification
+      summary: Đánh dấu đã đọc một thông báo
+      description: Thông báo không thuộc người gọi bị bỏ qua (vẫn trả 200).
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /notifications/read-all:
+    post:
+      tags: [Thông báo]
+      operationId: readAllNotifications
+      summary: Đánh dấu đã đọc tất cả thông báo của người gọi
+      x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ============================ Dữ liệu cá nhân ============================
+  /me/data:
+    get:
+      tags: [Dữ liệu cá nhân]
+      operationId: myData
+      summary: 6.1 Xem dữ liệu cá nhân, các lần đồng ý và nhật ký truy cập (100 dòng gần nhất)
+      description: 401 nếu không phải tài khoản khách hàng. Lượt xem được ghi nhật ký.
+      x-roles: [CUSTOMER]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MyData' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /me/consents/withdraw:
+    post:
+      tags: [Dữ liệu cá nhân]
+      operationId: withdrawConsent
+      summary: 6.3 Rút lại sự đồng ý (MB02 phần a hoặc b), xác nhận bằng OTP
+      description: |
+        - Phần (a): xóa các lượt sàng lọc đã lưu (và phương án liên quan) không gắn với hồ sơ vay; lượt gắn hồ sơ được giữ theo phần (b).
+        - Phần (b): với hồ sơ ở DRAFTING / WAITING_VERIFY / NEED_MORE / EXPIRED / CANCELLED: chuyển CANCELLED (nếu chưa),
+          xóa tệp giấy tờ, số CCCD, địa chỉ, email, cảnh báo; thông báo chi nhánh. Hồ sơ đã đối chiếu trở đi
+          (VERIFIED, APPROVED, DISBURSED, REJECTED) được giữ theo quy định (`keptApplications`).
+        Đánh dấu `withdrawnAt` cho các bản ghi đồng ý tương ứng. 400 nếu OTP sai; 401 nếu không phải khách hàng.
+      x-roles: [CUSTOMER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WithdrawConsentRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/WithdrawConsentResult' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ============================ Nhân viên chi nhánh ============================
+  /staff/applications:
+    get:
+      tags: [Nhân viên chi nhánh]
+      operationId: staffApplications
+      summary: 5.1 Tra cứu hồ sơ của chi nhánh
+      description: |
+        Chỉ hồ sơ thuộc chi nhánh của nhân viên, không gồm hồ sơ DRAFTING; sắp xếp theo `updatedAt` giảm dần.
+        403 nếu không phải BRANCH_STAFF.
+      security: [{ bearer: [] }]
+      x-roles: [BRANCH_STAFF]
+      parameters:
+        - name: status
+          in: query
+          description: 'Một hoặc nhiều trạng thái, phân cách bằng dấu phẩy (ví dụ WAITING_VERIFY,NEED_MORE)'
+          schema: { type: string, example: 'WAITING_VERIFY,NEED_MORE' }
+        - { name: keyword, in: query, schema: { type: string }, description: 'Mã hồ sơ, tên, số điện thoại (chứa) hoặc mã QR (khớp đúng)' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ApplicationSummary' } } } } }
+        '403': { $ref: '#/components/responses/Error' }
+  /staff/applications/by-qr/{token}:
+    get:
+      tags: [Nhân viên chi nhánh]
+      operationId: staffApplicationByQr
+      summary: Tìm hồ sơ theo mã QR trên Phiếu tóm tắt (MB08)
+      description: Mã QR không phân biệt hoa thường. 404 nếu không có; 403 nếu hồ sơ thuộc chi nhánh khác.
+      x-roles: [BRANCH_STAFF]
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string, example: QR7K2M9XQA } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/IdResult' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /staff/summary:
+    get:
+      tags: [Nhân viên chi nhánh]
+      operationId: staffSummary
+      summary: Số hồ sơ theo trạng thái cần xử lý của chi nhánh
+      x-roles: [BRANCH_STAFF]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StaffSummary' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /staff/applications/{id}/verification:
+    post:
+      tags: [Nhân viên chi nhánh]
+      operationId: verifyApplication
+      summary: 5.2 Đối chiếu giấy tờ bản gốc (MB09)
+      description: |
+        Chỉ nhân viên của chi nhánh tiếp nhận (khác chi nhánh → 404), hồ sơ ở WAITING_VERIFY (ngược lại 409).
+        400 nếu thiếu kết quả cho một giấy tờ đã tải, hoặc giấy tờ MISMATCH/MISSING không có lý do.
+        Tất cả MATCH → VERIFIED; có giấy tờ không khớp/thiếu → NEED_MORE (khách hàng phải tải lại các giấy tờ đó).
+        Ghi `verifyResult`/`verifyReason` vào từng giấy tờ, thêm bản ghi vào `verifications`, thông báo khách hàng.
+      x-roles: [BRANCH_STAFF]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VerificationRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /staff/applications/{id}/decision:
+    post:
+      tags: [Nhân viên chi nhánh]
+      operationId: decideApplication
+      summary: 5.3 Cập nhật kết quả xét duyệt (MB16)
+      description: |
+        Hồ sơ phải ở VERIFIED (ngược lại 409).
+        - APPROVED: bắt buộc approvedAmount, approvedTerm, approvedRate (400 nếu thiếu) → APPROVED.
+        - REJECTED: bắt buộc reason → REJECTED.
+        - MORE_INFO: bắt buộc reason → NEED_MORE.
+        Thông báo khách hàng.
+      x-roles: [BRANCH_STAFF]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DecisionRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /staff/applications/{id}/disbursement:
+    post:
+      tags: [Nhân viên chi nhánh]
+      operationId: disburseApplication
+      summary: 5.3 Cập nhật thông tin giải ngân (APPROVED → DISBURSED)
+      description: |
+        409 nếu hồ sơ chưa được phê duyệt. 400 nếu thiếu ngày/số tiền/bên thụ hưởng hoặc số tiền giải ngân vượt số tiền được duyệt.
+      x-roles: [BRANCH_STAFF]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DisbursementRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ============================ Quản trị chính sách ============================
+  /admin/param-versions:
+    get:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: listParamVersions
+      summary: 7.5 Lịch sử phiên bản tham số (mới nhất trước)
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ParamVersion' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/param-versions/{id}:
+    get:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: getParamVersion
+      summary: Chi tiết phiên bản gồm MB11, MB12 và kết quả chạy thử
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ParamVersionDetail' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: updateParamVersion
+      summary: 7.1, 7.2 Cập nhật tham số và trọng số của bản nháp
+      description: |
+        Kiểm tra tổng trọng số mỗi gói = 100 và DTI tối đa trong 65–80 (400). Chỉ sửa bản DRAFT (409).
+        `label` được chuẩn hóa theo danh mục khóa. Xóa kết quả chạy thử cũ.
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [params, weights]
+              properties:
+                params: { type: array, items: { $ref: '#/components/schemas/PolicyParam' } }
+                weights: { type: array, items: { $ref: '#/components/schemas/ScoringWeight' } }
+                legalBasis: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: deleteParamVersion
+      summary: Xóa bản nháp
+      description: 409 nếu phiên bản không phải DRAFT.
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Error' }
+  /admin/param-versions/{id}/clone:
+    post:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: cloneParamVersion
+      summary: Tạo bản nháp mới sao chép từ phiên bản {id}
+      description: |
+        Sao chép MB11, MB12 của phiên bản nguồn; áp dụng ngay các thay đổi trong `changes` (khớp theo key + productCode).
+        409 nếu đang có một bản nháp khác hoặc số phiên bản đã tồn tại; 404 nếu không có phiên bản nguồn.
+        Dùng cả cho luồng "áp dụng đề xuất hiệu chỉnh" từ báo cáo MB14.
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloneParamVersionRequest' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/IdResult' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Error' }
+  /admin/param-versions/{id}/test:
+    post:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: testParamVersion
+      summary: 7.4 Chạy thử bản nháp trên bộ hồ sơ mẫu, so sánh với phiên bản đang áp dụng
+      description: 409 nếu phiên bản không phải DRAFT.
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TestRunResult' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/param-versions/{id}/activate:
+    post:
+      tags: [Quản trị chính sách (QT07)]
+      operationId: activateParamVersion
+      summary: 7.4 Kích hoạt bản nháp (bản đang áp dụng chuyển EXPIRED)
+      description: Chỉ kích hoạt bản DRAFT và khi đã chạy thử (409 nếu chưa).
+      security: [{ bearer: [] }]
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ParamVersion' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  # ============================ Quản trị: tài khoản nhân viên ============================
+  /admin/staff:
+    get:
+      tags: [Quản trị hệ thống]
+      operationId: listStaff
+      summary: 1.5 Danh sách tài khoản nội bộ
+      x-roles: [ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/StaffAccount' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: createStaff
+      summary: 1.5 Tạo tài khoản nhân viên (trả mật khẩu tạm)
+      description: |
+        400 nếu email không hợp lệ hoặc BRANCH_STAFF không chọn chi nhánh; 409 nếu email đã dùng.
+        ADMIN luôn có branchId = null.
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateStaffRequest' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/StaffAccountWithPassword' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/staff/{id}:
+    put:
+      tags: [Quản trị hệ thống]
+      operationId: updateStaff
+      summary: 1.5 Cập nhật họ tên, vai trò, chi nhánh của nhân viên
+      description: 400 nếu BRANCH_STAFF không có chi nhánh; 409 nếu tự hạ quyền của chính mình; 404 nếu không có tài khoản.
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateStaffRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StaffAccount' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/staff/{id}/lock:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: lockStaff
+      summary: Khóa tài khoản nhân viên (status → LOCKED, thu hồi mọi token)
+      description: 409 nếu tự khóa tài khoản của mình.
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StaffAccountWithPassword' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/staff/{id}/unlock:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: unlockStaff
+      summary: Mở khóa tài khoản nhân viên (status → ACTIVE)
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StaffAccountWithPassword' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/staff/{id}/reset-password:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: resetStaffPassword
+      summary: Đặt lại mật khẩu nhân viên (trả `tempPassword`)
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StaffAccountWithPassword' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================ Quản trị: chi nhánh ============================
+  /admin/branches:
+    get:
+      tags: [Quản trị hệ thống]
+      operationId: adminListBranches
+      summary: 1.6 Tất cả chi nhánh (kể cả INACTIVE) kèm số hồ sơ đang xử lý
+      description: '`openApplications` đếm hồ sơ ở DRAFTING, WAITING_VERIFY, NEED_MORE, VERIFIED, APPROVED.'
+      x-roles: [ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Branch' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: createBranch
+      summary: 1.6 Thêm chi nhánh (status = ACTIVE)
+      description: 409 nếu mã chi nhánh đã tồn tại.
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BranchInput' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/Branch' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/branches/{id}:
+    put:
+      tags: [Quản trị hệ thống]
+      operationId: updateBranch
+      summary: 1.6 Cập nhật chi nhánh
+      description: 404 nếu không có; 409 nếu mã trùng chi nhánh khác.
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BranchInput' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Branch' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/branches/{id}/deactivate:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: deactivateBranch
+      summary: 1.6 Ngừng hoạt động chi nhánh (chuyển hồ sơ đang xử lý sang chi nhánh khác)
+      description: |
+        Nếu chi nhánh còn hồ sơ đang xử lý (DRAFTING, WAITING_VERIFY, NEED_MORE, VERIFIED, APPROVED) thì bắt buộc
+        `transferToBranchId` là một chi nhánh ACTIVE khác (409 nếu thiếu/không hợp lệ). Hồ sơ được chuyển giữ nguyên trạng thái,
+        thêm dòng lịch sử, thông báo khách hàng và chi nhánh nhận. Trả về chi nhánh (INACTIVE) và số hồ sơ đã chuyển.
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeactivateBranchRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BranchDeactivateResult' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/branches/{id}/activate:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: activateBranch
+      summary: 1.6 Mở lại chi nhánh (status → ACTIVE)
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Branch' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================ Quản trị: tác vụ định kỳ ============================
+  /admin/jobs:
+    get:
+      tags: [Quản trị hệ thống]
+      operationId: listJobs
+      summary: 1.7 Danh sách tác vụ định kỳ
+      x-roles: [ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/JobInfo' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/jobs/{code}/run:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: runJob
+      summary: 1.7 Chạy ngay một tác vụ định kỳ
+      description: |
+        - EXPIRE_DOCUMENTS: hồ sơ WAITING_VERIFY / NEED_MORE có `expiresAt` đã qua → EXPIRED, thông báo khách hàng (tác nhân SYSTEM).
+        - PURGE_RETENTION: xóa tệp giấy tờ, số CCCD, địa chỉ của hồ sơ REJECTED / CANCELLED / EXPIRED cập nhật lần cuối quá RETENTION_MONTHS tháng.
+        - REMIND_DRAFTS: nhắc khách hàng có hồ sơ DRAFTING không cập nhật quá 3 ngày.
+        Trả về tác vụ với `lastRunAt`, `lastResult` mới. 404 nếu không có tác vụ.
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/JobCode' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/JobInfo' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================ Quản trị: danh mục ============================
+  /admin/catalog:
+    get:
+      tags: [Quản trị hệ thống]
+      operationId: adminCatalog
+      summary: 7.3 Toàn bộ danh mục (gói vay, loại giấy tờ, giấy tờ theo gói, bán chéo), kể cả INACTIVE
+      x-roles: [ADMIN]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AdminCatalog' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/products/{id}:
+    put:
+      tags: [Quản trị hệ thống]
+      operationId: updateProduct
+      summary: 7.3 Cập nhật gói vay
+      description: Chỉ cập nhật name, description, repaymentMethod, status (trường khác bị bỏ qua; trường không gửi giữ nguyên).
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProductRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoanProduct' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/document-types:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: createDocumentType
+      summary: 7.3 Thêm loại giấy tờ
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DocumentTypeInput' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentType' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/document-types/{id}:
+    put:
+      tags: [Quản trị hệ thống]
+      operationId: updateDocumentType
+      summary: 7.3 Cập nhật loại giấy tờ
+      description: 409 nếu ngừng áp dụng (INACTIVE) loại "Giấy đề nghị vay vốn" do hệ thống tự lập.
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DocumentTypeInput' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentType' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/product-documents:
+    put:
+      tags: [Quản trị hệ thống]
+      operationId: updateProductDocuments
+      summary: 7.3 Thay toàn bộ cấu hình giấy tờ theo gói vay
+      description: 400 nếu một gói (TD, TC) không có giấy đề nghị vay vốn. Áp dụng cho hồ sơ tạo sau thời điểm cập nhật.
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { $ref: '#/components/schemas/ProductDocRule' } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ProductDocRule' } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/cross-sell-products:
+    post:
+      tags: [Quản trị hệ thống]
+      operationId: createCrossSell
+      summary: 7.3 Thêm sản phẩm bán chéo
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrossSellProductInput' }
+      responses:
+        '201': { description: Đã tạo, content: { application/json: { schema: { $ref: '#/components/schemas/CrossSellProduct' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/cross-sell-products/{id}:
+    put:
+      tags: [Quản trị hệ thống]
+      operationId: updateCrossSell
+      summary: 7.3 Cập nhật sản phẩm bán chéo
+      x-roles: [ADMIN]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrossSellProductInput' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CrossSellProduct' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================ Quản trị: nhật ký ============================
+  /admin/logs:
+    get:
+      tags: [Quản trị hệ thống]
+      operationId: listLogs
+      summary: Nhật ký hệ thống (tối đa 500 dòng, mới nhất trước)
+      x-roles: [ADMIN]
+      parameters:
+        - { name: keyword, in: query, schema: { type: string }, description: 'Tìm trong tên người thực hiện, thao tác, chi tiết, mã hồ sơ' }
+        - { name: actorType, in: query, schema: { type: string, enum: [CUSTOMER, STAFF, SYSTEM] } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ActivityLog' } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ============================ Báo cáo ============================
+  /admin/stats:
+    get:
+      tags: [Báo cáo (QT08)]
+      operationId: stats
+      summary: 8.1 Thống kê hồ sơ theo khoảng thời gian tạo hồ sơ
+      x-roles: [ADMIN]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date }, description: Mặc định 180 ngày trước }
+        - { name: to, in: query, schema: { type: string, format: date }, description: Mặc định hôm nay }
+        - { name: branchId, in: query, schema: { type: integer, format: int64 }, description: Lọc theo chi nhánh (bỏ trống = toàn hệ thống) }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StatsResponse' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/model-accuracy:
+    get:
+      tags: [Báo cáo (QT08)]
+      operationId: modelAccuracy
+      summary: 8.2 Đánh giá độ chính xác mô hình chấm điểm trên hồ sơ đã có kết quả (APPROVED, DISBURSED, REJECTED)
+      x-roles: [ADMIN]
+      parameters:
+        - { name: threshold, in: query, schema: { type: number, default: 55 }, description: Ngưỡng điểm dự báo "được duyệt" }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccuracyResponse' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/reports/mb14:
+    get:
+      tags: [Báo cáo (QT08)]
+      operationId: reportMb14
+      summary: 8.3 Báo cáo thống kê và đề xuất hiệu chỉnh tham số (MB14) theo tháng
+      x-roles: [ADMIN]
+      parameters:
+        - { name: month, in: query, schema: { type: string, pattern: '^\d{4}-\d{2}$', example: '2026-10' }, description: Mặc định tháng hiện tại }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ReportResponse' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+    DocId: { name: docId, in: path, required: true, description: 'id của tài liệu trong hồ sơ (AppDocument.id), không phải documentTypeId', schema: { type: integer, format: int64 } }
+    JobCode: { name: code, in: path, required: true, schema: { type: string, enum: [EXPIRE_DOCUMENTS, PURGE_RETENTION, REMIND_DRAFTS] } }
+  responses:
+    Error:
+      description: Lỗi
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    BadRequest:
+      description: Dữ liệu không hợp lệ hoặc OTP sai
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    Unauthorized:
+      description: Chưa đăng nhập, token hết hạn/thu hồi, hoặc không phải tài khoản khách hàng khi thao tác yêu cầu CUSTOMER
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    Forbidden:
+      description: Không có quyền (sai vai trò nội bộ hoặc khác chi nhánh)
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    NotFound:
+      description: Không tìm thấy (hoặc tài nguyên không thuộc người gọi)
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    Conflict:
+      description: Xung đột trạng thái nghiệp vụ (hồ sơ đã khóa, sai trạng thái, trùng mã...)
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    Unprocessable:
+      description: Phương án vay không đạt ngưỡng an toàn
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    Ok:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/OkResult' } } }
+  schemas:
+    ApiError:
+      type: object
+      properties: { message: { type: string }, fields: { type: object, additionalProperties: { type: string } } }
+    OkResult:
+      type: object
+      properties: { ok: { type: boolean, example: true } }
+    IdResult:
+      type: object
+      required: [id]
+      properties: { id: { type: integer, format: int64 } }
+    OtpSent:
+      type: object
+      properties: { sent: { type: boolean }, devOtp: { type: string, nullable: true, description: Chỉ có ở môi trường thử } }
+    OtpRequest:
+      type: object
+      required: [otp]
+      properties: { otp: { type: string, example: '123456' } }
+    Role: { type: string, enum: [CUSTOMER, BRANCH_STAFF, ADMIN] }
+    ProductCode: { type: string, enum: [TD, TC], description: 'TD: vay tiêu dùng; TC: vay thấu chi' }
+    AuthUser:
+      type: object
+      required: [id, name, role, username]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        username: { type: string, description: Số điện thoại (khách hàng) hoặc email (nội bộ) }
+        branchName: { type: string, nullable: true }
+    LoginRequest:
+      type: object
+      required: [kind, username, password]
+      properties:
+        kind: { type: string, enum: [CUSTOMER, STAFF] }
+        username: { type: string }
+        password: { type: string }
+    LoginResponse:
+      type: object
+      required: [token, user]
+      properties: { token: { type: string }, user: { $ref: '#/components/schemas/AuthUser' } }
+    RegisterRequest:
+      type: object
+      required: [phone, password, otp]
+      properties: { phone: { type: string, pattern: '^0\d{9}$' }, password: { type: string, minLength: 6 }, otp: { type: string } }
+    ChangePasswordRequest:
+      type: object
+      required: [oldPassword, newPassword]
+      properties:
+        oldPassword: { type: string }
+        newPassword: { type: string, minLength: 6, description: Khác mật khẩu hiện tại }
+    LoanProduct:
+      description: GÓI VAY (loan_product)
+      type: object
+      properties:
+        id: { type: integer }
+        code: { $ref: '#/components/schemas/ProductCode' }
+        name: { type: string }
+        productType: { type: string, enum: [CONSUMER, OVERDRAFT] }
+        repaymentMethod: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    UpdateProductRequest:
+      description: Partial<LoanProduct>; backend chỉ dùng name, description, repaymentMethod, status
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        repaymentMethod: { type: string }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    CrossSellProduct:
+      description: SẢN PHẨM BÁN CHÉO (cross_sell_product)
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        productType: { type: string }
+        estCost: { type: number, description: Chi phí ước tính khách hàng phải trả }
+        scoreBonus: { type: number, description: Điểm ưu tiên cộng thêm }
+        rateDiscount: { type: number, description: '%/năm' }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    CrossSellProductInput:
+      description: CrossSellProduct không có id
+      type: object
+      required: [name, productType, estCost, scoreBonus, rateDiscount, status]
+      properties:
+        name: { type: string }
+        productType: { type: string }
+        estCost: { type: number }
+        scoreBonus: { type: number }
+        rateDiscount: { type: number, description: '%/năm' }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    ChecklistItem:
+      type: object
+      properties: { name: { type: string }, group: { type: string }, required: { type: boolean } }
+    OtherDebt:
+      type: object
+      required: [monthlyPayment]
+      properties: { lender: { type: string }, monthlyPayment: { type: number } }
+    ScreeningRequest:
+      description: MB01 (không có họ tên, CCCD, SĐT) + đồng ý MB02 phần (a)
+      type: object
+      required: [consentA, nationality, dob, gender, maritalStatus, dependents, avgIncome, salaryBank, isAbbankStaff, selfDeclaredBadDebt, otherDebts, purpose, desiredAmount, desiredTerm]
+      properties:
+        consentA: { $ref: '#/components/schemas/ConsentInput' }
+        nationality: { type: string, example: Việt Nam }
+        dob: { type: string, format: date }
+        gender: { type: string, enum: [MALE, FEMALE] }
+        maritalStatus: { type: string, enum: [SINGLE, MARRIED, OTHER] }
+        dependents: { type: integer, minimum: 0 }
+        avgIncome: { type: number, description: Thu nhập lương chuyển khoản bình quân 03 tháng }
+        salaryBank: { type: string }
+        isAbbankStaff: { type: boolean }
+        selfDeclaredBadDebt: { type: boolean, description: Tự khai có nợ xấu từ nhóm 3 }
+        otherDebts: { type: array, items: { $ref: '#/components/schemas/OtherDebt' } }
+        purpose: { type: string }
+        desiredAmount: { type: number }
+        desiredTerm: { type: integer, description: tháng }
+    ConsentInput:
+      description: Đồng ý văn bản MB02 (phần a khi sàng lọc, phần b khi lập hồ sơ)
+      type: object
+      required: [agreed, docVersion]
+      properties: { agreed: { type: boolean }, docVersion: { type: string, example: MB02-1.0 } }
+    ScreeningResultItem:
+      type: object
+      properties:
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        productName: { type: string }
+        eligible: { type: boolean }
+        reasons: { type: array, items: { type: string }, description: Lý do không đạt điều kiện loại trừ }
+        hints: { type: array, items: { type: string }, description: Hướng cải thiện tương ứng }
+        dti: { type: number, nullable: true, description: '% DTI sau vay ước tính với số tiền mong muốn' }
+        maxSafeAmount: { type: number, nullable: true }
+        refRate: { type: number }
+        maxTerm: { type: integer }
+        score: { type: number, nullable: true }
+        rankNo: { type: integer, nullable: true }
+    ScreeningResponse:
+      description: MB03
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }
+        versionNo: { type: string }
+        input: { $ref: '#/components/schemas/ScreeningRequest' }
+        age: { type: integer }
+        livingCost: { type: number }
+        disposableIncome: { type: number }
+        currentDti: { type: number }
+        results: { type: array, items: { $ref: '#/components/schemas/ScreeningResultItem' } }
+        savedToCustomerId: { type: integer, nullable: true }
+    SimulationRequest:
+      type: object
+      required: [screeningId, productCode, amount, termMonths, crossSellIds]
+      properties:
+        screeningId: { type: integer, format: int64 }
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        amount: { type: number }
+        termMonths: { type: integer }
+        crossSellIds: { type: array, items: { type: integer } }
+    ScheduleRow:
+      type: object
+      properties:
+        period: { type: integer }
+        principal: { type: number }
+        interest: { type: number }
+        payment: { type: number }
+        balance: { type: number }
+    Suggestion:
+      type: object
+      properties:
+        type: { type: string, enum: [REDUCE_AMOUNT, EXTEND_TERM, SWITCH_PRODUCT, CROSS_SELL] }
+        title: { type: string }
+        detail: { type: string }
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        amount: { type: number }
+        termMonths: { type: integer }
+        crossSellIds: { type: array, items: { type: integer } }
+        score: { type: number }
+        extraCost: { type: number }
+    SimulationResponse:
+      description: MB04 kèm kết quả kiểm tra và đề xuất điều chỉnh ngược
+      type: object
+      properties:
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        productName: { type: string }
+        amount: { type: number }
+        termMonths: { type: integer }
+        rate: { type: number, description: 'Lãi suất tham chiếu sau ưu đãi bán chéo, %/năm' }
+        monthlyObligation: { type: number, description: Nghĩa vụ hằng tháng quy đổi dùng tính DTI }
+        firstPayment: { type: number }
+        totalInterest: { type: number }
+        totalPayment: { type: number }
+        dtiAfter: { type: number }
+        dtiMax: { type: number }
+        disposableAfter: { type: number }
+        maxSafeAmount: { type: number }
+        maxTermAllowed: { type: integer }
+        score: { type: number }
+        ok: { type: boolean }
+        issues: { type: array, items: { type: string } }
+        extraCost: { type: number }
+        schedule: { type: array, items: { $ref: '#/components/schemas/ScheduleRow' } }
+        suggestions: { type: array, items: { $ref: '#/components/schemas/Suggestion' } }
+    LoanPlan:
+      description: MB07 – Phương án vay đề xuất (loan_plan)
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        screeningId: { type: integer, format: int64 }
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        productName: { type: string }
+        amount: { type: number }
+        termMonths: { type: integer }
+        refRate: { type: number }
+        monthlyPayment: { type: number }
+        totalInterest: { type: number }
+        dtiAfter: { type: number }
+        score: { type: number }
+        status: { type: string, enum: [DRAFT, CONFIRMED] }
+        crossSells:
+          type: array
+          items: { type: object, properties: { id: { type: integer }, name: { type: string }, extraCost: { type: number }, benefit: { type: string } } }
+        createdAt: { type: string, format: date-time }
+        checklist: { type: array, items: { $ref: '#/components/schemas/ChecklistItem' }, description: Danh mục giấy tờ cần chuẩn bị (bản xem trước MB05) }
+        applicationId: { type: integer, format: int64, nullable: true, description: Hồ sơ đã lập từ phương án (nếu có) }
+    ApplicationStatus:
+      type: string
+      description: |
+        DRAFTING: Đang lập hồ sơ; WAITING_VERIFY: Chờ đối chiếu; NEED_MORE: Cần bổ sung; VERIFIED: Đã đối chiếu;
+        APPROVED: Được phê duyệt; DISBURSED: Đã giải ngân; REJECTED: Bị từ chối; CANCELLED: Đã hủy; EXPIRED: Hết hạn.
+        Sơ đồ chuyển trạng thái: xem mô tả schema Application.
+      enum: [DRAFTING, WAITING_VERIFY, NEED_MORE, VERIFIED, APPROVED, DISBURSED, REJECTED, CANCELLED, EXPIRED]
+    ApplicationSummary:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string, example: HS2610-0501 }
+        customerName: { type: string, description: '"Chưa khai" nếu khách hàng chưa khai họ tên' }
+        customerPhone: { type: string }
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        productName: { type: string }
+        amount: { type: number }
+        termMonths: { type: integer }
+        score: { type: number }
+        branchName: { type: string }
+        status: { $ref: '#/components/schemas/ApplicationStatus' }
+        qrToken: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+    CreateApplicationRequest:
+      type: object
+      required: [planId, branchId, consentB]
+      properties:
+        planId: { type: integer, format: int64, description: Phương án đã CONFIRMED của khách hàng }
+        branchId: { type: integer, format: int64, description: Chi nhánh ACTIVE }
+        consentB: { $ref: '#/components/schemas/ConsentInput' }
+    PersonalInfo:
+      description: Thông tin cá nhân khai trong hồ sơ
+      type: object
+      required: [fullName, nationalId, dob, gender, address, phone, email]
+      properties:
+        fullName: { type: string }
+        nationalId: { type: string, pattern: '^(\d{12})?$', description: Số CCCD 12 chữ số (rỗng nếu chưa khai) }
+        dob: { type: string, description: yyyy-MM-dd }
+        gender: { type: string, enum: [MALE, FEMALE] }
+        address: { type: string }
+        phone: { type: string, description: Luôn theo số điện thoại tài khoản }
+        email: { type: string }
+    ExtractedField:
+      description: TRƯỜNG TRÍCH XUẤT (extracted_field) – một dòng của MB06
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string, example: national_id }
+        label: { type: string }
+        ocrValue: { type: string, description: Giá trị máy đọc }
+        confidence: { type: number, description: '%' }
+        confirmedValue: { type: string, nullable: true, description: Giá trị khách hàng xác nhận }
+    DocStatus:
+      type: string
+      description: 'MISSING: chưa tải; UPLOADED: đã tải, chờ xác nhận MB06; CONFIRMED: đã xác nhận; REJECTED_QUALITY: không đạt chất lượng, cần tải lại'
+      enum: [MISSING, UPLOADED, CONFIRMED, REJECTED_QUALITY]
+    AppDocument:
+      description: TÀI LIỆU (application_document) – một dòng của MB05
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        documentTypeId: { type: integer, format: int64 }
+        typeName: { type: string }
+        group: { type: string }
+        required: { type: boolean }
+        allowedFormats: { type: string, example: 'JPG,PNG,PDF' }
+        status: { $ref: '#/components/schemas/DocStatus' }
+        fileName: { type: string, nullable: true }
+        fileFormat: { type: string, nullable: true }
+        fileSize: { type: number, nullable: true, description: KB }
+        versionNo: { type: integer, description: Tăng mỗi lần tải lên }
+        issuedDate: { type: string, format: date, nullable: true }
+        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE], nullable: true }
+        qualityMessage: { type: string, nullable: true }
+        uploadedAt: { type: string, format: date-time, nullable: true }
+        previewUrl: { type: string, nullable: true, description: Đường dẫn xem trước có thời hạn (ảnh) }
+        fields: { type: array, items: { $ref: '#/components/schemas/ExtractedField' } }
+        verifyResult: { type: string, enum: [MATCH, MISMATCH, MISSING], nullable: true, description: Kết quả đối chiếu gần nhất tại chi nhánh }
+        verifyReason: { type: string, nullable: true }
+    ConfirmFieldsRequest:
+      type: object
+      required: [fields]
+      properties:
+        fields:
+          type: array
+          items:
+            type: object
+            required: [id, confirmedValue]
+            properties: { id: { type: integer, format: int64 }, confirmedValue: { type: string } }
+    UpdatePlanRequest:
+      type: object
+      required: [amount, termMonths, crossSellIds]
+      properties:
+        amount: { type: number }
+        termMonths: { type: integer }
+        crossSellIds: { type: array, items: { type: integer } }
+    UpdateRequestFormRequest:
+      type: object
+      required: [values]
+      properties:
+        values:
+          type: object
+          description: Bản đồ key → giá trị cho các ô editable (contactAddress, email, beneficiary, repaymentSource, note)
+          additionalProperties: { type: string }
+    CancelRequest:
+      type: object
+      properties: { reason: { type: string } }
+    CrossCheckWarning:
+      description: Sai lệch giữa giá trị kiểm chứng (MB06) và giá trị khai báo (MB01). BLOCKING chặn nộp hồ sơ.
+      type: object
+      properties:
+        field: { type: string }
+        declared: { type: string }
+        verified: { type: string }
+        message: { type: string }
+        severity: { type: string, enum: [INFO, WARNING, BLOCKING] }
+    Recalculation:
+      description: Kết quả tính lại theo giá trị kiểm chứng (bước 30)
+      type: object
+      properties:
+        verifiedIncome: { type: number }
+        dtiAfter: { type: number }
+        maxSafeAmount: { type: number }
+        score: { type: number }
+        ok: { type: boolean }
+        issues: { type: array, items: { type: string } }
+    LoanRequestForm:
+      description: GIẤY ĐỀ NGHỊ VAY VỐN (loan_request_form) – MB15. Bị xóa (null) mỗi khi thông tin cá nhân, giấy tờ, phương án thay đổi.
+      type: object
+      properties:
+        status: { type: string, enum: [DRAFT, CONFIRMED] }
+        content:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              key: { type: string }
+              value: { type: string }
+              editable: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        otpConfirmedAt: { type: string, format: date-time, nullable: true }
+    VerificationDetail:
+      type: object
+      properties:
+        documentId: { type: integer, format: int64 }
+        typeName: { type: string }
+        result: { type: string, enum: [MATCH, MISMATCH, MISSING] }
+        reason: { type: string }
+    Verification:
+      description: PHIẾU ĐỐI CHIẾU (verification) – MB09
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        staffName: { type: string }
+        overallResult: { type: string, enum: [MATCH, MISMATCH, PENDING] }
+        note: { type: string }
+        verifiedAt: { type: string, format: date-time }
+        details: { type: array, items: { $ref: '#/components/schemas/VerificationDetail' } }
+    VerificationRequest:
+      type: object
+      required: [details, note]
+      properties:
+        details:
+          type: array
+          description: Một dòng cho mỗi giấy tờ đã tải lên (trừ giấy đề nghị hệ thống)
+          items:
+            type: object
+            required: [documentId, result, reason]
+            properties:
+              documentId: { type: integer, format: int64 }
+              result: { type: string, enum: [MATCH, MISMATCH, MISSING] }
+              reason: { type: string, description: Bắt buộc khi MISMATCH hoặc MISSING }
+        note: { type: string }
+    ApprovalResult:
+      description: KẾT QUẢ XÉT DUYỆT (approval_result) – MB16, kèm thông tin giải ngân
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        resultType: { type: string, enum: [APPROVED, REJECTED, MORE_INFO] }
+        approvedAmount: { type: number, nullable: true }
+        approvedTerm: { type: integer, nullable: true }
+        approvedRate: { type: number, nullable: true }
+        reason: { type: string, nullable: true }
+        recordedAt: { type: string, format: date-time }
+        staffName: { type: string }
+        disbursedAt: { type: string, nullable: true, description: yyyy-MM-dd }
+        disbursedAmount: { type: number, nullable: true }
+        beneficiary: { type: string, nullable: true }
+    DecisionRequest:
+      type: object
+      required: [resultType]
+      properties:
+        resultType: { type: string, enum: [APPROVED, REJECTED, MORE_INFO] }
+        approvedAmount: { type: number, description: Bắt buộc khi APPROVED }
+        approvedTerm: { type: integer, description: Bắt buộc khi APPROVED }
+        approvedRate: { type: number, description: 'Bắt buộc khi APPROVED, %/năm' }
+        reason: { type: string, description: Bắt buộc khi REJECTED hoặc MORE_INFO }
+    DisbursementRequest:
+      type: object
+      required: [disbursedAt, disbursedAmount, beneficiary]
+      properties:
+        disbursedAt: { type: string, format: date }
+        disbursedAmount: { type: number, description: '> 0 và không vượt approvedAmount' }
+        beneficiary: { type: string }
+    StatusEvent:
+      type: object
+      properties:
+        status: { $ref: '#/components/schemas/ApplicationStatus' }
+        at: { type: string, format: date-time }
+        actor: { type: string }
+        note: { type: string, nullable: true }
+    ApplicationPermissions:
+      description: Các thao tác được phép với người đang xem
+      type: object
+      properties:
+        edit: { type: boolean, description: 'Chủ hồ sơ và trạng thái DRAFTING / NEED_MORE / EXPIRED' }
+        submit: { type: boolean, description: Chủ hồ sơ và DRAFTING }
+        resubmit: { type: boolean, description: 'Chủ hồ sơ và NEED_MORE / EXPIRED (dùng POST /applications/{id}/submit)' }
+        cancel: { type: boolean, description: 'Chủ hồ sơ và DRAFTING / WAITING_VERIFY / NEED_MORE / EXPIRED' }
+        verify: { type: boolean, description: Nhân viên chi nhánh tiếp nhận và WAITING_VERIFY }
+        decide: { type: boolean, description: Nhân viên chi nhánh tiếp nhận và VERIFIED }
+        disburse: { type: boolean, description: Nhân viên chi nhánh tiếp nhận và APPROVED }
+    Application:
+      description: |
+        HỒ SƠ VAY (loan_application) – chi tiết.
+
+        Chuyển trạng thái (`status`, mỗi lần chuyển thêm một dòng vào `history`):
+        - (tạo) → DRAFTING: POST /applications (khách hàng).
+        - DRAFTING → WAITING_VERIFY: POST /applications/{id}/submit với OTP; khóa nội dung (contentHash, lockedAt), cấp qrToken, đặt expiresAt.
+        - NEED_MORE → WAITING_VERIFY: nộp lại (cùng đường dẫn submit) sau khi tải lại giấy tờ MISMATCH/MISSING.
+        - EXPIRED → NEED_MORE → WAITING_VERIFY: nộp lại sau khi thay giấy tờ quá hạn hiệu lực.
+        - WAITING_VERIFY → VERIFIED: nhân viên đối chiếu, tất cả MATCH.
+        - WAITING_VERIFY → NEED_MORE: đối chiếu có giấy tờ MISMATCH/MISSING.
+        - VERIFIED → APPROVED / REJECTED / NEED_MORE: kết quả xét duyệt APPROVED / REJECTED / MORE_INFO.
+        - APPROVED → DISBURSED: cập nhật giải ngân.
+        - WAITING_VERIFY / NEED_MORE → EXPIRED: tác vụ EXPIRE_DOCUMENTS khi expiresAt đã qua.
+        - DRAFTING / WAITING_VERIFY / NEED_MORE / EXPIRED → CANCELLED: khách hàng hủy, hoặc rút đồng ý phần (b).
+        Trạng thái kết thúc: DISBURSED, REJECTED, CANCELLED.
+        Chỉ sửa được (thông tin cá nhân, giấy tờ, MB06, phương án, giấy đề nghị) khi DRAFTING / NEED_MORE / EXPIRED.
+        Ngừng hoạt động chi nhánh chuyển hồ sơ sang chi nhánh khác mà không đổi trạng thái.
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string, example: HS2610-0501 }
+        customerId: { type: integer, format: int64 }
+        status: { $ref: '#/components/schemas/ApplicationStatus' }
+        branchId: { type: integer, format: int64 }
+        branchName: { type: string }
+        branchAddress: { type: string }
+        plan: { $ref: '#/components/schemas/LoanPlan' }
+        purpose: { type: string }
+        personal: { $ref: '#/components/schemas/PersonalInfo' }
+        consentBAt: { type: string, format: date-time }
+        versionNo: { type: string, description: Phiên bản tham số áp dụng (cập nhật khi nộp) }
+        contentHash: { type: string, nullable: true, description: SHA-256 nội dung đã khóa }
+        lockedAt: { type: string, format: date-time, nullable: true }
+        qrToken: { type: string, nullable: true, description: Mã QR trên Phiếu tóm tắt MB08 }
+        expiresAt: { type: string, format: date-time, nullable: true, description: Hạn hiệu lực giấy tờ (nộp + DOC_VALIDITY_DAYS) }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        documents: { type: array, items: { $ref: '#/components/schemas/AppDocument' } }
+        warnings: { type: array, items: { $ref: '#/components/schemas/CrossCheckWarning' } }
+        recalc: { type: object, allOf: [{ $ref: '#/components/schemas/Recalculation' }], nullable: true }
+        requestForm: { type: object, allOf: [{ $ref: '#/components/schemas/LoanRequestForm' }], nullable: true }
+        verifications: { type: array, items: { $ref: '#/components/schemas/Verification' } }
+        approval: { type: object, allOf: [{ $ref: '#/components/schemas/ApprovalResult' }], nullable: true }
+        history: { type: array, items: { $ref: '#/components/schemas/StatusEvent' } }
+        can: { $ref: '#/components/schemas/ApplicationPermissions' }
+    AppNotification:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        body: { type: string }
+        link: { type: string, nullable: true, description: Đường dẫn trong frontend }
+        createdAt: { type: string, format: date-time }
+        read: { type: boolean }
+    ActivityLog:
+      description: NHẬT KÝ (activity_log)
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        applicationCode: { type: string, nullable: true }
+        actorType: { type: string, enum: [CUSTOMER, STAFF, SYSTEM] }
+        actorName: { type: string }
+        action: { type: string }
+        detail: { type: string }
+        createdAt: { type: string, format: date-time }
+    ConsentRecord:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        scope: { type: string, enum: [A, B] }
+        docVersion: { type: string }
+        agreedAt: { type: string, format: date-time }
+        withdrawnAt: { type: string, format: date-time, nullable: true }
+        applicationCode: { type: string, nullable: true }
+    MyData:
+      description: 6.1 Dữ liệu cá nhân của khách hàng
+      type: object
+      properties:
+        account:
+          type: object
+          properties: { phone: { type: string }, name: { type: string }, createdAt: { type: string, format: date-time } }
+        personal: { type: object, allOf: [{ $ref: '#/components/schemas/PersonalInfo' }], nullable: true }
+        consents: { type: array, items: { $ref: '#/components/schemas/ConsentRecord' } }
+        screenings: { type: integer }
+        plans: { type: integer }
+        applications:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string }
+              status: { $ref: '#/components/schemas/ApplicationStatus' }
+              documents: { type: integer, description: Số tệp giấy tờ đang lưu }
+        logs: { type: array, items: { $ref: '#/components/schemas/ActivityLog' } }
+    WithdrawConsentRequest:
+      type: object
+      required: [scope, otp]
+      properties:
+        scope: { type: string, enum: [A, B], description: 'A: xử lý dữ liệu sàng lọc; B: lưu trữ giấy tờ và lập hồ sơ' }
+        otp: { type: string }
+    WithdrawConsentResult:
+      type: object
+      properties:
+        scope: { type: string, enum: [A, B] }
+        deletedScreenings: { type: integer }
+        deletedDocuments: { type: integer }
+        cancelledApplications: { type: array, items: { type: string } }
+        keptApplications: { type: array, items: { type: string } }
+        message: { type: string }
+    StaffSummary:
+      type: object
+      properties:
+        waitingVerify: { type: integer }
+        needMore: { type: integer }
+        verified: { type: integer }
+        approved: { type: integer }
+    Branch:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        code: { type: string, example: HN01 }
+        name: { type: string }
+        address: { type: string }
+        phone: { type: string }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        openApplications: { type: integer, description: Chỉ có ở GET /admin/branches }
+    BranchInput:
+      description: Branch không có id, status
+      type: object
+      required: [code, name, address, phone]
+      properties:
+        code: { type: string }
+        name: { type: string }
+        address: { type: string }
+        phone: { type: string }
+    DeactivateBranchRequest:
+      type: object
+      properties:
+        transferToBranchId: { type: integer, format: int64, description: Bắt buộc nếu chi nhánh còn hồ sơ đang xử lý }
+    BranchDeactivateResult:
+      allOf:
+        - $ref: '#/components/schemas/Branch'
+        - type: object
+          properties:
+            transferred: { type: integer, description: Số hồ sơ đã chuyển }
+    StaffAccount:
+      description: NHÂN VIÊN (staff)
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        fullName: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [BRANCH_STAFF, ADMIN] }
+        branchId: { type: integer, format: int64, nullable: true }
+        branchName: { type: string, nullable: true }
+        status: { type: string, enum: [ACTIVE, LOCKED] }
+        createdAt: { type: string, format: date-time }
+    StaffAccountWithPassword:
+      allOf:
+        - $ref: '#/components/schemas/StaffAccount'
+        - type: object
+          properties:
+            tempPassword: { type: string, description: Mật khẩu tạm (khi tạo mới hoặc đặt lại mật khẩu) }
+    CreateStaffRequest:
+      type: object
+      required: [fullName, email, role, branchId]
+      properties:
+        fullName: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [BRANCH_STAFF, ADMIN] }
+        branchId: { type: integer, format: int64, nullable: true, description: Bắt buộc với BRANCH_STAFF }
+    UpdateStaffRequest:
+      type: object
+      required: [fullName, role, branchId]
+      properties:
+        fullName: { type: string }
+        role: { type: string, enum: [BRANCH_STAFF, ADMIN] }
+        branchId: { type: integer, format: int64, nullable: true, description: Bắt buộc với BRANCH_STAFF }
+    JobInfo:
+      description: Tác vụ định kỳ (1.7)
+      type: object
+      properties:
+        code: { type: string, example: EXPIRE_DOCUMENTS }
+        name: { type: string }
+        schedule: { type: string }
+        lastRunAt: { type: string, format: date-time, nullable: true }
+        lastResult: { type: string, nullable: true }
+    DocumentType:
+      description: LOẠI GIẤY TỜ (document_type)
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        group: { type: string }
+        allowedFormats: { type: string, example: 'JPG,PNG,PDF', description: 'Danh sách định dạng, phân cách bằng dấu phẩy' }
+        validityDays: { type: integer, nullable: true, description: Thời hạn hiệu lực (ngày) }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    DocumentTypeInput:
+      description: DocumentType không có id
+      type: object
+      required: [name, group, allowedFormats, validityDays, status]
+      properties:
+        name: { type: string }
+        group: { type: string }
+        allowedFormats: { type: string }
+        validityDays: { type: integer, nullable: true }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+    ProductDocRule:
+      type: object
+      required: [productCode, documentTypeId, required]
+      properties:
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        documentTypeId: { type: integer, format: int64 }
+        required: { type: boolean }
+    AdminCatalog:
+      type: object
+      properties:
+        products: { type: array, items: { $ref: '#/components/schemas/LoanProduct' } }
+        documentTypes: { type: array, items: { $ref: '#/components/schemas/DocumentType' } }
+        productDocuments: { type: array, items: { $ref: '#/components/schemas/ProductDocRule' } }
+        crossSells: { type: array, items: { $ref: '#/components/schemas/CrossSellProduct' } }
+    ParamVersion:
+      type: object
+      properties:
+        id: { type: integer }
+        versionNo: { type: string }
+        legalBasis: { type: string }
+        status: { type: string, enum: [DRAFT, ACTIVE, EXPIRED] }
+        createdBy: { type: string }
+        createdAt: { type: string, format: date-time }
+        activatedAt: { type: string, format: date-time, nullable: true }
+    ParamChange:
+      description: Thay đổi giá trị một tham số khi sao chép phiên bản
+      type: object
+      required: [key, productCode, value]
+      properties:
+        key: { type: string, example: DTI_MAX }
+        productCode: { type: string, enum: [TD, TC], nullable: true, description: 'Rỗng nếu tham số dùng chung' }
+        value: { type: string }
+    CloneParamVersionRequest:
+      type: object
+      required: [versionNo, legalBasis]
+      properties:
+        versionNo: { type: string, example: '2026.11' }
+        legalBasis: { type: string }
+        changes: { type: array, items: { $ref: '#/components/schemas/ParamChange' } }
+    PolicyParam:
+      description: Một dòng MB11
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        productCode: { type: string, enum: [TD, TC], nullable: true, description: 'Rỗng nếu tham số dùng chung' }
+        key: { type: string, example: DTI_MAX }
+        label: { type: string }
+        value: { type: string }
+        unit: { type: string }
+    ScoringWeight:
+      description: Một dòng MB12
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        criterion: { type: string, enum: [DTI, AMOUNT_RATIO, SALARY_BANK, STAFF, TERM_TO_RETIRE] }
+        label: { type: string }
+        weight: { type: number }
+    TestRunRow:
+      type: object
+      properties:
+        profile: { type: string }
+        productCode: { $ref: '#/components/schemas/ProductCode' }
+        activeEligible: { type: boolean }
+        draftEligible: { type: boolean }
+        activeMaxSafe: { type: number, nullable: true }
+        draftMaxSafe: { type: number, nullable: true }
+        activeScore: { type: number, nullable: true }
+        draftScore: { type: number, nullable: true }
+    TestRunResult:
+      description: Kết quả chạy thử phiên bản nháp trên bộ hồ sơ mẫu (7.4)
+      type: object
+      properties:
+        runAt: { type: string, format: date-time }
+        changed: { type: integer }
+        rows: { type: array, items: { $ref: '#/components/schemas/TestRunRow' } }
+    ParamVersionDetail:
+      allOf:
+        - $ref: '#/components/schemas/ParamVersion'
+        - type: object
+          properties:
+            params: { type: array, items: { $ref: '#/components/schemas/PolicyParam' } }
+            weights: { type: array, items: { $ref: '#/components/schemas/ScoringWeight' } }
+            testResult: { type: object, allOf: [{ $ref: '#/components/schemas/TestRunResult' }], nullable: true }
+    StatsResponse:
+      description: 8.1 Thống kê hồ sơ
+      type: object
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        totals:
+          type: object
+          description: Số hồ sơ đã từng đạt mỗi mốc (theo lịch sử), screenings/plans là số lượt sàng lọc, phương án
+          properties:
+            screenings: { type: integer }
+            plans: { type: integer }
+            applications: { type: integer }
+            submitted: { type: integer }
+            verified: { type: integer }
+            approved: { type: integer }
+            disbursed: { type: integer }
+            rejected: { type: integer }
+            cancelled: { type: integer }
+            expired: { type: integer }
+        byStatus:
+          type: array
+          items: { type: object, properties: { status: { $ref: '#/components/schemas/ApplicationStatus' }, count: { type: integer } } }
+        byProduct:
+          type: array
+          items: { type: object, properties: { productCode: { $ref: '#/components/schemas/ProductCode' }, count: { type: integer }, amount: { type: number, description: Tổng tiền đã giải ngân } } }
+        byBranch:
+          type: array
+          items: { type: object, properties: { branchName: { type: string }, count: { type: integer }, approved: { type: integer }, rejected: { type: integer } } }
+        byMonth:
+          type: array
+          items: { type: object, properties: { month: { type: string, example: '2026-10' }, created: { type: integer }, disbursed: { type: integer }, rejected: { type: integer } } }
+        avgProcessingDays: { type: number, description: Bình quân số ngày từ nộp đến giải ngân/từ chối }
+        disbursedAmount: { type: number }
+    AccuracyResponse:
+      description: 8.2 Đánh giá độ chính xác mô hình (tỷ lệ theo %)
+      type: object
+      properties:
+        threshold: { type: number }
+        sample: { type: integer }
+        matrix:
+          type: object
+          properties: { tp: { type: integer }, fp: { type: integer }, tn: { type: integer }, fn: { type: integer } }
+        accuracy: { type: number }
+        precision: { type: number }
+        recall: { type: number }
+        byBand:
+          type: array
+          items: { type: object, properties: { band: { type: string, example: '55 – 65' }, total: { type: integer }, approved: { type: integer }, rate: { type: number } } }
+        byProduct:
+          type: array
+          items: { type: object, properties: { productCode: { $ref: '#/components/schemas/ProductCode' }, sample: { type: integer }, accuracy: { type: number } } }
+    ReportProposal:
+      description: Một đề xuất hiệu chỉnh tham số trong MB14
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        paramKey: { type: string, nullable: true }
+        productCode: { type: string, enum: [TD, TC], nullable: true }
+        currentValue: { type: string, nullable: true }
+        proposedValue: { type: string, nullable: true }
+    ReportResponse:
+      description: 8.3 MB14 – báo cáo thống kê và đề xuất hiệu chỉnh
+      type: object
+      properties:
+        period: { type: string, example: '2026-10' }
+        generatedAt: { type: string, format: date-time }
+        stats: { $ref: '#/components/schemas/StatsResponse' }
+        accuracy: { $ref: '#/components/schemas/AccuracyResponse' }
+        proposals: { type: array, items: { $ref: '#/components/schemas/ReportProposal' } }

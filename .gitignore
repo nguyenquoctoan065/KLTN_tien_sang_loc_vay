@@ -1,0 +1,8 @@
+node_modules/
+dist/
+tests/e2e/shots/
+be/.env
+be/target/
+be/data/
+.idea/
+.vscode/
