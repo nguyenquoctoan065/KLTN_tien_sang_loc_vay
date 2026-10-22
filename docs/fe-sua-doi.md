@@ -180,7 +180,7 @@ Kiểm tra bằng `grep -rn "thử nghiệm\|đồ án\|PoC" fe/src/layouts fe/s
 
 ---
 
-## F6. Rà chữ khó hiểu còn lại (nên làm)
+## F6. Rà chữ khó hiểu còn lại (nên làm) [x]
 
 Rà các tooltip và nhãn trong `ScreeningWizard.tsx`, `ScreeningResult.tsx`, `Simulation.tsx`, `PlanDetail.tsx`.
 Thuật ngữ nào khách không hiểu thì thêm câu giải thích bằng lời thường. Ví dụ:

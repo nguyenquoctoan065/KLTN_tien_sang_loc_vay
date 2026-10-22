@@ -11,6 +11,8 @@ import { errorMessage } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import type { ProductCode, SimulationRequest, SimulationResponse, Suggestion } from '../../api/types';
 import Disclaimer from '../../components/Disclaimer';
+import Hint from '../../components/Hint';
+import { GLOSSARY } from '../../utils/glossary';
 import ScheduleChart from '../../components/ScheduleChart';
 import { money, moneyFormatter, moneyParser, moneyShort, pct } from '../../utils/format';
 import { scoreLevel } from '../../utils/status';
@@ -148,17 +150,17 @@ export default function Simulation() {
               <Card>
                 <Row gutter={[16, 16]}>
                   <Col xs={12} md={6}><Statistic title={code === 'TD' ? 'Trả kỳ đầu' : 'Lãi hằng tháng'} value={s.firstPayment} suffix="đ" groupSeparator="." /></Col>
-                  <Col xs={12} md={6}><Statistic title="Tổng lãi dự kiến" value={s.totalInterest} suffix="đ" groupSeparator="." /></Col>
-                  <Col xs={12} md={6}><Statistic title="Lãi suất tham chiếu" value={s.rate} suffix="%/năm" precision={2} decimalSeparator="," /></Col>
+                  <Col xs={12} md={6}><Statistic title={<Hint text={GLOSSARY.totalInterest}>Tổng lãi dự kiến</Hint>} value={s.totalInterest} suffix="đ" groupSeparator="." /></Col>
+                  <Col xs={12} md={6}><Statistic title={<Hint text={GLOSSARY.refRate}>Lãi suất tham chiếu</Hint>} value={s.rate} suffix="%/năm" precision={2} decimalSeparator="," /></Col>
                   <Col xs={12} md={6}>
-                    <Statistic title="Điểm tương thích" value={s.score} decimalSeparator="," />
+                    <Statistic title={<Hint text={GLOSSARY.score}>Điểm tương thích</Hint>} value={s.score} decimalSeparator="," />
                     <Tag color={lv.color}>{lv.label}</Tag>
                   </Col>
                 </Row>
                 <div style={{ marginTop: 16 }}>
                   <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                    <Typography.Text>DTI sau vay: <b>{pct(s.dtiAfter)}</b></Typography.Text>
-                    <Typography.Text type="secondary">Ngưỡng tối đa {s.dtiMax}%</Typography.Text>
+                    <Typography.Text>Tỷ lệ trả nợ trên thu nhập (DTI) sau vay: <Hint text={GLOSSARY.dti}><b>{pct(s.dtiAfter)}</b></Hint></Typography.Text>
+                    <Typography.Text type="secondary"><Hint text={GLOSSARY.dtiMax}>Ngưỡng tối đa {s.dtiMax}%</Hint></Typography.Text>
                   </Space>
                   <Tooltip title={`Nghĩa vụ hằng tháng quy đổi: ${money(s.monthlyObligation)}`}>
                     <Progress percent={Math.min(100, s.dtiAfter / s.dtiMax * 100)} showInfo={false}
@@ -229,8 +231,8 @@ export default function Simulation() {
               { title: 'Lãi suất', dataIndex: 'rate', render: v => `${v}%` },
               { title: 'Trả kỳ đầu', dataIndex: 'firstPayment', align: 'right', render: money },
               { title: 'Tổng lãi', dataIndex: 'totalInterest', align: 'right', render: money },
-              { title: 'DTI', dataIndex: 'dtiAfter', render: v => pct(v) },
-              { title: 'Điểm', dataIndex: 'score' },
+              { title: <Hint text={GLOSSARY.dti}>DTI</Hint>, dataIndex: 'dtiAfter', render: v => pct(v) },
+              { title: <Hint text={GLOSSARY.score}>Điểm</Hint>, dataIndex: 'score' },
               { title: 'Đạt', dataIndex: 'ok', render: v => (v ? <Tag color="success">Đạt</Tag> : <Tag color="error">Vượt</Tag>) },
               {
                 title: '', key: 'x', render: (_, r, i) => (

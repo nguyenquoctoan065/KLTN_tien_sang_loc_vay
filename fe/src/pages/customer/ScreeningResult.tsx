@@ -9,6 +9,8 @@ import { screeningApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import Disclaimer from '../../components/Disclaimer';
+import Hint from '../../components/Hint';
+import { GLOSSARY } from '../../utils/glossary';
 import { dt, money, pct } from '../../utils/format';
 import { scoreLevel } from '../../utils/status';
 import type { ScreeningResultItem } from '../../api/types';
@@ -28,13 +30,13 @@ function ProductCard({ r, onSim }: { r: ScreeningResultItem; onSim: () => void }
               <Progress type="dashboard" percent={r.score ?? 0} strokeColor={{ success: '#16a34a', warning: '#f59e0b', error: '#dc2626', default: '#0f766e' }[lv.color]} format={p => <span style={{ fontSize: 22 }}>{p}<div style={{ fontSize: 12, color: '#64748b' }}>điểm</div></span>} />
             </Col>
             <Col flex="auto">
-              <Statistic title="Hạn mức tối đa an toàn" value={r.maxSafeAmount ?? 0} suffix="đ" groupSeparator="." />
-              <Typography.Text type="secondary">DTI ước tính với số tiền mong muốn: <b>{pct(r.dti)}</b></Typography.Text>
+              <Statistic title={<Hint text={GLOSSARY.maxSafe}>Hạn mức tối đa an toàn</Hint>} value={r.maxSafeAmount ?? 0} suffix="đ" groupSeparator="." />
+              <Typography.Text type="secondary">Tỷ lệ trả nợ trên thu nhập (DTI) ước tính với số tiền mong muốn: <Hint text={GLOSSARY.dti}><b>{pct(r.dti)}</b></Hint></Typography.Text>
               <div style={{ marginTop: 6 }}><Tag color={lv.color}>{lv.label}</Tag></div>
             </Col>
           </Row>
           <Descriptions size="small" column={2} style={{ marginTop: 12 }}>
-            <Descriptions.Item label="Lãi suất tham chiếu">{r.refRate}%/năm</Descriptions.Item>
+            <Descriptions.Item label={<Hint text={GLOSSARY.refRate}>Lãi suất tham chiếu</Hint>}>{r.refRate}%/năm</Descriptions.Item>
             <Descriptions.Item label="Kỳ hạn tối đa">{r.maxTerm} tháng</Descriptions.Item>
           </Descriptions>
           {r.hints.length > 0 && (
@@ -108,15 +110,15 @@ export default function ScreeningResult() {
       <Card style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]}>
           <Col xs={12} md={6}><Statistic title="Thu nhập bình quân" value={s.input.avgIncome} suffix="đ" groupSeparator="." /></Col>
-          <Col xs={12} md={6}><Statistic title="Chi phí sinh hoạt định mức" value={s.livingCost} suffix="đ" groupSeparator="." /></Col>
-          <Col xs={12} md={6}><Statistic title="Nghĩa vụ nợ hiện có" value={debt} suffix="đ" groupSeparator="." /></Col>
+          <Col xs={12} md={6}><Statistic title={<Hint text={GLOSSARY.living}>Chi phí sinh hoạt định mức</Hint>} value={s.livingCost} suffix="đ" groupSeparator="." /></Col>
+          <Col xs={12} md={6}><Statistic title={<Hint text={GLOSSARY.debt}>Nghĩa vụ nợ hiện có</Hint>} value={debt} suffix="đ" groupSeparator="." /></Col>
           <Col xs={12} md={6}>
-            <Statistic title="Thu nhập khả dụng" value={s.disposableIncome} suffix="đ" groupSeparator="."
+            <Statistic title={<Hint text={GLOSSARY.disposable}>Thu nhập khả dụng</Hint>} value={s.disposableIncome} suffix="đ" groupSeparator="."
               valueStyle={{ color: s.disposableIncome > 0 ? '#16a34a' : '#dc2626' }} />
           </Col>
         </Row>
         <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
-          DTI hiện tại (chưa tính khoản vay mới): <b>{pct(s.currentDti)}</b>. Nhu cầu: {money(s.input.desiredAmount)}, {s.input.desiredTerm} tháng, mục đích “{s.input.purpose}”.
+          Tỷ lệ trả nợ trên thu nhập (DTI) hiện tại, chưa tính khoản vay mới: <Hint text={GLOSSARY.dti}><b>{pct(s.currentDti)}</b></Hint>. Nhu cầu: {money(s.input.desiredAmount)}, {s.input.desiredTerm} tháng, mục đích “{s.input.purpose}”.
         </Typography.Paragraph>
       </Card>
 

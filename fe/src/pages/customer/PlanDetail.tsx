@@ -5,6 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { planApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
 import Disclaimer from '../../components/Disclaimer';
+import Hint from '../../components/Hint';
+import { GLOSSARY } from '../../utils/glossary';
 import { dt, money, pct } from '../../utils/format';
 
 /** MB07 – Phương án vay đề xuất, kèm danh mục giấy tờ cần chuẩn bị */
@@ -42,12 +44,12 @@ export default function PlanDetail() {
             <Descriptions column={{ xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }} size="small" bordered>
               <Descriptions.Item label="Số tiền vay">{money(p.amount)}</Descriptions.Item>
               <Descriptions.Item label="Kỳ hạn">{p.termMonths} tháng</Descriptions.Item>
-              <Descriptions.Item label="Lãi suất tham chiếu">{p.refRate}%/năm</Descriptions.Item>
+              <Descriptions.Item label={<Hint text={GLOSSARY.refRate}>Lãi suất tham chiếu</Hint>}>{p.refRate}%/năm</Descriptions.Item>
               <Descriptions.Item label={p.productCode === 'TD' ? 'Trả kỳ đầu' : 'Lãi hằng tháng'}>{money(p.monthlyPayment)}</Descriptions.Item>
-              <Descriptions.Item label="Tổng lãi dự kiến">{money(p.totalInterest)}</Descriptions.Item>
-              <Descriptions.Item label="DTI sau vay">{pct(p.dtiAfter)}</Descriptions.Item>
-              <Descriptions.Item label="Điểm tương thích">{p.score}</Descriptions.Item>
-              <Descriptions.Item label="Sản phẩm bán chéo">
+              <Descriptions.Item label={<Hint text={GLOSSARY.totalInterest}>Tổng lãi dự kiến</Hint>}>{money(p.totalInterest)}</Descriptions.Item>
+              <Descriptions.Item label={<Hint text={GLOSSARY.dti}>Tỷ lệ trả nợ trên thu nhập (DTI) sau vay</Hint>}>{pct(p.dtiAfter)}</Descriptions.Item>
+              <Descriptions.Item label={<Hint text={GLOSSARY.score}>Điểm tương thích</Hint>}>{p.score}</Descriptions.Item>
+              <Descriptions.Item label={<Hint text={GLOSSARY.crossSell}>Sản phẩm đi kèm</Hint>}>
                 {p.crossSells.length ? p.crossSells.map(c => <div key={c.id}>{c.name}: {c.benefit}{c.extraCost ? ` (chi phí ~${money(c.extraCost)}/năm)` : ''}</div>) : 'Không'}
               </Descriptions.Item>
             </Descriptions>

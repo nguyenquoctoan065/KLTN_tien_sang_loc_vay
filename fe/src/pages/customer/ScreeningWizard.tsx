@@ -166,9 +166,9 @@ export default function ScreeningWizard() {
               <div className="consent-box">
                 <Typography.Title level={5} style={{ marginTop: 0 }}>Văn bản xác nhận đồng ý xử lý dữ liệu cá nhân – Phần (a): tiền sàng lọc</Typography.Title>
                 <ul>
-                  <li>Mục đích: kiểm tra điều kiện, tính tỷ lệ nợ trên thu nhập (DTI), hạn mức an toàn và gợi ý gói vay phù hợp.</li>
+                  <li>Mục đích: kiểm tra điều kiện, tính tỷ lệ tiền trả nợ hằng tháng trên thu nhập (DTI), hạn mức an toàn (số tiền tối đa bạn vay được mà vẫn đủ chi tiêu sinh hoạt) và gợi ý gói vay phù hợp.</li>
                   <li>Dữ liệu xử lý: quốc tịch, ngày sinh, giới tính, tình trạng hôn nhân, số người phụ thuộc, thu nhập, nghĩa vụ trả nợ, nhu cầu vay. Không thu thập họ tên, số CCCD, số điện thoại ở bước này.</li>
-                  <li>Kết quả chỉ để tham khảo; hệ thống không tra cứu CIC và không phê duyệt khoản vay.</li>
+                  <li>Kết quả chỉ để tham khảo; hệ thống không tra cứu lịch sử tín dụng tại CIC (Trung tâm Thông tin tín dụng Quốc gia) và không phê duyệt khoản vay.</li>
                   <li>Kết quả chỉ được lưu vào tài khoản khi bạn chọn lưu; bạn có thể rút lại sự đồng ý bất kỳ lúc nào.</li>
                   <li>Việc lưu trữ giấy tờ và lập hồ sơ vay cần đồng ý riêng ở Phần (b) khi tạo hồ sơ.</li>
                 </ul>
