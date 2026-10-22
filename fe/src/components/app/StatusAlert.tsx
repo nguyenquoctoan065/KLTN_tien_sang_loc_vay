@@ -10,7 +10,7 @@ export default function StatusAlert({ app }: { app: Application }) {
       return <Alert type="info" showIcon message="Hồ sơ đang lập" description="Khai thông tin cá nhân, tải và xác nhận từng giấy tờ, sau đó lập giấy đề nghị vay vốn và xác nhận bằng OTP để nộp." />;
     case 'WAITING_VERIFY':
       return <Alert type="info" showIcon message={`Chờ đối chiếu tại ${app.branchName}`}
-        description={`Mang bản gốc các giấy tờ và Phiếu tóm tắt hồ sơ (MB08) tới chi nhánh trước ${dt(app.expiresAt)}. Nhân viên sẽ quét mã QR để mở hồ sơ.`} />;
+        description={`Mang bản gốc các giấy tờ và Phiếu tóm tắt hồ sơ tới chi nhánh trước ${dt(app.expiresAt)}. Nhân viên sẽ quét mã QR để mở hồ sơ.`} />;
     case 'NEED_MORE':
       return <Alert type="warning" showIcon message="Hồ sơ cần bổ sung" description={<>{last.note}<br />Tải lại các giấy tờ được đánh dấu không khớp rồi bấm “Nộp lại”.</>} />;
     case 'EXPIRED':

@@ -80,7 +80,7 @@ export const applicationHandlers = [
     const u = currentUser(request);
     if (!u || u.role !== 'CUSTOMER') return err(401, 'Cần đăng nhập tài khoản khách hàng.');
     const b = (await request.json()) as { planId: number; branchId: number; consentB: { agreed: boolean; docVersion: string } };
-    if (!b.consentB?.agreed) return err(400, 'Cần đồng ý lưu trữ giấy tờ và lập hồ sơ (MB02 phần b).');
+    if (!b.consentB?.agreed) return err(400, 'Cần đồng ý lưu trữ giấy tờ và lập hồ sơ.');
     const plan = db.plans.find(p => p.id === b.planId && p.customerId === u.id);
     if (!plan) return err(404, 'Không tìm thấy phương án.');
     if (plan.status !== 'CONFIRMED') return err(409, 'Cần xác nhận phương án trước khi lập hồ sơ.');
@@ -223,7 +223,7 @@ export const applicationHandlers = [
     const miss = missingForSubmit(app);
     if (miss.length) return err(409, miss.join(' '));
     app.requestForm = { status: 'DRAFT', content: buildForm(app), createdAt: nowIso(), otpConfirmedAt: null };
-    log(u, 'Lập giấy đề nghị vay vốn', 'Bản nháp MB15', app);
+    log(u, 'Lập giấy đề nghị vay vốn', 'Bản nháp giấy đề nghị', app);
     persist();
     return HttpResponse.json(view(app, u));
   }),
@@ -266,7 +266,7 @@ export const applicationHandlers = [
     if (app.status === 'EXPIRED') setStatus(app, 'NEED_MORE', u.name, 'Cập nhật giấy tờ hết hạn');
     setStatus(app, 'WAITING_VERIFY', u.name, resub ? 'Bổ sung giấy tờ, nộp lại' : 'Xác nhận giấy đề nghị bằng OTP, nộp hồ sơ');
     notify({ branchId: app.branchId }, resub ? 'Hồ sơ đã bổ sung' : 'Có hồ sơ mới chờ đối chiếu', `${app.code} – ${app.personal.fullName}`, `/noi-bo/ho-so/${app.id}`);
-    notify({ customerId: app.customerId }, 'Đã nộp hồ sơ', `Hồ sơ ${app.code} đang chờ đối chiếu tại ${db.branches.find(x => x.id === app.branchId)?.name}. Mang bản gốc giấy tờ và Phiếu tóm tắt (MB08) khi đến quầy.`, `/ho-so/${app.id}`);
+    notify({ customerId: app.customerId }, 'Đã nộp hồ sơ', `Hồ sơ ${app.code} đang chờ đối chiếu tại ${db.branches.find(x => x.id === app.branchId)?.name}. Mang bản gốc giấy tờ và Phiếu tóm tắt khi đến quầy.`, `/ho-so/${app.id}`);
     log(u, resub ? 'Nộp lại hồ sơ' : 'Nộp hồ sơ', `Khóa nội dung, mã băm ${app.contentHash?.slice(0, 12)}…`, app);
     persist();
     return HttpResponse.json(view(app, u));

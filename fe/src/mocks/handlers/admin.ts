@@ -16,7 +16,7 @@ const forbid = () => err(403, 'Không có quyền.');
 /** Bộ hồ sơ mẫu dùng khi chạy thử phiên bản tham số (7.4) */
 const SAMPLE_PROFILES: { name: string; inp: ScreeningRequest }[] = (() => {
   const base: ScreeningRequest = {
-    consentA: { agreed: true, docVersion: 'MB02-1.0' }, nationality: 'Việt Nam', dob: '1992-05-10', gender: 'MALE',
+    consentA: { agreed: true, docVersion: 'DK-1.0' }, nationality: 'Việt Nam', dob: '1992-05-10', gender: 'MALE',
     maritalStatus: 'MARRIED', dependents: 1, avgIncome: 20_000_000, salaryBank: 'Vietcombank', isAbbankStaff: false,
     creditHistory: 'ON_TIME', otherDebts: [], purpose: 'Mua sắm đồ dùng, thiết bị', desiredAmount: 100_000_000, desiredTerm: 36,
   };

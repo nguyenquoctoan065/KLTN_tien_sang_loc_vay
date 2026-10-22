@@ -29,7 +29,7 @@ export default function PlanDetail() {
       <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
         <div>
           <Typography.Title level={3} style={{ marginBottom: 0 }}>Phương án vay đề xuất</Typography.Title>
-          <Typography.Text type="secondary">MB07 · Phương án #{p.id} · {dt(p.createdAt)}</Typography.Text>
+          <Typography.Text type="secondary">Phương án #{p.id} · {dt(p.createdAt)}</Typography.Text>
         </div>
         <Space>
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>In</Button>
@@ -55,7 +55,7 @@ export default function PlanDetail() {
               <Button type="primary" style={{ marginTop: 16 }} loading={confirm.isPending} onClick={() => confirm.mutate()}>Xác nhận phương án</Button>
             ) : (
               <Alert style={{ marginTop: 16 }} type="success" showIcon message="Phương án đã được xác nhận"
-                description="Bước tiếp theo: lập hồ sơ vay trực tuyến – chọn chi nhánh, đồng ý lưu trữ giấy tờ (MB02 phần b), tải giấy tờ lên."
+                description="Bước tiếp theo: lập hồ sơ vay trực tuyến – chọn chi nhánh, đồng ý lưu trữ giấy tờ, tải giấy tờ lên."
                 action={p.applicationId
                   ? <Button type="primary" onClick={() => nav(`/ho-so/${p.applicationId}`)}>Mở hồ sơ</Button>
                   : <Button type="primary" onClick={() => nav(`/ho-so/tao?phuongAn=${p.id}`)}>Lập hồ sơ vay</Button>} />
@@ -73,7 +73,7 @@ export default function PlanDetail() {
               </div>
             ))}
             <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
-              Mang bản gốc đến chi nhánh để nhân viên đối chiếu. Danh mục đầy đủ (MB05) sẽ được lập khi tạo hồ sơ.
+              Mang bản gốc đến chi nhánh để nhân viên đối chiếu. Danh mục đầy đủ sẽ được lập khi tạo hồ sơ.
             </Typography.Paragraph>
           </Card>
         </Col>

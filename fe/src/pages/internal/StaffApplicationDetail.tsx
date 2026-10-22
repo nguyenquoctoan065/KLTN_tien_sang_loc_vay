@@ -32,7 +32,7 @@ function VerifyForm({ app }: { app: Application }) {
   });
   const allMatch = Object.values(rows).every(r => r.result === 'MATCH');
   return (
-    <Card title={<Space><AuditOutlined />Phiếu đối chiếu giấy tờ bản gốc (MB09)</Space>} size="small" style={{ marginBottom: 16 }}>
+    <Card title={<Space><AuditOutlined />Phiếu đối chiếu giấy tờ bản gốc</Space>} size="small" style={{ marginBottom: 16 }}>
       <Table size="small" rowKey="id" pagination={false} dataSource={docs} columns={[
         { title: 'Giấy tờ', dataIndex: 'typeName', width: 170 },
         {
@@ -67,7 +67,7 @@ function DecisionForm({ app }: { app: Application }) {
     onSuccess: a => { qc.setQueryData(['application', app.id], a); qc.invalidateQueries({ queryKey: ['staff-apps'] }); message.success('Đã ghi nhận kết quả và thông báo khách hàng'); },
   });
   return (
-    <Card title={<Space><CheckCircleOutlined />Kết quả xét duyệt (MB16)</Space>} size="small" style={{ marginBottom: 16 }}>
+    <Card title={<Space><CheckCircleOutlined />Kết quả xét duyệt</Space>} size="small" style={{ marginBottom: 16 }}>
       <Form form={form} layout="vertical" onFinish={m.mutate}
         initialValues={{ resultType: 'APPROVED', approvedAmount: app.plan.amount, approvedTerm: app.plan.termMonths, approvedRate: app.plan.refRate }}>
         <Form.Item name="resultType" label="Kết quả do ngân hàng thông báo">
@@ -156,7 +156,7 @@ export default function StaffApplicationDetail() {
                 ),
               },
               {
-                key: 'form', label: 'Giấy đề nghị (MB15)', children: a.requestForm?.content.length ? (
+                key: 'form', label: 'Giấy đề nghị', children: a.requestForm?.content.length ? (
                   <Descriptions size="small" bordered column={1}>
                     {a.requestForm.content.map(c => <Descriptions.Item key={c.key} label={c.label}>{c.value || '—'}</Descriptions.Item>)}
                     <Descriptions.Item label="Xác nhận OTP">{dt(a.requestForm.otpConfirmedAt)}</Descriptions.Item>

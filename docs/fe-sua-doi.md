@@ -107,9 +107,9 @@ Hai câu hỏi gộp thành một trường mới `creditHistory`:
 **Vấn đề.** Trên trang kết quả, bấm “Sàng lọc lại” sẽ mở form trống, khách phải nhập lại từ đầu.
 
 **Việc cần làm**
-- [ ] `fe/src/pages/customer/ScreeningResult.tsx`: nút “Sàng lọc lại” chuyển tới `/sang-loc?tu=<id lượt sàng lọc>`.
+- [x] `fe/src/pages/customer/ScreeningResult.tsx`: nút “Sàng lọc lại” chuyển tới `/sang-loc?tu=<id lượt sàng lọc>`.
   Làm tương tự cho nút “Xem” ở tab “Kết quả sàng lọc” của `/cua-toi`: thêm nút “Sàng lọc lại với thông tin này”.
-- [ ] `fe/src/pages/customer/ScreeningWizard.tsx`:
+- [x] `fe/src/pages/customer/ScreeningWizard.tsx`:
   - Có `?tu=` thì gọi `screeningApi.get(id)` và lấy `input` để điền sẵn toàn bộ form:
     - `dob` chuyển sang `dayjs`;
     - `creditHistory` tách lại thành 2 câu hỏi;
@@ -134,7 +134,7 @@ Hai câu hỏi gộp thành một trường mới `creditHistory`:
 **Vấn đề.** Giao diện hiện mã tài liệu nội bộ, ví dụ “Đồng ý lưu trữ giấy tờ và lập hồ sơ – **MB02 phần (b)**”,
 và việc này xảy ra ở rất nhiều chỗ. Khách hàng không hiểu các mã này.
 
-**Việc cần làm.** Xóa mã khỏi mọi chữ hiển thị: tiêu đề, nhãn, tab, toast, mô tả. Áp dụng cho cả khu vực khách hàng
+**Việc cần làm.** [x] Xóa mã khỏi mọi chữ hiển thị: tiêu đề, nhãn, tab, toast, mô tả. Áp dụng cho cả khu vực khách hàng
 lẫn khu vực nội bộ để thống nhất. Giữ mã trong comment code và trong `docs/`.
 
 Danh sách đã biết (chạy `grep -rnE "MB0[0-9]|MB1[0-9]" fe/src --include=*.tsx` để rà sót):
@@ -199,4 +199,4 @@ Có thể hiện chữ đầy đủ ở lần đầu xuất hiện và giữ ch�
 - [ ] Sửa `tests/e2e/full_flow.py` theo F2 (chọn “Đã từng” → “Không”), F4 (tên tab mới), F1 (đăng nhập bằng email ở lần đăng nhập thứ hai).
   Chạy `npm run dev`, sau đó chạy `python tests/e2e/full_flow.py`; kết quả in ra phải là `ERRORS []`.
 - [ ] Xem ảnh trong `tests/e2e/shots/` để kiểm tra bằng mắt các trang đã sửa.
-- [ ] Thêm thử nghiệm tay F3: sàng lọc, “Sàng lọc lại”, kiểm tra dữ liệu còn nguyên.
+- [x] Thêm thử nghiệm tay F3: sàng lọc, “Sàng lọc lại”, kiểm tra dữ liệu còn nguyên.

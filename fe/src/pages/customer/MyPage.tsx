@@ -61,7 +61,12 @@ export default function MyPage() {
                   { title: 'Thời điểm', dataIndex: 'createdAt', render: dt },
                   { title: 'Nhu cầu', render: (_, r) => `${money(r.input.desiredAmount)} · ${r.input.desiredTerm} tháng` },
                   { title: 'Gói gợi ý', render: (_, r) => r.results.filter(x => x.eligible).map(x => <Tag key={x.productCode}>{x.productCode === 'TD' ? 'Tiêu dùng' : 'Thấu chi'} · {x.score}</Tag>) },
-                  { title: '', render: (_, r) => <Button size="small" onClick={() => nav(`/sang-loc/${r.id}`)}>Xem</Button> },
+                  { title: '', render: (_, r) => (
+                    <span style={{ display: 'inline-flex', gap: 8, flexWrap: 'wrap' }}>
+                      <Button size="small" onClick={() => nav(`/sang-loc/${r.id}`)}>Xem</Button>
+                      <Button size="small" onClick={() => nav(`/sang-loc?tu=${r.id}`)}>Sàng lọc lại với thông tin này</Button>
+                    </span>
+                  ) },
                 ]} />
             ),
           },

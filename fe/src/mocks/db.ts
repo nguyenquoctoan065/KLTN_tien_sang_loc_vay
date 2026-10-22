@@ -58,7 +58,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 4;
+export const DB_VERSION = 5;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',
@@ -287,7 +287,7 @@ export function seed(): Db {
   const docTypes = docTypesSeed();
   const rules = productDocsSeed();
   const applications = historical(rnd, accounts, branches, docTypes, rules, nextId);
-  const consents: ConsentRow[] = applications.map(a => ({ id: nextId(), customerId: a.customerId, scope: 'B', docVersion: 'MB02-1.0',
+  const consents: ConsentRow[] = applications.map(a => ({ id: nextId(), customerId: a.customerId, scope: 'B', docVersion: 'DK-1.0',
     agreedAt: a.consentBAt, withdrawnAt: null, applicationCode: a.code }));
   const past = { screenings: [] as string[], plans: [] as string[] };
   for (const a of applications) {

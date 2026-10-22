@@ -9,7 +9,7 @@ export const screeningHandlers = [
   http.post(`${API}/screenings`, async ({ request }) => {
     await delay(400);
     const inp = (await request.json()) as ScreeningRequest;
-    if (!inp.consentA?.agreed) return err(400, 'Cần đồng ý xử lý dữ liệu (MB02 phần a) trước khi sàng lọc.');
+    if (!inp.consentA?.agreed) return err(400, 'Cần đồng ý xử lý dữ liệu trước khi sàng lọc.');
     if (!(inp.avgIncome >= 0) || !(inp.desiredAmount > 0)) return err(400, 'Thông tin thu nhập hoặc số tiền vay không hợp lệ.');
     const v = activeVersion();
     const r = screen(inp, paramsOf(v.id), weightsOf(v.id));

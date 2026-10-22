@@ -15,7 +15,7 @@ export default function SummarySlip({ app }: { app: Application }) {
       <Card className="print-area">
         <Row gutter={24} align="top">
           <Col flex="auto">
-            <Typography.Title level={4} style={{ marginTop: 0 }}>PHIẾU TÓM TẮT HỒ SƠ VAY (MB08)</Typography.Title>
+            <Typography.Title level={4} style={{ marginTop: 0 }}>PHIẾU TÓM TẮT HỒ SƠ VAY </Typography.Title>
             <Descriptions size="small" column={1} bordered>
               <Descriptions.Item label="Mã hồ sơ"><b>{app.code}</b></Descriptions.Item>
               <Descriptions.Item label="Khách hàng">{app.personal.fullName} · {app.personal.phone}</Descriptions.Item>

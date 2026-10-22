@@ -56,7 +56,7 @@ export default function MyData() {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card size="small" title="Các lần đồng ý xử lý dữ liệu (MB02)" style={{ height: '100%' }}>
+          <Card size="small" title="Các lần đồng ý xử lý dữ liệu" style={{ height: '100%' }}>
             <Table size="small" rowKey="id" pagination={{ pageSize: 5, hideOnSinglePage: true }} dataSource={d.consents} columns={[
               { title: 'Phần', dataIndex: 'scope', render: v => (v === 'A' ? '(a) Tiền sàng lọc' : '(b) Lưu giấy tờ, lập hồ sơ') },
               { title: 'Hồ sơ', dataIndex: 'applicationCode', render: v => v ?? '—' },

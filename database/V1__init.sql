@@ -212,7 +212,7 @@ CREATE TABLE consent (
 COMMENT ON COLUMN consent.id IS 'Mã đồng ý';
 COMMENT ON COLUMN consent.customer_id IS 'Mã khách hàng (rỗng với lượt sàng lọc ẩn danh)';
 COMMENT ON COLUMN consent.scope IS 'Phạm vi: A (tiền sàng lọc), B (lưu trữ giấy tờ, lập hồ sơ)';
-COMMENT ON COLUMN consent.doc_version IS 'Phiên bản văn bản MB02';
+COMMENT ON COLUMN consent.doc_version IS 'Phiên bản văn bản đồng ý';
 COMMENT ON COLUMN consent.agreed_at IS 'Thời điểm đồng ý';
 COMMENT ON COLUMN consent.withdrawn_at IS 'Thời điểm rút đồng ý';
 COMMENT ON TABLE consent IS 'ĐỒNG Ý XỬ LÝ DỮ LIỆU';

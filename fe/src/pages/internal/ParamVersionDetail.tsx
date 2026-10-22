@@ -95,7 +95,7 @@ export default function ParamVersionDetail() {
       <Card>
         <Tabs items={[
           {
-            key: 'p', label: 'Bảng tham số (MB11)', children: (
+            key: 'p', label: 'Bảng tham số', children: (
               <Space direction="vertical" style={{ width: '100%' }} size={16}>
                 <Table size="small" title={() => <b>Tham số chung</b>} rowKey="id" pagination={false} dataSource={groupParams(null)} columns={paramCols} />
                 <Table size="small" title={() => <b>{PRODUCT.TD}</b>} rowKey="id" pagination={false} dataSource={groupParams('TD')} columns={paramCols} />
@@ -104,7 +104,7 @@ export default function ParamVersionDetail() {
             ),
           },
           {
-            key: 'w', label: 'Ma trận trọng số (MB12)', children: (
+            key: 'w', label: 'Ma trận trọng số', children: (
               <Space direction="vertical" style={{ width: '100%' }} size={16}>
                 {(['TD', 'TC'] as const).map(c => (
                   <Table key={c} size="small" rowKey="id" pagination={false} dataSource={weights.filter(w => w.productCode === c)}

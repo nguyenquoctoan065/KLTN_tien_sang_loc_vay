@@ -86,7 +86,7 @@ export default function DocumentCard({ app, doc, editable }: { app: Application;
           {doc.status === 'REJECTED_QUALITY' && <Alert style={{ marginTop: 8 }} type="error" showIcon message={doc.qualityMessage} />}
           {doc.fields.length > 0 && (
             <div style={{ marginTop: 12 }}>
-              <Typography.Text strong>Thông tin trích xuất (MB06)</Typography.Text>
+              <Typography.Text strong>Thông tin đọc từ giấy tờ</Typography.Text>
               <Table size="small" rowKey="id" pagination={false} dataSource={doc.fields} style={{ marginTop: 6 }}
                 columns={[
                   { title: 'Trường', dataIndex: 'label', width: '28%' },

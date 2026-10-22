@@ -70,7 +70,7 @@ export default function ApplicationDetail() {
           key: 'ho-so', label: 'Hồ sơ và giấy tờ', children: (
             <div>
               <PersonalForm app={a} editable={editable} />
-              <Typography.Title level={5}>Danh mục hồ sơ cá nhân hóa (MB05)</Typography.Title>
+              <Typography.Title level={5}>Danh mục hồ sơ cá nhân hóa</Typography.Title>
               <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
                 {docs.map(d => <Col xs={24} xl={12} key={d.id}><DocumentCard app={a} doc={d} editable={editable} /></Col>)}
               </Row>
@@ -79,7 +79,7 @@ export default function ApplicationDetail() {
             </div>
           ),
         },
-        { key: 'phieu', label: 'Phiếu tóm tắt (MB08)', disabled: !a.qrToken, children: <SummarySlip app={a} /> },
+        { key: 'phieu', label: 'Phiếu tóm tắt', disabled: !a.qrToken, children: <SummarySlip app={a} /> },
         {
           key: 'theo-doi', label: 'Theo dõi trạng thái', children: (
             <Row gutter={16}>
@@ -96,7 +96,7 @@ export default function ApplicationDetail() {
                   </Card>
                 )}
                 {a.approval && (
-                  <Card size="small" title="Kết quả xét duyệt (MB16)">
+                  <Card size="small" title="Kết quả xét duyệt">
                     <Descriptions size="small" column={1}>
                       <Descriptions.Item label="Kết quả">{{ APPROVED: 'Phê duyệt', REJECTED: 'Từ chối', MORE_INFO: 'Yêu cầu bổ sung' }[a.approval.resultType]}</Descriptions.Item>
                       {a.approval.approvedAmount && <Descriptions.Item label="Được duyệt">{money(a.approval.approvedAmount)} · {a.approval.approvedTerm} tháng · {a.approval.approvedRate}%/năm</Descriptions.Item>}

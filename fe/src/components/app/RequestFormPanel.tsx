@@ -43,7 +43,7 @@ export default function RequestFormPanel({ app }: { app: Application }) {
   const form = app.requestForm;
 
   return (
-    <Card title="Giấy đề nghị vay vốn (MB15)" size="small" style={{ marginBottom: 16 }}
+    <Card title="Giấy đề nghị vay vốn" size="small" style={{ marginBottom: 16 }}
       extra={form && <Tag color={form.status === 'CONFIRMED' ? 'success' : 'gold'}>{form.status === 'CONFIRMED' ? `Đã xác nhận OTP ${dt(form.otpConfirmedAt)}` : 'Bản nháp'}</Tag>}>
       {(app.can.submit || resub) && miss.length > 0 && (
         <Alert type="warning" showIcon style={{ marginBottom: 12 }} message="Cần hoàn tất trước khi nộp"

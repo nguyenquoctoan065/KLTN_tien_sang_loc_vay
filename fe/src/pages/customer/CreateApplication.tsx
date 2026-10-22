@@ -7,7 +7,7 @@ import { appApi, catalogApi, planApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
 import { money } from '../../utils/format';
 
-const CONSENT_B = 'MB02-1.0';
+const CONSENT_B = 'DK-1.0';
 
 /** 4.1 Tạo hồ sơ vay: chọn chi nhánh, đồng ý phần (b) */
 export default function CreateApplication() {
@@ -54,7 +54,7 @@ export default function CreateApplication() {
           Bạn sẽ mang bản gốc giấy tờ tới chi nhánh này để nhân viên đối chiếu.
         </Typography.Paragraph>
       </Card>
-      <Card title="2. Đồng ý lưu trữ giấy tờ và lập hồ sơ – MB02 phần (b)">
+      <Card title="2. Đồng ý lưu trữ giấy tờ và lập hồ sơ">
         <div className="consent-box">
           <ul>
             <li>Mục đích: lưu trữ giấy tờ, trích xuất thông tin, lập giấy đề nghị vay vốn và chuyển hồ sơ tới chi nhánh đã chọn.</li>

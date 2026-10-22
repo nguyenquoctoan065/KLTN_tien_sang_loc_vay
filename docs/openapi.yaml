@@ -1327,7 +1327,7 @@ components:
       description: Đồng ý văn bản MB02 (phần a khi sàng lọc, phần b khi lập hồ sơ)
       type: object
       required: [agreed, docVersion]
-      properties: { agreed: { type: boolean }, docVersion: { type: string, example: MB02-1.0 } }
+      properties: { agreed: { type: boolean }, docVersion: { type: string, example: DK-1.0 } }
     ScreeningResultItem:
       type: object
       properties:

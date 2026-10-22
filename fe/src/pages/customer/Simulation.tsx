@@ -62,7 +62,7 @@ export default function Simulation() {
   const [compare, setCompare] = useState<(SimulationResponse & { cs: number[] })[]>([]);
   const create = useMutation({
     mutationFn: planApi.create,
-    onSuccess: p => { message.success('Đã lưu phương án vay (MB07)'); nav(`/phuong-an/${p.id}`); },
+    onSuccess: p => { message.success('Đã lưu phương án vay'); nav(`/phuong-an/${p.id}`); },
     onError: e => message.error(errorMessage(e)),
   });
   const choose = () => {
@@ -97,7 +97,7 @@ export default function Simulation() {
     <div>
       <Button type="link" icon={<ArrowLeftOutlined />} style={{ paddingLeft: 0 }} onClick={() => nav(`/sang-loc/${sid}`)}>Kết quả gợi ý</Button>
       <Typography.Title level={3} style={{ marginTop: 0 }}>Mô phỏng phương án vay</Typography.Title>
-      <Typography.Paragraph type="secondary">MB04 – Kế hoạch trả nợ dự kiến. Điều chỉnh số tiền, kỳ hạn, sản phẩm bán chéo; hệ thống tính lại ngay.</Typography.Paragraph>
+      <Typography.Paragraph type="secondary">Kế hoạch trả nợ dự kiến. Điều chỉnh số tiền, kỳ hạn, sản phẩm bán chéo; hệ thống tính lại ngay.</Typography.Paragraph>
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={9}>
           <Card title="Thông số phương án">

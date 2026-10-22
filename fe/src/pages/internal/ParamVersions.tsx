@@ -31,7 +31,7 @@ export default function ParamVersions() {
     <div>
       <Typography.Title level={3} style={{ marginTop: 0 }}>Phiên bản tham số chính sách</Typography.Title>
       <Typography.Paragraph type="secondary">
-        Mỗi phiên bản gồm Bảng tham số chính sách (MB11) và Ma trận trọng số (MB12). Sửa trên bản nháp, chạy thử trên bộ hồ sơ mẫu rồi mới kích hoạt.
+        Mỗi phiên bản gồm Bảng tham số chính sách và Ma trận trọng số. Sửa trên bản nháp, chạy thử trên bộ hồ sơ mẫu rồi mới kích hoạt.
       </Typography.Paragraph>
       <Card extra={<Button type="primary" icon={<PlusOutlined />} disabled={!active || hasDraft} onClick={() => setOpen(true)}>Tạo bản nháp từ phiên bản đang áp dụng</Button>}>
         {hasDraft && <Alert style={{ marginBottom: 16 }} type="info" showIcon message="Đang có một bản nháp; hoàn tất hoặc xóa trước khi tạo bản mới." />}
@@ -39,7 +39,7 @@ export default function ParamVersions() {
           onRow={r => ({ onClick: () => nav(`/noi-bo/tham-so/${r.id}`), style: { cursor: 'pointer' } })}
           columns={[
             { title: 'Phiên bản', dataIndex: 'versionNo' },
-            { title: 'Căn cứ văn bản (MB10)', dataIndex: 'legalBasis' },
+            { title: 'Căn cứ văn bản', dataIndex: 'legalBasis' },
             { title: 'Trạng thái', dataIndex: 'status', render: (v: keyof typeof VERSION_STATUS) => <Tag color={VERSION_STATUS[v].color}>{VERSION_STATUS[v].label}</Tag> },
             { title: 'Người tạo', dataIndex: 'createdBy' },
             { title: 'Ngày tạo', dataIndex: 'createdAt', render: dt },
@@ -51,7 +51,7 @@ export default function ParamVersions() {
           <Form.Item name="versionNo" label="Số phiên bản" rules={[{ required: true, message: 'Nhập số phiên bản' }]}>
             <Input placeholder="Ví dụ 2026.11" />
           </Form.Item>
-          <Form.Item name="legalBasis" label="Căn cứ văn bản điều chỉnh (MB10)" rules={[{ required: true, message: 'Nhập căn cứ' }]}>
+          <Form.Item name="legalBasis" label="Căn cứ văn bản điều chỉnh" rules={[{ required: true, message: 'Nhập căn cứ' }]}>
             <Input.TextArea rows={2} placeholder="Số, ngày văn bản của Phòng Chính sách tín dụng" />
           </Form.Item>
           {clone.isError && <Alert type="error" message={errorMessage(clone.error)} />}

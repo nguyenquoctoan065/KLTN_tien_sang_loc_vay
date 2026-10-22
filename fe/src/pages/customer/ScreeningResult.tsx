@@ -96,10 +96,10 @@ export default function ScreeningResult() {
       <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
         <div>
           <Typography.Title level={3} style={{ marginBottom: 0 }}>Kết quả gợi ý gói vay</Typography.Title>
-          <Typography.Text type="secondary">MB03 · Lượt sàng lọc #{s.id} · {dt(s.createdAt)} · Phiên bản tham số {s.versionNo}</Typography.Text>
+          <Typography.Text type="secondary">Lượt sàng lọc #{s.id} · {dt(s.createdAt)} · Phiên bản tham số {s.versionNo}</Typography.Text>
         </div>
         <Space>
-          <Button onClick={() => nav('/sang-loc')}>Sàng lọc lại</Button>
+          <Button onClick={() => nav(`/sang-loc?tu=${sid}`)}>Sàng lọc lại</Button>
           {s.savedToCustomerId ? <Tag color="success" icon={<SaveOutlined />}>Đã lưu vào tài khoản</Tag>
             : <Button icon={<SaveOutlined />} loading={save.isPending} onClick={onSave}>Lưu kết quả</Button>}
         </Space>

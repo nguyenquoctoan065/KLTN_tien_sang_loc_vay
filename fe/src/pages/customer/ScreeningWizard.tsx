@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert, App, Button, Card, Checkbox, Col, DatePicker, Descriptions, Divider, Form, Input, InputNumber, Radio, Row, Select,
   Space, Steps, Switch, Typography,
 } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { screeningApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
 import type { CreditHistory, ScreeningRequest } from '../../api/types';
@@ -15,7 +15,7 @@ import { money, moneyFormatter, moneyParser } from '../../utils/format';
 const BANKS = ['ABBANK', 'Vietcombank', 'VietinBank', 'BIDV', 'Agribank', 'Techcombank', 'MB', 'ACB', 'VPBank', 'Sacombank', 'TPBank', 'Ngân hàng khác'];
 const PURPOSES = ['Mua sắm đồ dùng, thiết bị', 'Mua xe máy, ô tô', 'Sửa chữa, nâng cấp nhà ở', 'Học tập', 'Chữa bệnh', 'Du lịch',
   'Cưới hỏi', 'Chi tiêu cá nhân linh hoạt', 'Kinh doanh'];
-const CONSENT_VERSION = 'MB02-1.0';
+const CONSENT_VERSION = 'DK-1.0';
 
 interface FormValues {
   consentA: boolean;
@@ -69,11 +69,66 @@ function toRequest(v: FormValues): ScreeningRequest {
 
 const moneyInput = { style: { width: '100%' }, formatter: moneyFormatter, parser: moneyParser, addonAfter: 'đ', min: 0, step: 500000 };
 
+const DRAFT_KEY = 'screening-draft';
+
+function readDraft(): Partial<FormValues> | null {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    return { ...d, dob: d.dob ? dayjs(d.dob) : undefined };
+  } catch { return null; }
+}
+
+function writeDraft(v: Partial<FormValues>) {
+  try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...v, dob: v.dob ? v.dob.format('YYYY-MM-DD') : undefined })); } catch { /* bỏ qua */ }
+}
+
+function clearDraft() {
+  try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* bỏ qua */ }
+}
+
+function fromRequest(r: ScreeningRequest): Partial<FormValues> {
+  const h = r.creditHistory;
+  return {
+    consentA: true, nationality: r.nationality, dob: dayjs(r.dob), gender: r.gender, maritalStatus: r.maritalStatus,
+    dependents: r.dependents, avgIncome: r.avgIncome, salaryBank: r.salaryBank, isAbbankStaff: r.isAbbankStaff,
+    otherDebts: r.otherDebts ?? [],
+    everBorrowed: h === 'NEVER_BORROWED' ? 'NEVER' : 'EVER',
+    lateHistory: h === 'NEVER_BORROWED' ? undefined : h === 'LATE_OVER_90' ? 'YES' : h === 'UNSURE' ? 'UNSURE' : 'NO',
+    purpose: r.purpose, desiredAmount: r.desiredAmount, desiredTerm: r.desiredTerm,
+  };
+}
+
 export default function ScreeningWizard() {
   const [form] = Form.useForm<FormValues>();
   const [step, setStep] = useState(0);
+  const [restored, setRestored] = useState(false);
+  const [params] = useSearchParams();
+  const fromId = Number(params.get('tu')) || 0;
   const nav = useNavigate();
   const { message } = App.useApp();
+  const prev = useQuery({ queryKey: ['screening', fromId], queryFn: () => screeningApi.get(fromId), enabled: fromId > 0 });
+
+  useEffect(() => {
+    if (fromId > 0) {
+      if (!prev.data) return;
+      const vals = fromRequest(prev.data.input);
+      form.setFieldsValue(vals);
+      writeDraft(vals);
+      setStep(1);
+      return;
+    }
+    const d = readDraft();
+    if (d) { form.setFieldsValue(d); setRestored(true); }
+  }, [fromId, prev.data, form]);
+
+  const resetDraft = () => {
+    clearDraft();
+    form.resetFields();
+    setRestored(false);
+    setStep(0);
+  };
   const m = useMutation({
     mutationFn: screeningApi.create,
     onSuccess: r => { message.success('Đã có kết quả gợi ý'); nav(`/sang-loc/${r.id}`); },
@@ -93,11 +148,17 @@ export default function ScreeningWizard() {
   return (
     <div>
       <Typography.Title level={3}>Kiểm tra khả năng vay</Typography.Title>
-      <Typography.Paragraph type="secondary">Phiếu thông tin sàng lọc (MB01). Không cần đăng nhập, không khai họ tên, số CCCD, số điện thoại.</Typography.Paragraph>
-      <Card>
+      <Typography.Paragraph type="secondary">Không cần đăng nhập, không khai họ tên, số CCCD, số điện thoại.</Typography.Paragraph>
+      {restored && fromId === 0 && (
+        <Alert style={{ marginBottom: 16 }} type="info" showIcon message="Đã khôi phục thông tin bạn nhập trước đó"
+          action={<Button size="small" onClick={resetDraft}>Nhập mới</Button>} />
+      )}
+      {fromId > 0 && prev.isError && <Alert style={{ marginBottom: 16 }} type="warning" showIcon message={errorMessage(prev.error)} />}
+      <Card loading={fromId > 0 && prev.isLoading}>
         <Steps current={step} size="small" style={{ marginBottom: 24 }} responsive
           items={[{ title: 'Đồng ý xử lý dữ liệu' }, { title: 'Thông tin cá nhân' }, { title: 'Thu nhập, nghĩa vụ nợ' }, { title: 'Nhu cầu vay' }, { title: 'Xem lại' }]} />
         <Form form={form} layout="vertical" requiredMark="optional" scrollToFirstError
+          onValuesChange={() => writeDraft(form.getFieldsValue(true))}
           initialValues={{ nationality: 'Việt Nam', gender: 'MALE', maritalStatus: 'SINGLE', dependents: 0, isAbbankStaff: false,
             otherDebts: [], desiredTerm: 24 }}>
           {step === 0 && (

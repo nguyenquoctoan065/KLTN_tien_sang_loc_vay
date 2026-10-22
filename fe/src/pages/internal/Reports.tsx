@@ -172,7 +172,7 @@ function AccuracyTab() {
 }
 
 function exportCsv(r: ReportResponse) {
-  const rows: (string | number)[][] = [['Báo cáo thống kê và hiệu chỉnh mô hình (MB14)', r.period], [],
+  const rows: (string | number)[][] = [['Báo cáo thống kê và hiệu chỉnh mô hình', r.period], [],
     ['Chỉ tiêu', 'Giá trị'], ...Object.entries(r.stats.totals).map(([k, v]) => [k, v]),
     ['Thời gian xử lý trung bình (ngày)', r.stats.avgProcessingDays], ['Số tiền giải ngân', r.stats.disbursedAmount], [],
     ['Chi nhánh', 'Hồ sơ', 'Phê duyệt', 'Từ chối'], ...r.stats.byBranch.map(b => [b.branchName, b.count, b.approved, b.rejected]), [],
@@ -182,7 +182,7 @@ function exportCsv(r: ReportResponse) {
   const csv = '﻿' + rows.map(x => x.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `MB14-${r.period}.csv`; a.click();
+  a.download = `bao-cao-hieu-chinh-${r.period}.csv`; a.click();
 }
 
 function Mb14Tab() {
@@ -194,7 +194,7 @@ function Mb14Tab() {
   const draft = useMutation({
     mutationFn: (p: ReportResponse['proposals'][number]) => {
       const active = versions.data?.find(v => v.status === 'ACTIVE');
-      return adminApi.clone(active!.id, { versionNo: `${dayjs().format('YYYY.MM.DD')}-${p.id}`, legalBasis: `Đề xuất hiệu chỉnh từ báo cáo MB14 kỳ ${q.data?.period}: ${p.title}`,
+      return adminApi.clone(active!.id, { versionNo: `${dayjs().format('YYYY.MM.DD')}-${p.id}`, legalBasis: `Đề xuất hiệu chỉnh từ báo cáo hiệu chỉnh mô hình kỳ ${q.data?.period}: ${p.title}`,
         changes: [{ key: p.paramKey!, productCode: p.productCode, value: p.proposedValue! }] });
     },
     onSuccess: r => { message.success('Đã tạo bản nháp tham số; chạy thử trước khi kích hoạt'); nav(`/noi-bo/tham-so/${r.id}`); },
@@ -210,7 +210,7 @@ function Mb14Tab() {
       </Space>
       {!r ? <Skeleton active /> : (
         <div className="print-area">
-          <Typography.Title level={4} style={{ marginTop: 0 }}>BÁO CÁO THỐNG KÊ VÀ HIỆU CHỈNH MÔ HÌNH (MB14) – THÁNG {r.period.split('-').reverse().join('/')}</Typography.Title>
+          <Typography.Title level={4} style={{ marginTop: 0 }}>BÁO CÁO THỐNG KÊ VÀ HIỆU CHỈNH MÔ HÌNH – THÁNG {r.period.split('-').reverse().join('/')}</Typography.Title>
           <Typography.Text type="secondary">Lập lúc {dt(r.generatedAt)}</Typography.Text>
           <Card size="small" title="1. Kết quả hoạt động trong kỳ" style={{ marginTop: 12 }}>
             {r.stats.totals.applications === 0 ? <Empty description="Không có hồ sơ trong kỳ" /> : (
@@ -236,7 +236,7 @@ function Mb14Tab() {
                 <List.Item.Meta title={p.title} description={<>{p.detail}{p.paramKey && <div><Tag>{p.paramKey}</Tag>{p.currentValue} → <b>{p.proposedValue}</b></div>}</>} />
               </List.Item>
             )} />
-            <Alert type="info" showIcon style={{ marginTop: 8 }} message="Đề xuất chỉ để tham khảo; điều chỉnh chính thức cần văn bản của Phòng Chính sách tín dụng (MB10) và phải chạy thử trước khi kích hoạt." />
+            <Alert type="info" showIcon style={{ marginTop: 8 }} message="Đề xuất chỉ để tham khảo; điều chỉnh chính thức cần văn bản của Phòng Chính sách tín dụng và phải chạy thử trước khi kích hoạt." />
           </Card>
         </div>
       )}
@@ -254,7 +254,7 @@ export default function Reports() {
         <Tabs activeKey={sp.get('tab') || 'thong-ke'} onChange={k => setSp({ tab: k })} destroyInactiveTabPane items={[
           { key: 'thong-ke', label: 'Thống kê hồ sơ', children: <StatsTab /> },
           { key: 'do-chinh-xac', label: 'Độ chính xác mô hình', children: <AccuracyTab /> },
-          { key: 'mb14', label: 'Báo cáo MB14', children: <Mb14Tab /> },
+          { key: 'mb14', label: 'Báo cáo hiệu chỉnh mô hình', children: <Mb14Tab /> },
         ]} />
       </Card>
     </div>

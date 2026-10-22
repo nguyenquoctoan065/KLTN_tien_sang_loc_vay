@@ -43,7 +43,7 @@ export default function Catalog() {
 
   return (
     <div>
-      <Typography.Title level={3} style={{ marginTop: 0 }}>Gói vay, giấy tờ và sản phẩm bán chéo (MB13)</Typography.Title>
+      <Typography.Title level={3} style={{ marginTop: 0 }}>Gói vay, giấy tờ và sản phẩm bán chéo</Typography.Title>
       <Card>
         <Tabs items={[
           {
@@ -52,7 +52,7 @@ export default function Catalog() {
                 { title: 'Mã', dataIndex: 'code' }, { title: 'Tên gói', dataIndex: 'name' },
                 { title: 'Phương thức trả nợ', dataIndex: 'repaymentMethod' }, { title: 'Trạng thái', dataIndex: 'status', render: ST },
                 { title: '', key: 'x', render: (_, r) => <Button size="small" onClick={() => open('product', r)}>Sửa</Button> },
-              ]} footer={() => <Typography.Text type="secondary">Ngưỡng, trần hạn mức, kỳ hạn, lãi suất của từng gói sửa ở “Phiên bản tham số” (MB11).</Typography.Text>} />
+              ]} footer={() => <Typography.Text type="secondary">Ngưỡng, trần hạn mức, kỳ hạn, lãi suất của từng gói sửa ở “Phiên bản tham số”.</Typography.Text>} />
             ),
           },
           {

@@ -34,7 +34,7 @@ export default function StaffApplications({ title = 'Tra cứu hồ sơ vay', pr
       )}
       <Card>
         <Space wrap style={{ marginBottom: 16 }}>
-          <Input.Search allowClear enterButton={<><QrcodeOutlined /> Mở theo mã QR</>} placeholder="Nhập hoặc quét mã QR trên phiếu MB08" style={{ width: 380 }}
+          <Input.Search allowClear enterButton={<><QrcodeOutlined /> Mở theo mã QR</>} placeholder="Nhập hoặc quét mã QR trên phiếu tóm tắt" style={{ width: 380 }}
             loading={qr.isPending} onSearch={v => v.trim() && qr.mutate(v.trim())} />
           <Input.Search allowClear placeholder="Mã hồ sơ, tên, số điện thoại" style={{ width: 280 }} onSearch={setKeyword} />
           {!preset && (
