@@ -1,4 +1,4 @@
-# Sửa frontend – đợt góp ý 22/10/2026
+﻿# Sửa frontend – đợt góp ý 22/10/2026
 
 Làm lần lượt F1 → F6. Mỗi mục có: vấn đề, việc cần làm (kèm file), thay đổi hợp đồng API (nếu có), tiêu chí hoàn thành.
 Các mục F1, F2 đổi hợp đồng API nên làm trước khi viết các module backend tương ứng.
@@ -13,18 +13,18 @@ Sau cùng (mục F7): cập nhật kiểm thử e2e, chạy build/lint, chạy l
 Dòng “Tài khoản thử: 0901234567 / 123456” cũng hiện cả khi chạy thật.
 
 **Việc cần làm**
-- [ ] `fe/src/pages/customer/Login.tsx`
+- [x] `fe/src/pages/customer/Login.tsx`
   - Với khách hàng: nhãn **“Số điện thoại hoặc email”**, placeholder `Số điện thoại hoặc email`.
   - Kiểm tra: hoặc khớp `^0\d{9}$`, hoặc là email hợp lệ. Thông báo lỗi: “Nhập số điện thoại (10 số) hoặc email”.
   - Trang nội bộ giữ nguyên nhãn “Email”.
   - Dòng “Tài khoản thử …” chỉ hiện khi `import.meta.env.VITE_USE_MOCK === 'true'`, áp dụng cho cả hai trang.
-- [ ] `fe/src/pages/customer/Register.tsx`: thêm ô **Email (không bắt buộc)** dưới ô số điện thoại, kiểm tra định dạng email.
+- [x] `fe/src/pages/customer/Register.tsx`: thêm ô **Email (không bắt buộc)** dưới ô số điện thoại, kiểm tra định dạng email.
   Gửi `email` trong body đăng ký.
-- [ ] Mock `fe/src/mocks/handlers/auth.ts`:
+- [x] Mock `fe/src/mocks/handlers/auth.ts`:
   - Đăng nhập khách hàng: nếu `username` có `@` thì tìm theo email (không phân biệt hoa thường), ngược lại tìm theo số điện thoại.
   - Đăng ký: nếu email đã có thì trả 409 “Email đã được sử dụng”.
   - Thêm trường `email` vào `Account` trong `db.ts`. Khách mẫu 0901234567 có email `khachhang@poc.local`. Tăng `DB_VERSION`.
-- [ ] Trang “Tài khoản” trong `/cua-toi` (nếu đang hiện thông tin tài khoản) hiển thị email.
+- [x] Trang “Tài khoản” trong `/cua-toi` (nếu đang hiện thông tin tài khoản) hiển thị email.
 
 **Hợp đồng API**
 - `LoginRequest.username`: mô tả “Khách hàng: số điện thoại hoặc email; nội bộ: email”.

@@ -99,7 +99,7 @@ paths:
       tags: [Xác thực]
       operationId: register
       summary: 1.1 Đăng ký tài khoản khách hàng
-      description: 400 nếu OTP sai; 409 nếu số điện thoại đã đăng ký. Thành công trả token như đăng nhập.
+      description: 400 nếu OTP sai; 409 nếu số điện thoại đã đăng ký ("Số điện thoại đã được đăng ký.") hoặc email đã có ("Email đã được sử dụng."). Thành công trả token như đăng nhập.
       security: []
       x-roles: []
       requestBody:
@@ -1226,13 +1226,14 @@ components:
         name: { type: string }
         role: { $ref: '#/components/schemas/Role' }
         username: { type: string, description: Số điện thoại (khách hàng) hoặc email (nội bộ) }
+        email: { type: string, format: email, nullable: true, description: Email của khách hàng (nếu có) }
         branchName: { type: string, nullable: true }
     LoginRequest:
       type: object
       required: [kind, username, password]
       properties:
         kind: { type: string, enum: [CUSTOMER, STAFF] }
-        username: { type: string }
+        username: { type: string, description: 'Khách hàng: số điện thoại hoặc email; nội bộ: email' }
         password: { type: string }
     LoginResponse:
       type: object
@@ -1241,7 +1242,11 @@ components:
     RegisterRequest:
       type: object
       required: [phone, password, otp]
-      properties: { phone: { type: string, pattern: '^0\d{9}$' }, password: { type: string, minLength: 6 }, otp: { type: string } }
+      properties:
+        phone: { type: string, pattern: '^0\d{9}$' }
+        email: { type: string, format: email, description: Không bắt buộc; không trùng với tài khoản khác (không phân biệt hoa thường) }
+        password: { type: string, minLength: 6 }
+        otp: { type: string }
     ChangePasswordRequest:
       type: object
       required: [oldPassword, newPassword]

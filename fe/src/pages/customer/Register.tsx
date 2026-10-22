@@ -25,9 +25,12 @@ export default function Register() {
     <div className="auth-wrap">
       <Card style={{ width: 420, maxWidth: '100%' }}>
         <Typography.Title level={3} style={{ marginTop: 0 }}>Đăng ký tài khoản</Typography.Title>
-        <Form form={form} layout="vertical" requiredMark={false} onFinish={v => reg.mutate({ phone: v.phone, password: v.password, otp: v.otp })}>
+        <Form form={form} layout="vertical" requiredMark={false} onFinish={v => reg.mutate({ phone: v.phone, email: v.email?.trim() || undefined, password: v.password, otp: v.otp })}>
           <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, pattern: /^0\d{9}$/, message: 'Số điện thoại gồm 10 chữ số, bắt đầu bằng 0' }]}>
             <Input placeholder="09xxxxxxxx" />
+          </Form.Item>
+          <Form.Item name="email" label="Email (không bắt buộc)" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
+            <Input placeholder="ten@example.com" />
           </Form.Item>
           <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }]}>
             <Input.Password />

@@ -8,6 +8,7 @@ export interface AuthUser {
   role: Role;
   /** số điện thoại (khách hàng) hoặc email (nội bộ) */
   username: string;
+  email?: string | null;
   branchName?: string;
 }
 
@@ -24,6 +25,7 @@ export interface LoginResponse {
 
 export interface RegisterRequest {
   phone: string;
+  email?: string;
   password: string;
   otp: string;
 }

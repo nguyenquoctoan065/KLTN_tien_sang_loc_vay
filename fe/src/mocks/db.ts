@@ -9,6 +9,7 @@ export interface Account {
   id: number;
   kind: 'CUSTOMER' | 'STAFF';
   username: string;
+  email?: string | null;
   password: string;
   name: string;
   role: 'CUSTOMER' | 'BRANCH_STAFF' | 'ADMIN';
@@ -57,7 +58,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',
@@ -277,7 +278,7 @@ export function seed(): Db {
   ];
   const created = iso(addDays(now, -200));
   const accounts: Account[] = [
-    { id: 1, kind: 'CUSTOMER', username: '0901234567', password: '123456', name: 'Khách hàng mẫu', role: 'CUSTOMER', branchId: null, status: 'ACTIVE', createdAt: created },
+    { id: 1, kind: 'CUSTOMER', username: '0901234567', email: 'khachhang@poc.local', password: '123456', name: 'Khách hàng mẫu', role: 'CUSTOMER', branchId: null, status: 'ACTIVE', createdAt: created },
     { id: 101, kind: 'STAFF', username: 'nhanvien@poc.local', password: '123456', name: 'Nguyễn Thu Hà', role: 'BRANCH_STAFF', branchId: 1, status: 'ACTIVE', createdAt: created },
     { id: 103, kind: 'STAFF', username: 'nv.hcm@poc.local', password: '123456', name: 'Lê Hoàng Phúc', role: 'BRANCH_STAFF', branchId: 2, status: 'ACTIVE', createdAt: created },
     { id: 104, kind: 'STAFF', username: 'nv.danang@poc.local', password: '123456', name: 'Phan Thị Mỹ', role: 'BRANCH_STAFF', branchId: 3, status: 'ACTIVE', createdAt: created },

@@ -27,9 +27,15 @@ export default function Login({ internal = false }: { internal?: boolean }) {
           <Alert style={{ marginBottom: 16 }} type="info" showIcon message="Cần đăng nhập để lưu kết quả và phương án vay." />
         )}
         <Form layout="vertical" onFinish={v => m.mutate(v)} requiredMark={false}>
-          <Form.Item name="username" label={internal ? 'Email' : 'Số điện thoại'}
-            rules={[{ required: true, message: internal ? 'Nhập email' : 'Nhập số điện thoại' }]}>
-            <Input autoFocus placeholder={internal ? 'nhanvien@poc.local' : '0901234567'} />
+          <Form.Item name="username" label={internal ? 'Email' : 'Số điện thoại hoặc email'}
+            rules={internal ? [{ required: true, message: 'Nhập email' }] : [{
+              validator: (_, v: string | undefined) => {
+                const s = (v ?? '').trim();
+                return /^0\d{9}$/.test(s) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)
+                  ? Promise.resolve() : Promise.reject(new Error('Nhập số điện thoại (10 số) hoặc email'));
+              },
+            }]}>
+            <Input autoFocus placeholder={internal ? 'nhanvien@poc.local' : 'Số điện thoại hoặc email'} />
           </Form.Item>
           <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }]}>
             <Input.Password />
@@ -37,9 +43,11 @@ export default function Login({ internal = false }: { internal?: boolean }) {
           {m.isError && <Alert style={{ marginBottom: 16 }} type="error" message={errorMessage(m.error)} />}
           <Button type="primary" htmlType="submit" block loading={m.isPending}>Đăng nhập</Button>
         </Form>
-        <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0, fontSize: 12 }}>
-          Tài khoản thử: {internal ? 'nhanvien@poc.local hoặc quantri@poc.local' : '0901234567'} / 123456
-        </Typography.Paragraph>
+        {import.meta.env.VITE_USE_MOCK === 'true' && (
+          <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0, fontSize: 12 }}>
+            Tài khoản thử: {internal ? 'nhanvien@poc.local hoặc quantri@poc.local' : '0901234567 hoặc khachhang@poc.local'} / 123456
+          </Typography.Paragraph>
+        )}
         {!internal && (
           <div style={{ marginTop: 12 }}>
             Chưa có tài khoản? <Link to={`/dang-ky${sp.get('next') ? `?next=${encodeURIComponent(sp.get('next')!)}` : ''}`}>Đăng ký</Link>

@@ -565,7 +565,8 @@ CREATE UNIQUE INDEX uq_param_version_active ON param_version (status) WHERE stat
 CREATE UNIQUE INDEX uq_param_version_draft ON param_version (status) WHERE status = 'DRAFT';
 -- Tham số và trọng số không trùng trong một phiên bản
 CREATE UNIQUE INDEX uq_policy_param ON policy_param (version_id, COALESCE(product_id, 0), param_key);
-CREATE UNIQUE INDEX uq_scoring_weight ON scoring_weight (version_id, product_id, criterion);
+CREATE UNIQUE INDEX uq_customer_email ON customer (lower(email)) WHERE email IS NOT NULL;
+CREATE UNIQUE INDEX uq_scoring_weightON scoring_weight (version_id, product_id, criterion);
 -- Chỉ mục tra cứu thường dùng
 CREATE INDEX ix_screening_customer ON screening (customer_id);
 CREATE INDEX ix_loan_plan_screening ON loan_plan (screening_id);

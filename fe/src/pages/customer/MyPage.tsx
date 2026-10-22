@@ -72,6 +72,7 @@ export default function MyPage() {
                 <Descriptions size="small" column={1} style={{ maxWidth: 480 }}>
                   <Descriptions.Item label="Tên hiển thị">{user?.name}</Descriptions.Item>
                   <Descriptions.Item label="Số điện thoại đăng nhập">{user?.username}</Descriptions.Item>
+                  <Descriptions.Item label="Email">{user?.email || 'Chưa cập nhật'}</Descriptions.Item>
                 </Descriptions>
                 <Button icon={<KeyOutlined />} onClick={() => setPw(true)}>Đổi mật khẩu</Button>
                 <ChangePasswordModal open={pw} onClose={() => setPw(false)} />

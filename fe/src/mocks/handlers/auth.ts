@@ -3,7 +3,7 @@ import type { LoginRequest, RegisterRequest } from '../../api/types';
 import { API, db, err, nextId, persist, currentUser, nowIso, log, DEV_OTP } from '../ctx';
 
 const userOut = (a: (typeof db.accounts)[number]) => ({
-  id: a.id, name: a.name, role: a.role, username: a.username,
+  id: a.id, name: a.name, role: a.role, username: a.username, email: a.email ?? null,
   branchName: a.branchId ? db.branches.find(b => b.id === a.branchId)?.name : undefined,
 });
 
@@ -11,7 +11,10 @@ export const authHandlers = [
   http.post(`${API}/auth/login`, async ({ request }) => {
     await delay(250);
     const b = (await request.json()) as LoginRequest;
-    const acc = db.accounts.find(a => a.kind === b.kind && a.username === b.username.trim() && a.password === b.password);
+    const u = b.username.trim();
+    const byEmail = b.kind === 'CUSTOMER' && u.includes('@');
+    const acc = db.accounts.find(a => a.kind === b.kind && a.password === b.password
+      && (byEmail ? (a.email ?? '').toLowerCase() === u.toLowerCase() : a.username === u));
     if (!acc) return err(401, 'Sai tài khoản hoặc mật khẩu.');
     if (acc.status !== 'ACTIVE') return err(403, 'Tài khoản đang bị khóa, liên hệ quản trị viên.');
     const token = `mock-${acc.id}-${Date.now()}`;
@@ -40,7 +43,9 @@ export const authHandlers = [
     const b = (await request.json()) as RegisterRequest;
     if (b.otp !== DEV_OTP) return err(400, 'Mã OTP không đúng.');
     if (db.accounts.some(a => a.kind === 'CUSTOMER' && a.username === b.phone)) return err(409, 'Số điện thoại đã được đăng ký.');
-    const acc = { id: nextId(), kind: 'CUSTOMER' as const, username: b.phone, password: b.password, name: `Khách hàng ${b.phone.slice(-4)}`,
+    const email = b.email?.trim() || null;
+    if (email && db.accounts.some(a => a.kind === 'CUSTOMER' && (a.email ?? '').toLowerCase() === email.toLowerCase())) return err(409, 'Email đã được sử dụng.');
+    const acc = { id: nextId(), kind: 'CUSTOMER' as const, username: b.phone, email, password: b.password, name: `Khách hàng ${b.phone.slice(-4)}`,
       role: 'CUSTOMER' as const, branchId: null, status: 'ACTIVE' as const, createdAt: nowIso() };
     db.accounts.push(acc);
     const token = `mock-${acc.id}-${Date.now()}`;
