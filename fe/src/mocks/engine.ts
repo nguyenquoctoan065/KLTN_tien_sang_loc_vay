@@ -3,7 +3,7 @@
  * Backend Java cần cài đặt lại đúng các quy tắc này – xem docs/quy-tac-tinh-toan.md.
  */
 import type {
-  CrossSellProduct, ProductCode, ScheduleRow, ScreeningRequest, ScreeningResultItem,
+  CrossSellProduct, ProductCode, ScheduleRow, ScreeningNote, ScreeningRequest, ScreeningResultItem,
   SimulationRequest, SimulationResponse, Suggestion, PolicyParam, ScoringWeight,
 } from '../api/types';
 
@@ -169,9 +169,9 @@ export function exclusion(inp: ScreeningRequest, ps: ParamSet, code: ProductCode
   } else if (code === 'TD' && left < Math.min(Math.max(inp.desiredTerm, pp.minTerm), pp.maxTerm)) {
     hints.push(`Kỳ hạn cần rút xuống tối đa ${left} tháng để không vượt tuổi nghỉ hưu.`);
   }
-  if (inp.selfDeclaredBadDebt) {
-    reasons.push('Có nợ xấu từ nhóm 3 trở lên.');
-    hints.push('Tất toán khoản nợ xấu và chờ thông tin tín dụng được cập nhật trước khi đề nghị vay.');
+  if (inp.creditHistory === 'LATE_OVER_90') {
+    reasons.push('Bạn cho biết từng trả chậm quá 3 tháng hoặc phải xin giãn, hoãn nợ trong 5 năm gần đây.');
+    hints.push('Tất toán khoản nợ đó và chờ thông tin tín dụng được cập nhật; bạn có thể tự kiểm tra trên ứng dụng CIC Credit Connect trước khi đề nghị vay.');
   }
   if (!(inp.avgIncome > 0)) {
     reasons.push('Không có thu nhập lương chuyển khoản.');
@@ -218,7 +218,14 @@ export function screen(inp: ScreeningRequest, ps: ParamSet, ws: WeightSet) {
   items.filter(i => i.eligible).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).forEach((x, i) => { x.rankNo = i + 1; });
   items.sort((a, b) => (a.rankNo ?? 99) - (b.rankNo ?? 99));
   const debt = otherDebtTotal(inp);
+  const notes: ScreeningNote[] = [];
+  if (inp.creditHistory === 'UNSURE') {
+    notes.push({ type: 'WARNING', text: 'Bạn chưa chắc về lịch sử trả nợ. Ngân hàng sẽ tra cứu CIC khi bạn ký hồ sơ; nếu có khoản trả chậm quá 3 tháng, hồ sơ có thể không được duyệt.' });
+  } else if (inp.creditHistory === 'NEVER_BORROWED') {
+    notes.push({ type: 'INFO', text: 'Bạn chưa có lịch sử vay – điều này không ảnh hưởng tới kết quả sàng lọc.' });
+  }
   return {
+    notes,
     age: ageAt(inp.dob),
     livingCost: livingCost(inp, ps),
     disposableIncome: inp.avgIncome - debt - livingCost(inp, ps),

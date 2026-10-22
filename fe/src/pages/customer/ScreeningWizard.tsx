@@ -9,7 +9,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { screeningApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
-import type { ScreeningRequest } from '../../api/types';
+import type { CreditHistory, ScreeningRequest } from '../../api/types';
 import { money, moneyFormatter, moneyParser } from '../../utils/format';
 
 const BANKS = ['ABBANK', 'Vietcombank', 'VietinBank', 'BIDV', 'Agribank', 'Techcombank', 'MB', 'ACB', 'VPBank', 'Sacombank', 'TPBank', 'Ngân hàng khác'];
@@ -28,7 +28,8 @@ interface FormValues {
   salaryBank: string;
   isAbbankStaff: boolean;
   otherDebts: { lender: string; monthlyPayment: number }[];
-  selfDeclaredBadDebt: boolean;
+  everBorrowed: 'NEVER' | 'EVER';
+  lateHistory?: 'NO' | 'YES' | 'UNSURE';
   purpose: string;
   desiredAmount: number;
   desiredTerm: number;
@@ -37,20 +38,31 @@ interface FormValues {
 const STEP_FIELDS: (keyof FormValues | (string | number)[])[][] = [
   ['consentA'],
   ['nationality', 'dob', 'gender', 'maritalStatus', 'dependents'],
-  ['avgIncome', 'salaryBank', 'isAbbankStaff', 'otherDebts', 'selfDeclaredBadDebt'],
+  ['avgIncome', 'salaryBank', 'isAbbankStaff', 'otherDebts', 'everBorrowed', 'lateHistory'],
   ['purpose', 'desiredAmount', 'desiredTerm'],
   [],
 ];
 
 const LABELS = { SINGLE: 'Độc thân', MARRIED: 'Đã kết hôn', OTHER: 'Khác', MALE: 'Nam', FEMALE: 'Nữ' } as const;
 
+const HISTORY_LABELS: Record<CreditHistory, string> = {
+  NEVER_BORROWED: 'Chưa từng vay', ON_TIME: 'Đã từng vay, trả đúng hạn',
+  LATE_OVER_90: 'Đã từng trả chậm quá 3 tháng hoặc phải xin giãn, hoãn nợ', UNSURE: 'Đã từng vay, không nhớ rõ có trả chậm hay không',
+};
+
+function toCreditHistory(v: FormValues): CreditHistory {
+  if (v.everBorrowed === 'NEVER') return 'NEVER_BORROWED';
+  return v.lateHistory === 'YES' ? 'LATE_OVER_90' : v.lateHistory === 'UNSURE' ? 'UNSURE' : 'ON_TIME';
+}
+
 function toRequest(v: FormValues): ScreeningRequest {
+  const creditHistory = toCreditHistory(v);
   return {
     consentA: { agreed: !!v.consentA, docVersion: CONSENT_VERSION },
     nationality: v.nationality, dob: v.dob.format('YYYY-MM-DD'), gender: v.gender, maritalStatus: v.maritalStatus,
     dependents: v.dependents ?? 0, avgIncome: v.avgIncome, salaryBank: v.salaryBank, isAbbankStaff: !!v.isAbbankStaff,
-    selfDeclaredBadDebt: !!v.selfDeclaredBadDebt,
-    otherDebts: (v.otherDebts ?? []).filter(d => d && d.monthlyPayment > 0).map(d => ({ lender: d.lender || 'Không ghi rõ', monthlyPayment: d.monthlyPayment })),
+    creditHistory,
+    otherDebts: creditHistory === 'NEVER_BORROWED' ? [] : (v.otherDebts ?? []).filter(d => d && d.monthlyPayment > 0).map(d => ({ lender: d.lender || 'Không ghi rõ', monthlyPayment: d.monthlyPayment })),
     purpose: v.purpose, desiredAmount: v.desiredAmount, desiredTerm: v.desiredTerm,
   };
 }
@@ -74,6 +86,7 @@ export default function ScreeningWizard() {
     } catch { /* lỗi hiện tại ô nhập */ }
   };
   const debts = Form.useWatch('otherDebts', form) as FormValues['otherDebts'] | undefined;
+  const everBorrowed = Form.useWatch('everBorrowed', form) as FormValues['everBorrowed'] | undefined;
   const v = step === 4 ? (form.getFieldsValue(true) as FormValues) : undefined;
   const debtSum = ((step === 4 ? v?.otherDebts : debts) ?? []).reduce((s, d) => s + (d?.monthlyPayment || 0), 0);
 
@@ -86,7 +99,7 @@ export default function ScreeningWizard() {
           items={[{ title: 'Đồng ý xử lý dữ liệu' }, { title: 'Thông tin cá nhân' }, { title: 'Thu nhập, nghĩa vụ nợ' }, { title: 'Nhu cầu vay' }, { title: 'Xem lại' }]} />
         <Form form={form} layout="vertical" requiredMark="optional" scrollToFirstError
           initialValues={{ nationality: 'Việt Nam', gender: 'MALE', maritalStatus: 'SINGLE', dependents: 0, isAbbankStaff: false,
-            selfDeclaredBadDebt: false, otherDebts: [], desiredTerm: 24 }}>
+            otherDebts: [], desiredTerm: 24 }}>
           {step === 0 && (
             <div>
               <div className="consent-box">
@@ -156,13 +169,24 @@ export default function ScreeningWizard() {
                     <Switch checkedChildren="Có" unCheckedChildren="Không" />
                   </Form.Item>
                 </Col>
-                <Col xs={24} md={12}>
-                  <Form.Item name="selfDeclaredBadDebt" label="Hiện có nợ xấu từ nhóm 3 trở lên"
-                    tooltip="Khoản vay quá hạn từ 91 ngày trở lên hoặc đã được cơ cấu lại" rules={[{ required: true }]}>
-                    <Radio.Group options={[{ value: false, label: 'Không' }, { value: true, label: 'Có' }]} />
+                <Col xs={24}>
+                  <Form.Item name="everBorrowed" label="Bạn đã từng vay ngân hàng, công ty tài chính hoặc dùng thẻ tín dụng chưa?"
+                    rules={[{ required: true, message: 'Chọn một đáp án' }]}>
+                    <Radio.Group options={[{ value: 'NEVER', label: 'Chưa từng' }, { value: 'EVER', label: 'Đã từng' }]}
+                      onChange={e => { if (e.target.value === 'NEVER') form.setFieldValue('otherDebts', []); }} />
                   </Form.Item>
                 </Col>
+                {everBorrowed === 'EVER' && (
+                  <Col xs={24}>
+                    <Form.Item name="lateHistory" rules={[{ required: true, message: 'Chọn một đáp án' }]}
+                      label="Trong 5 năm gần đây, có lần nào bạn trả chậm một khoản vay hoặc thẻ tín dụng quá 3 tháng, hoặc phải xin ngân hàng giãn, hoãn, giảm số tiền phải trả vì không trả được không?"
+                      extra="Ngân hàng sẽ tra cứu lịch sử tín dụng của bạn tại Trung tâm Thông tin tín dụng Quốc gia (CIC) khi bạn ký hồ sơ ở chi nhánh. Bạn cũng có thể tự tra cứu qua ứng dụng CIC Credit Connect.">
+                      <Radio.Group options={[{ value: 'NO', label: 'Không' }, { value: 'YES', label: 'Có' }, { value: 'UNSURE', label: 'Không nhớ rõ' }]} />
+                    </Form.Item>
+                  </Col>
+                )}
               </Row>
+              {everBorrowed === 'EVER' && (<>
               <Divider orientation="left" plain>Nghĩa vụ trả nợ hằng tháng tại tổ chức tín dụng khác</Divider>
               <Form.List name="otherDebts">
                 {(fields, { add, remove }) => (
@@ -185,6 +209,7 @@ export default function ScreeningWizard() {
                   </div>
                 )}
               </Form.List>
+              </>)}
             </div>
           )}
           {step === 3 && (
@@ -219,8 +244,8 @@ export default function ScreeningWizard() {
               <Descriptions.Item label="Thu nhập bình quân">{money(v.avgIncome)}</Descriptions.Item>
               <Descriptions.Item label="Ngân hàng nhận lương">{v.salaryBank}</Descriptions.Item>
               <Descriptions.Item label="CBNV ABBANK">{v.isAbbankStaff ? 'Có' : 'Không'}</Descriptions.Item>
-              <Descriptions.Item label="Nghĩa vụ nợ khác">{money(debtSum)}/tháng</Descriptions.Item>
-              <Descriptions.Item label="Nợ xấu tự khai">{v.selfDeclaredBadDebt ? 'Có' : 'Không'}</Descriptions.Item>
+              {v.everBorrowed === 'EVER' && <Descriptions.Item label="Nghĩa vụ nợ khác">{money(debtSum)}/tháng</Descriptions.Item>}
+              <Descriptions.Item label="Lịch sử vay và trả nợ">{HISTORY_LABELS[toCreditHistory(v)]}</Descriptions.Item>
               <Descriptions.Item label="Mục đích">{v.purpose}</Descriptions.Item>
               <Descriptions.Item label="Số tiền, kỳ hạn">{money(v.desiredAmount)} · {v.desiredTerm} tháng</Descriptions.Item>
             </Descriptions>

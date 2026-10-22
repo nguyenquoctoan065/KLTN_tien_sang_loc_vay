@@ -120,6 +120,10 @@ export default function ScreeningResult() {
         </Typography.Paragraph>
       </Card>
 
+      {(s.notes ?? []).map(n => (
+        <Alert key={n.text} style={{ marginTop: 16 }} showIcon type={n.type === 'WARNING' ? 'warning' : 'info'} message={n.text} />
+      ))}
+
       {!anyEligible && (
         <Alert style={{ marginTop: 16 }} type="error" showIcon message="Hiện chưa có gói vay phù hợp"
           description="Xem lý do và hướng cải thiện ở từng gói bên dưới. Bạn có thể điều chỉnh thông tin và sàng lọc lại." />

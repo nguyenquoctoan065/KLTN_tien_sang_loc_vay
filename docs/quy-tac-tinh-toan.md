@@ -47,10 +47,22 @@ Một gói **không đạt** khi có bất kỳ điều kiện nào:
 1. Quốc tịch khác Việt Nam.
 2. Tuổi < `MIN_AGE` của gói.
 3. `L` < kỳ hạn tối thiểu (tuổi đáo hạn vượt tuổi nghỉ hưu). Với vay tiêu dùng, kỳ hạn dùng để tính được rút về `min(kỳ hạn mong muốn, L)`.
-4. Tự khai nợ xấu từ nhóm 3.
+4. Lịch sử tín dụng tự khai `creditHistory = LATE_OVER_90` (từng trả chậm quá 3 tháng hoặc phải xin giãn, hoãn nợ trong 5 năm gần đây).
+   Lý do: “Bạn cho biết từng trả chậm quá 3 tháng hoặc phải xin giãn, hoãn nợ trong 5 năm gần đây.” Hướng cải thiện: “Tất toán khoản nợ đó và chờ thông tin tín dụng được cập nhật; bạn có thể tự kiểm tra trên ứng dụng CIC Credit Connect trước khi đề nghị vay.”
 5. Thu nhập lương chuyển khoản = 0.
 6. Mục đích “Kinh doanh” (cả hai gói); vay tiêu dùng không nhận mục đích “Chi tiêu cá nhân linh hoạt” (cần chứng từ cụ thể).
 7. `K` ≤ 0, hoặc hạn mức an toàn (mục 5) < `MIN_AMOUNT`.
+
+### Lịch sử tín dụng tự khai (`creditHistory`)
+
+Gộp từ hai câu hỏi: “đã từng vay/dùng thẻ tín dụng chưa?” và “trong 5 năm gần đây có trả chậm quá 3 tháng hoặc phải xin giãn, hoãn, giảm nợ không?”.
+
+| `creditHistory` | Kết quả sàng lọc |
+|---|---|
+| `LATE_OVER_90` | Điều kiện loại trừ số 4 (cả hai gói). Tương ứng “nợ nhóm 3 trở lên hoặc nợ đã cơ cấu” trong báo cáo đồ án. |
+| `UNSURE` | Không loại trừ. `notes` thêm WARNING: “Bạn chưa chắc về lịch sử trả nợ. Ngân hàng sẽ tra cứu CIC khi bạn ký hồ sơ; nếu có khoản trả chậm quá 3 tháng, hồ sơ có thể không được duyệt.” |
+| `NEVER_BORROWED` | Không loại trừ. `notes` thêm INFO: “Bạn chưa có lịch sử vay – điều này không ảnh hưởng tới kết quả sàng lọc.” Giao diện ẩn và bỏ qua phần nghĩa vụ nợ khác (`otherDebts` rỗng). |
+| `ON_TIME` | Không loại trừ, không có ghi chú. |
 
 ## 5. Hạn mức tối đa an toàn
 

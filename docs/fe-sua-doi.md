@@ -92,6 +92,8 @@ Hai câu hỏi gộp thành một trường mới `creditHistory`:
 - `docs/quy-tac-tinh-toan.md` mục 4: thay dòng nợ xấu bằng bảng ở trên. Ghi chú để đối chiếu với báo cáo đồ án:
   `LATE_OVER_90` tương ứng “nợ nhóm 3 trở lên hoặc nợ đã cơ cấu”.
 
+- [x] F2 hoàn thành (wizard, engine, notes ở trang kết quả, openapi, V1, quy-tắc-tính-toán).
+
 **Tiêu chí hoàn thành**
 - Chọn “Chưa từng” thì không hiện câu 2 và phần nợ khác.
 - Chọn “Có” thì cả hai gói báo không đạt, kèm lý do bằng lời thường.

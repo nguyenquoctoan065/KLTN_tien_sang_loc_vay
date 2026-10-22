@@ -58,7 +58,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',

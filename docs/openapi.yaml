@@ -1304,7 +1304,7 @@ components:
     ScreeningRequest:
       description: MB01 (không có họ tên, CCCD, SĐT) + đồng ý MB02 phần (a)
       type: object
-      required: [consentA, nationality, dob, gender, maritalStatus, dependents, avgIncome, salaryBank, isAbbankStaff, selfDeclaredBadDebt, otherDebts, purpose, desiredAmount, desiredTerm]
+      required: [consentA, nationality, dob, gender, maritalStatus, dependents, avgIncome, salaryBank, isAbbankStaff, creditHistory, otherDebts, purpose, desiredAmount, desiredTerm]
       properties:
         consentA: { $ref: '#/components/schemas/ConsentInput' }
         nationality: { type: string, example: Việt Nam }
@@ -1315,7 +1315,10 @@ components:
         avgIncome: { type: number, description: Thu nhập lương chuyển khoản bình quân 03 tháng }
         salaryBank: { type: string }
         isAbbankStaff: { type: boolean }
-        selfDeclaredBadDebt: { type: boolean, description: Tự khai có nợ xấu từ nhóm 3 }
+        creditHistory:
+          type: string
+          enum: [NEVER_BORROWED, ON_TIME, LATE_OVER_90, UNSURE]
+          description: 'Tự khai lịch sử tín dụng: chưa từng vay / từng vay và trả đúng hạn / từng trả chậm quá 3 tháng hoặc phải xin giãn, hoãn nợ trong 5 năm gần đây / không nhớ rõ'
         otherDebts: { type: array, items: { $ref: '#/components/schemas/OtherDebt' } }
         purpose: { type: string }
         desiredAmount: { type: number }
@@ -1339,6 +1342,12 @@ components:
         maxTerm: { type: integer }
         score: { type: number, nullable: true }
         rankNo: { type: integer, nullable: true }
+    ScreeningNote:
+      type: object
+      required: [type, text]
+      properties:
+        type: { type: string, enum: [INFO, WARNING] }
+        text: { type: string }
     ScreeningResponse:
       description: MB03
       type: object
@@ -1352,6 +1361,7 @@ components:
         disposableIncome: { type: number }
         currentDti: { type: number }
         results: { type: array, items: { $ref: '#/components/schemas/ScreeningResultItem' } }
+        notes: { type: array, items: { $ref: '#/components/schemas/ScreeningNote' }, description: Ghi chú chung hiển thị trên trang kết quả }
         savedToCustomerId: { type: integer, nullable: true }
     SimulationRequest:
       type: object

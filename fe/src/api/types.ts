@@ -60,6 +60,14 @@ export interface OtherDebt {
   monthlyPayment: number;
 }
 
+export type CreditHistory = 'NEVER_BORROWED' | 'ON_TIME' | 'LATE_OVER_90' | 'UNSURE';
+
+/** Ghi chú chung trên trang kết quả sàng lọc */
+export interface ScreeningNote {
+  type: 'INFO' | 'WARNING';
+  text: string;
+}
+
 /** MB01 – Phiếu thông tin sàng lọc (không có họ tên, CCCD, SĐT) + đồng ý MB02 phần (a) */
 export interface ScreeningRequest {
   consentA: { agreed: boolean; docVersion: string };
@@ -71,7 +79,7 @@ export interface ScreeningRequest {
   avgIncome: number;
   salaryBank: string;
   isAbbankStaff: boolean;
-  selfDeclaredBadDebt: boolean;
+  creditHistory: CreditHistory;
   otherDebts: OtherDebt[];
   purpose: string;
   desiredAmount: number;
@@ -106,6 +114,7 @@ export interface ScreeningResponse {
   disposableIncome: number;
   currentDti: number; // %
   results: ScreeningResultItem[];
+  notes: ScreeningNote[];
   savedToCustomerId: number | null;
 }
 

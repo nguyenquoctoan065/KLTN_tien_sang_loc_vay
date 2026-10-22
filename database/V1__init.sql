@@ -231,7 +231,7 @@ CREATE TABLE screening (
     avg_income decimal(15,0) NOT NULL CHECK (avg_income >= 0),
     salary_bank varchar(100) NOT NULL,
     is_abbank_staff boolean NOT NULL,
-    self_declared_bad_debt boolean NOT NULL,
+    credit_history varchar(20) NOT NULL CHECK (credit_history IN ('NEVER_BORROWED','ON_TIME','LATE_OVER_90','UNSURE')),
     purpose varchar(100) NOT NULL,
     desired_amount decimal(15,0) NOT NULL,
     desired_term int NOT NULL CHECK (desired_term > 0),
@@ -252,7 +252,7 @@ COMMENT ON COLUMN screening.dependents IS 'Số người phụ thuộc';
 COMMENT ON COLUMN screening.avg_income IS 'Thu nhập lương chuyển khoản bình quân 03 tháng';
 COMMENT ON COLUMN screening.salary_bank IS 'Ngân hàng nhận lương';
 COMMENT ON COLUMN screening.is_abbank_staff IS 'Là CBNV ABBANK';
-COMMENT ON COLUMN screening.self_declared_bad_debt IS 'Tự khai có nợ xấu nhóm 3 trở lên';
+COMMENT ON COLUMN screening.credit_history IS 'Tự khai lịch sử tín dụng: NEVER_BORROWED, ON_TIME, LATE_OVER_90 (tương ứng nợ nhóm 3 trở lên hoặc đã cơ cấu), UNSURE';
 COMMENT ON COLUMN screening.purpose IS 'Mục đích vay';
 COMMENT ON COLUMN screening.desired_amount IS 'Số tiền mong muốn';
 COMMENT ON COLUMN screening.desired_term IS 'Kỳ hạn mong muốn (tháng)';

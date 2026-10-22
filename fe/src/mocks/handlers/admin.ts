@@ -18,7 +18,7 @@ const SAMPLE_PROFILES: { name: string; inp: ScreeningRequest }[] = (() => {
   const base: ScreeningRequest = {
     consentA: { agreed: true, docVersion: 'MB02-1.0' }, nationality: 'Việt Nam', dob: '1992-05-10', gender: 'MALE',
     maritalStatus: 'MARRIED', dependents: 1, avgIncome: 20_000_000, salaryBank: 'Vietcombank', isAbbankStaff: false,
-    selfDeclaredBadDebt: false, otherDebts: [], purpose: 'Mua sắm đồ dùng, thiết bị', desiredAmount: 100_000_000, desiredTerm: 36,
+    creditHistory: 'ON_TIME', otherDebts: [], purpose: 'Mua sắm đồ dùng, thiết bị', desiredAmount: 100_000_000, desiredTerm: 36,
   };
   return [
     { name: 'Nhân viên văn phòng, thu nhập 20 triệu', inp: base },
