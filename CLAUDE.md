@@ -1,5 +1,7 @@
 # Hệ thống gợi ý và tiền sàng lọc hồ sơ vay tín chấp – hướng dẫn cho Claude Code
 
+> Máy phát triển: Windows, PowerShell 5.1 – không dùng `&&` (dùng `;` hoặc từng dòng), Maven chạy bằng `.\mvnw.cmd`.
+
 Đồ án tốt nghiệp (ABBANK): khách hàng tự sàng lọc, mô phỏng phương án vay, lập hồ sơ trực tuyến; nhân viên chi nhánh
 đối chiếu bản gốc, ghi nhận kết quả; quản trị viên chỉnh tham số, xem báo cáo. Toàn bộ giao diện và thông báo lỗi bằng tiếng Việt.
 
@@ -33,29 +35,31 @@ docker-compose.yml       PostgreSQL 16 cho phát triển
 6. Tiền là số nguyên VND (`long` ở Java, `number` ở TS). Tỷ lệ phần trăm làm tròn 1 chữ số thập phân như engine.ts.
 
 Dịch vụ ngoài của backend: Cloudinary (lưu ảnh/tệp giấy tờ), Gemini API (đọc thông tin giấy tờ). Khóa qua biến môi trường
-`CLOUDINARY_URL`, `GEMINI_API_KEY`, không bao giờ commit.
+`CLOUDINARY_URL`, `GEMINI_API_KEY` (đặt trong `be/.env`), không bao giờ commit, không đọc hay in nội dung file `.env`.
 
-## Lệnh thường dùng
+## Lệnh thường dùng (PowerShell)
 
-```bash
-docker compose up -d                       # PostgreSQL (db loan_prescreening, user loan / loan123)
-cd fe && npm install && npm run dev        # http://localhost:5173 ; build: npm run build ; lint: npx eslint src
-cd be && ./mvnw spring-boot:run            # http://localhost:8080/api  (khi đã có backend)
-python tests/e2e/full_flow.py              # cần fe đang chạy; BASE_URL=http://localhost:5173
+```powershell
+docker compose up -d                          # PostgreSQL (db loan_prescreening, user loan / loan123)
+cd fe; npm install; npm run dev               # http://localhost:5173 ; build: npm run build ; lint: npx eslint src
+cd be; .\mvnw.cmd spring-boot:run             # http://localhost:8080/api  (khi đã có backend)
+cd be; .\mvnw.cmd verify                      # build + test backend (cần Docker cho Testcontainers)
+python tests\e2e\full_flow.py                 # cần fe đang chạy; $env:BASE_URL="http://localhost:5173"
 ```
 
 Frontend gọi backend thật khi `fe/.env.development` có `VITE_USE_MOCK=false` (Vite proxy `/api` → `localhost:8080`).
 
 ## Tài khoản thử (mật khẩu 123456, OTP môi trường dev: 123456)
 
-| Vai trò | Đăng nhập | Tài khoản |
-|---|---|---|
-| Khách hàng | /dang-nhap | 0901234567 |
+| Vai trò                             | Đăng nhập         | Tài khoản                                                   |
+| ----------------------------------- | ----------------- | ----------------------------------------------------------- |
+| Khách hàng                          | /dang-nhap        | 0901234567                                                  |
 | Nhân viên CN Hà Nội / HCM / Đà Nẵng | /noi-bo/dang-nhap | nhanvien@poc.local / nv.hcm@poc.local / nv.danang@poc.local |
-| Quản trị viên | /noi-bo/dang-nhap | quantri@poc.local |
+| Quản trị viên                       | /noi-bo/dang-nhap | quantri@poc.local                                           |
 
 ## Cách làm việc
 
 - Làm theo từng mục trong `docs/fe-sua-doi.md` hoặc từng giai đoạn trong `docs/be-huong-dan.md`; xong mục nào đánh dấu `[x]` mục đó.
 - Mỗi mục xong phải: build/lint/test pass, và kiểm tra lại đúng “Tiêu chí hoàn thành” của mục.
 - Không tự thêm thư viện lớn ngoài danh sách trong tài liệu khi chưa hỏi.
+- Không tự chạy `git commit`/`git push`; người dùng tự commit sau khi kiểm tra.
