@@ -164,7 +164,7 @@ export const adminHandlers = [
     else if (params.action === 'reset-password') acc.password = '123456';
     else return err(404, 'Thao tác không hợp lệ.');
     if (params.action === 'lock') for (const [t, id] of Object.entries(db.tokens)) if (id === acc.id) delete db.tokens[t];
-    log(u, 'Quản lý tài khoản nhân viên', `${params.action} ${acc.username}`);
+    log(u, 'Quản lý tài khoản nhân viên', `${({ lock: 'Khóa', unlock: 'Mở khóa', 'reset-password': 'Đặt lại mật khẩu' } as Record<string, string>)[params.action as string]} ${acc.username}`);
     persist();
     return HttpResponse.json({ ...staffOut(acc), tempPassword: params.action === 'reset-password' ? '123456' : undefined });
   }),

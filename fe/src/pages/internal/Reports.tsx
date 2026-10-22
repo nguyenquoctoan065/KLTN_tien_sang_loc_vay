@@ -113,7 +113,7 @@ function AccuracyView({ a }: { a: AccuracyResponse }) {
   return (
     <Row gutter={[16, 16]}>
       <Col xs={24} xl={10}>
-        <Card size="small" title={`Ma trận nhầm lẫn (ngưỡng điểm ${a.threshold}, ${a.sample} hồ sơ đã có kết quả)`}>
+        <Card size="small" title={<div style={{ whiteSpace: 'normal', lineHeight: 1.4, padding: '8px 0' }}>Ma trận nhầm lẫn<div style={{ fontWeight: 400, fontSize: 12, color: '#64748b' }}>Ngưỡng điểm {a.threshold}, {a.sample} hồ sơ đã có kết quả</div></div>}>
           <table className="cm-table">
             <thead><tr><th /><th>Ngân hàng duyệt</th><th>Ngân hàng từ chối</th></tr></thead>
             <tbody>

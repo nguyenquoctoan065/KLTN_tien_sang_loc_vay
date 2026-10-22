@@ -41,3 +41,5 @@ body { margin: 0; background: #f1f5f9; }
   .ant-layout-content { padding: 0 !important; }
   body { background: #fff; }
 }
+.nowrap-cell { white-space: nowrap; }
+.ant-layout-sider:not(.ant-layout-sider-collapsed) { flex: 0 0 240px !important; min-width: 240px !important; max-width: 240px !important; width: 240px !important; transition: none !important; }

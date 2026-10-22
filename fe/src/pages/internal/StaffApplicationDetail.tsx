@@ -43,7 +43,7 @@ function VerifyForm({ app }: { app: Application }) {
         },
         {
           title: 'Lý do', render: (_, d: AppDocument) => rows[d.id]?.result !== 'MATCH'
-            ? <Input status={rows[d.id]?.reason ? undefined : 'error'} placeholder="Bắt buộc" value={rows[d.id]?.reason} onChange={e => setRows(r => ({ ...r, [d.id]: { ...r[d.id], reason: e.target.value } }))} /> : null,
+            ? <Input.TextArea autoSize={{ minRows: 1, maxRows: 6 }} status={rows[d.id]?.reason ? undefined : 'error'} placeholder="Bắt buộc" value={rows[d.id]?.reason} onChange={e => setRows(r => ({ ...r, [d.id]: { ...r[d.id], reason: e.target.value } }))} /> : null,
         },
       ]} />
       <Input.TextArea style={{ marginTop: 12 }} rows={2} placeholder="Ghi chú chung" value={note} onChange={e => setNote(e.target.value)} />

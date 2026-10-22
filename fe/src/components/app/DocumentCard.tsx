@@ -93,7 +93,7 @@ export default function DocumentCard({ app, doc, editable }: { app: Application;
                   { title: 'Máy đọc', dataIndex: 'ocrValue', render: (v: string, f) => <span>{v || '—'} <Tag color={f.confidence >= 90 ? 'green' : f.confidence >= 85 ? 'gold' : 'orange'}>{f.confidence}%</Tag></span> },
                   {
                     title: 'Giá trị xác nhận', key: 'c', width: '38%', render: (_, f) => editable && doc.status !== 'MISSING'
-                      ? <Input value={vals[f.id] ?? ''} onChange={e => setVals(v => ({ ...v, [f.id]: e.target.value }))} />
+                      ? <Input.TextArea autoSize={{ minRows: 1, maxRows: 8 }} value={vals[f.id] ?? ''} onChange={e => setVals(v => ({ ...v, [f.id]: e.target.value }))} />
                       : (f.confirmedValue ?? '—'),
                   },
                 ]} />

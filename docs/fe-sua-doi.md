@@ -194,9 +194,9 @@ Có thể hiện chữ đầy đủ ở lần đầu xuất hiện và giữ ch�
 
 ## F7. Kiểm tra cuối
 
-- [ ] `cd fe && npm run build && npx eslint src`: 0 lỗi.
-- [ ] `npx -y @redocly/cli@1.25.11 lint docs/openapi.yaml`: 0 lỗi.
-- [ ] Sửa `tests/e2e/full_flow.py` theo F2 (chọn “Đã từng” → “Không”), F4 (tên tab mới), F1 (đăng nhập bằng email ở lần đăng nhập thứ hai).
+- [x] `cd fe && npm run build && npx eslint src`: 0 lỗi.
+- [x] `npx -y @redocly/cli@1.25.11 lint docs/openapi.yaml`: 0 lỗi.
+- [x] Sửa `tests/e2e/full_flow.py` theo F2 (chọn “Đã từng” → “Không”), F4 (tên tab mới), F1 (đăng nhập bằng email ở lần đăng nhập thứ hai).
   Chạy `npm run dev`, sau đó chạy `python tests/e2e/full_flow.py`; kết quả in ra phải là `ERRORS []`.
-- [ ] Xem ảnh trong `tests/e2e/shots/` để kiểm tra bằng mắt các trang đã sửa.
+- [x] Xem ảnh trong `tests/e2e/shots/` để kiểm tra bằng mắt các trang đã sửa.
 - [x] Thêm thử nghiệm tay F3: sàng lọc, “Sàng lọc lại”, kiểm tra dữ liệu còn nguyên.

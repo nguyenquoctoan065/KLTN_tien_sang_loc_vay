@@ -2,6 +2,7 @@ import { http, HttpResponse, delay } from 'msw';
 import type { Verification } from '../../api/types';
 import { API, db, err, nextId, persist, currentUser, nowIso, log, notify, setStatus, view, summary, fmtMoney } from '../ctx';
 import { SYSTEM_DOC_TYPE } from '../db';
+import { APP_STATUS } from '../../utils/status';
 
 function staffApp(request: Request, id: unknown) {
   const u = currentUser(request);
@@ -91,7 +92,7 @@ export const staffHandlers = [
       setStatus(app, 'NEED_MORE', u.name, `Ngân hàng yêu cầu bổ sung: ${b.reason}`);
       notify({ customerId: app.customerId }, 'Ngân hàng yêu cầu bổ sung hồ sơ', b.reason!, `/ho-so/${app.id}`);
     }
-    log(u, 'Cập nhật kết quả xét duyệt', b.resultType, app);
+    log(u, 'Cập nhật kết quả xét duyệt', APP_STATUS[b.resultType === 'MORE_INFO' ? 'NEED_MORE' : b.resultType].label, app);
     persist();
     return HttpResponse.json(view(app, u));
   }),

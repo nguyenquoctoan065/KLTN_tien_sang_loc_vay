@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Alert, App, Button, Card, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Alert, App, Button, Card, Form, Input, Modal, Dropdown, Select, Space, Table, Tag, Typography } from 'antd';
+import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
@@ -43,21 +43,23 @@ export default function StaffAccounts() {
     <div>
       <Typography.Title level={3} style={{ marginTop: 0 }}>Tài khoản nhân viên</Typography.Title>
       <Card extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => open('new')}>Thêm nhân viên</Button>}>
-        <Table rowKey="id" loading={q.isLoading} dataSource={q.data} scroll={{ x: 800 }} columns={[
-          { title: 'Họ tên', dataIndex: 'fullName' },
-          { title: 'Email đăng nhập', dataIndex: 'email' },
-          { title: 'Vai trò', dataIndex: 'role', render: v => (v === 'ADMIN' ? <Tag color="purple">Quản trị viên chính sách</Tag> : <Tag color="blue">Nhân viên chi nhánh</Tag>) },
-          { title: 'Chi nhánh', dataIndex: 'branchName', render: v => v ?? '—' },
-          { title: 'Trạng thái', dataIndex: 'status', render: v => (v === 'ACTIVE' ? <Tag color="success">Hoạt động</Tag> : <Tag color="error">Đã khóa</Tag>) },
-          { title: 'Ngày tạo', dataIndex: 'createdAt', render: dt },
+        <Table rowKey="id" loading={q.isLoading} dataSource={q.data} scroll={{ x: 1025 }} columns={[
+          { title: 'Họ tên', dataIndex: 'fullName', width: 150, className: 'nowrap-cell' },
+          { title: 'Email đăng nhập', dataIndex: 'email', width: 180, className: 'nowrap-cell' },
+          { title: 'Vai trò', dataIndex: 'role', width: 170, className: 'nowrap-cell', render: v => (v === 'ADMIN' ? <Tag color="purple">Quản trị viên chính sách</Tag> : <Tag color="blue">Nhân viên chi nhánh</Tag>) },
+          { title: 'Chi nhánh', dataIndex: 'branchName', width: 165, className: 'nowrap-cell', render: v => v ?? '—' },
+          { title: 'Trạng thái', dataIndex: 'status', width: 100, className: 'nowrap-cell', render: v => (v === 'ACTIVE' ? <Tag color="success">Hoạt động</Tag> : <Tag color="error">Đã khóa</Tag>) },
+          { title: 'Ngày tạo', dataIndex: 'createdAt', width: 150, className: 'nowrap-cell', render: dt },
           {
-            title: '', key: 'x', render: (_, r) => (
+            title: '', key: 'x', width: 110, fixed: 'right', render: (_, r) => (
               <Space>
                 <Button size="small" onClick={() => open(r)}>Sửa</Button>
-                {r.status === 'ACTIVE'
-                  ? <Popconfirm title="Khóa tài khoản này?" onConfirm={() => act.mutate({ id: r.id, action: 'lock' })}><Button size="small" danger>Khóa</Button></Popconfirm>
-                  : <Button size="small" onClick={() => act.mutate({ id: r.id, action: 'unlock' })}>Mở khóa</Button>}
-                <Popconfirm title="Đặt lại mật khẩu?" onConfirm={() => act.mutate({ id: r.id, action: 'reset-password' })}><Button size="small">Đặt lại mật khẩu</Button></Popconfirm>
+                <Dropdown trigger={['click']} menu={{ items: [
+                  r.status === 'ACTIVE'
+                    ? { key: 'lock', danger: true, label: 'Khóa tài khoản', onClick: () => modal.confirm({ title: 'Khóa tài khoản này?', okText: 'Khóa', cancelText: 'Hủy', onOk: () => act.mutate({ id: r.id, action: 'lock' }) }) }
+                    : { key: 'unlock', label: 'Mở khóa', onClick: () => act.mutate({ id: r.id, action: 'unlock' }) },
+                  { key: 'reset', label: 'Đặt lại mật khẩu', onClick: () => modal.confirm({ title: 'Đặt lại mật khẩu?', okText: 'Đặt lại', cancelText: 'Hủy', onOk: () => act.mutate({ id: r.id, action: 'reset-password' }) }) },
+                ] }}><Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" /></Dropdown>
               </Space>
             ),
           },

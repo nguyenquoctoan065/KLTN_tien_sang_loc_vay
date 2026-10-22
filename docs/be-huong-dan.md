@@ -79,6 +79,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
 - **Trạng thái hồ sơ**: chỉ đổi qua một hàm `ApplicationStateMachine.transition(app, to, actor, note)` – kiểm tra chuyển hợp lệ
   theo `docs/quy-tac-tinh-toan.md` mục 12, ghi lịch sử, cập nhật `updated_at`.
 - Trường tính toán `can {edit, submit, cancel, resubmit, verify, decide, disburse}` của `Application`: chép logic hàm `view()` trong `ctx.ts`.
+- Nhật ký phải ghi bằng nhãn tiếng Việt (ví dụ trạng thái “Được phê duyệt”, không ghi `APPROVED`): dùng cùng bảng nhãn với `APP_STATUS` trong `fe/src/utils/status.ts` cho `action` và `detail`.
 - Không log mật khẩu, OTP, số CCCD đầy đủ.
 
 ## 5. Quyết định kỹ thuật

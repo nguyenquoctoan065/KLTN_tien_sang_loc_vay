@@ -4,6 +4,7 @@ import type {
   DocumentType, JobInfo, LoanPlan, LoanProduct, ParamVersion, PolicyParam, ProductCode, ProductDocRule, ScoringWeight,
   ScreeningResponse, TestRunResult,
 } from '../api/types';
+import { APP_STATUS } from '../utils/status';
 
 export interface Account {
   id: number;
@@ -58,7 +59,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 5;
+export const DB_VERSION = 6;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',
@@ -302,7 +303,7 @@ export function seed(): Db {
   for (const a of applications) {
     for (const h of a.history) {
       logs.push({ id: nextId(), customerId: a.customerId, applicationCode: a.code, actorType: h.actor === 'Hệ thống' ? 'SYSTEM' : h.actor === a.personal.fullName ? 'CUSTOMER' : 'STAFF',
-        actorName: h.actor, action: 'Đổi trạng thái', detail: `→ ${h.status}${h.note ? ` (${h.note})` : ''}`, createdAt: h.at });
+        actorName: h.actor, action: 'Đổi trạng thái', detail: `→ ${APP_STATUS[h.status].label}${h.note ? ` (${h.note})` : ''}`, createdAt: h.at });
     }
   }
   return {

@@ -35,7 +35,7 @@ export default function InternalLayout() {
   const sel = items.map(i => i.key).find(k => loc.pathname.startsWith(k)) || (user?.role === 'BRANCH_STAFF' ? '/noi-bo/ho-so' : items[0].key);
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider width={240} theme="light" breakpoint="lg" collapsedWidth={0} style={{ borderRight: '1px solid #f0f0f0' }} className="no-print">
+      <Sider width={240} theme="light" breakpoint="lg" collapsedWidth={0} style={{ borderRight: '1px solid #f0f0f0', flex: '0 0 auto' }} className="no-print">
         <div className="sider-brand">
           <div style={{ fontWeight: 600 }}>Khu vực nội bộ</div>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
@@ -44,7 +44,7 @@ export default function InternalLayout() {
         </div>
         <Menu mode="inline" selectedKeys={[sel]} items={items} style={{ borderRight: 0 }} />
       </Sider>
-      <Layout>
+      <Layout style={{ minWidth: 0 }}>
         <Header className="internal-header no-print">
           <Space>
             {user?.branchName && <Tag color="cyan">{user.branchName}</Tag>}
@@ -61,7 +61,7 @@ export default function InternalLayout() {
             </Dropdown>
           </Space>
         </Header>
-        <Content style={{ padding: 24 }}>
+        <Content style={{ padding: 24, minWidth: 0, overflowX: 'auto' }}>
           <Outlet />
         </Content>
       </Layout>
