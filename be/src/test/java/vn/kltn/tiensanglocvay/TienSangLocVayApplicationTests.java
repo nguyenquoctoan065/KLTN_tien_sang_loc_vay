@@ -60,7 +60,7 @@ class TienSangLocVayApplicationTests {
                 Integer.class);
         Integer products = jdbc.queryForObject("SELECT count(*) FROM loan_product", Integer.class);
 
-        assertThat(versions).containsExactly("1", "2", "3");
+        assertThat(versions).containsExactly("1", "2", "3", "4");
         assertThat(tables).isEqualTo(26); // 24 bảng V1 + auth_session, otp_code (V3)
         assertThat(products).isPositive();
     }
@@ -82,13 +82,14 @@ class TienSangLocVayApplicationTests {
 
     @Test
     void endpointCongKhaiKhongBiChan() throws Exception {
-        // Chưa có controller (B2, B3) nên 404 (không phải 401): bộ lọc bảo mật đã cho đi qua.
-        mvc.perform(get("/products")).andExpect(status().isNotFound())
+        // Danh mục (B2) đã có controller: không token vẫn trả 200.
+        mvc.perform(get("/products")).andExpect(status().isOk());
+        mvc.perform(get("/products/TD/checklist")).andExpect(status().isOk());
+        mvc.perform(get("/cross-sell-products")).andExpect(status().isOk());
+        mvc.perform(get("/branches")).andExpect(status().isOk());
+        // Chưa có controller (B3) nên 404 (không phải 401): bộ lọc bảo mật đã cho đi qua.
+        mvc.perform(get("/screenings/1")).andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Không tìm thấy."));
-        mvc.perform(get("/products/TD/checklist")).andExpect(status().isNotFound());
-        mvc.perform(get("/cross-sell-products")).andExpect(status().isNotFound());
-        mvc.perform(get("/branches")).andExpect(status().isNotFound());
-        mvc.perform(get("/screenings/1")).andExpect(status().isNotFound());
         // /auth/** đã có (B1): bộ lọc cho qua, controller trả 400 vì thiếu dữ liệu.
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isBadRequest());
         mvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isNotFound());

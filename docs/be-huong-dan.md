@@ -57,7 +57,7 @@ be/
     │   └── report/        /admin/stats, /admin/model-accuracy, /admin/reports/mb14
     ├── main/resources/
     │   ├── application.yml, application-dev.yml
-    │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__app_support.sql (B1), V4__…, V5__… (mỗi giai đoạn cần thêm bảng/cột một file mới); db/dev/V1000__dev_history.sql
+    │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__app_support.sql (B1), V4__sua_dinh_dang_sao_ke.sql (B2), V5__… (B4), V6__… (mỗi giai đoạn cần thêm bảng/cột một file mới); db/dev/V1000__dev_history.sql
     └── test/java/vn/kltn/tiensanglocvay/…  (+ test/resources/engine-fixtures/*.json)
 ```
 
@@ -105,7 +105,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   `uploader().upload(bytes, ObjectUtils.asMap("type", "authenticated", "resource_type", "auto",
   "folder", "tien-sang-loc-vay/<môi trường>/app-<applicationId>", "public_id", "doc-<documentId>-v<version>", "overwrite", true))`.
   - Lưu vào DB: `public_id`, `resource_type`, `format`, `version`, `bytes`. Cột `storage_path` giữ `public_id`;
-    các cột còn lại thêm bằng migration của giai đoạn B4 (V4 trở đi) (`storage_resource_type`, `storage_version`).
+    các cột còn lại thêm bằng migration của giai đoạn B4 (V5 trở đi) (`storage_resource_type`, `storage_version`).
   - Không lưu `secure_url` công khai.
 - **Xem lại tệp**: `previewUrl` trong DTO là URL ký (signed) có hạn 10 phút. Tạo bằng
   `cloudinary.url().type("authenticated").resourceType(rt).signed(true).version(v)…` cùng tham số hết hạn,
@@ -181,9 +181,9 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
 - Mỗi job là một bean `ScheduledJob { code(); run(): String }`; `/admin/jobs/{code}/run` gọi cùng bean. Bảng `scheduled_job` lưu
   `last_run_at`, `last_result`.
 
-### 5.7 Cơ sở dữ liệu bổ sung (V3, V4, V5…)
+### 5.7 Cơ sở dữ liệu bổ sung (V3, V5, V6…; V4 đã dùng ở B2)
 Mỗi giai đoạn tự so DTO trong openapi.yaml với lược đồ hiện có và thêm phần thiếu vào **một file migration mới theo thứ tự**
-(`V4__…`, `V5__…`); không sửa file đã chạy. `V3__app_support.sql` (B1) đã có `auth_session`, `otp_code` và unique index `lower(email)`. Còn cần:
+(`V5__…`, `V6__…`); không sửa file đã chạy. `V3__app_support.sql` (B1) đã có `auth_session`, `otp_code` và unique index `lower(email)`. Còn cần:
 - `notification` (người nhận: customer/staff/branch, title, body, link, read_at),
   `application_status_history` (application_id, from_status, to_status, actor, note, created_at), `scheduled_job`.
 - `loan_application`: `cancel_reason`, các cột còn thiếu so với `Application` DTO (ví dụ thông tin cá nhân khai cho hồ sơ nếu không lưu ở `customer`).
@@ -212,8 +212,8 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] Test: đăng nhập đúng/sai/khóa, OTP sai, đăng ký trùng số/email, đổi mật khẩu thu hồi phiên cũ.
 
 ### B2. Danh mục và tham số đọc
-- [ ] Entity: loan_product, cross_sell_product, branch, document_type, product_document_type, param_version, policy_param, scoring_weight.
-- [ ] `/products`, `/products/{code}/checklist`, `/cross-sell-products`, `/branches`. `ActivePolicy` lấy phiên bản đang hiệu lực.
+- [x] Entity: loan_product, cross_sell_product, branch, document_type, product_document_type, param_version, policy_param, scoring_weight.
+- [x] `/products`, `/products/{code}/checklist`, `/cross-sell-products`, `/branches`. `ActivePolicy` lấy phiên bản đang hiệu lực.
 
 ### B3. Sàng lọc, mô phỏng, phương án (QT01–QT02)
 - [ ] `engine/` + fixtures (5.5). `/screenings`, `/screenings/{id}`, `/screenings/{id}/save`, `/me/screenings` (consent A).
@@ -221,7 +221,7 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [ ] Bật FE với backend thật: chạy luồng sàng lọc → phương án.
 
 ### B4. Hồ sơ vay (QT03, 4.1–4.2)
-- [ ] Migration mới (`V4__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
+- [ ] Migration mới (`V5__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
 - [ ] `/personal`, upload `/documents/{docId}` (QualityChecker → StorageService → OcrService), `/fields`, `CrossCheckService` (mục 10),
   `/plan`, `/request-form`, `/submit` (OTP, khóa nội dung mục 11, QR, hạn), `/cancel`.
 - [ ] `NotificationService` + `/notifications`, `/notifications/{id}/read`, `/notifications/read-all`; lịch sử trạng thái.
@@ -325,3 +325,14 @@ app:
   - `Customer` mới ánh xạ cột tài khoản (phone, email, password_hash, full_name, status, created_at); thêm cột hồ sơ cá nhân khi cần ở B4. Tên chi nhánh của `AuthUser.branchName` đang lấy bằng truy vấn native trong `StaffRepository`; B2 có entity `Branch` thì đổi sang entity.
   - `@RequireRole` vẫn chưa làm (B1 chưa có endpoint phân theo vai trò ngoài đăng nhập); làm cùng controller đầu tiên cần phân quyền (B3/B4). `TokenAuthFilter` đã đặt `ROLE_<CUSTOMER|BRANCH_STAFF|ADMIN>` và principal là `CurrentUser` (`@AuthenticationPrincipal CurrentUser`).
 - **Kiểm tra**: `.\mvnw.cmd verify` → 40 test pass (6 `GlobalExceptionHandlerTest`, 6 `TienSangLocVayApplicationTests` – đã sửa: Flyway V1–V3, 26 bảng, `/auth/login` rỗng → 400; 28 `AuthApiTest` MockMvc + Testcontainers: đăng nhập khách bằng SĐT/email, 3 nhân viên + quản trị, sai mật khẩu/không tồn tại/sai loại tài khoản, thiếu trường, tài khoản khóa, phiên hết hạn, đăng xuất, OTP không hợp lệ/hết hạn/sai 5 lần/dùng một lần, đăng ký thành công/trùng số/trùng email/dữ liệu sai, đổi mật khẩu thu hồi phiên khác). Chạy `spring-boot:run -Dspring-boot.run.profiles=dev` trên PostgreSQL Docker (Flyway áp V3), FE chạy `VITE_USE_MOCK=false` (đặt qua biến môi trường, **chưa đổi** `fe/.env.development`, B9 mới đổi): bằng Playwright đăng nhập khách (SĐT, email) → `/cua-toi`, nhân viên 3 chi nhánh → `/noi-bo/ho-so`, quản trị → `/noi-bo/bao-cao`, sai mật khẩu hiện đúng “Sai tài khoản hoặc mật khẩu.”, đăng ký mới với OTP dev `123456` → `/cua-toi`; không có lỗi trang. Các trang sau đăng nhập vẫn gọi endpoint chưa làm (B2 trở đi) nên chưa hiển thị dữ liệu. Chưa chạy `tests/e2e/full_flow.py` (cần đủ endpoint, thuộc B9).
+
+### B2 – xong 23/10/2026
+- **Đã có**: package `catalog/` (entity `Branch`, `LoanProduct`, `CrossSellProduct`, `DocumentType`, `ProductDocumentType` với `@IdClass`; repository; `CatalogService`, `CatalogController`; DTO `LoanProductDto`, `CrossSellProductDto`, `BranchDto`, `ChecklistItem`) và `policy/` (entity `ParamVersion`, `PolicyParam`, `ScoringWeight`; `ActivePolicy`, `PolicySnapshot`). Không cần migration mới (V1/V2 đủ).
+- **Endpoint** (đều công khai, chỉ trả bản ghi `ACTIVE` như mock, sắp theo `id`): `GET /products`, `/products/{code}/checklist`, `/cross-sell-products`, `/branches`. JSON khớp openapi và `handlers/catalog.ts`: tiền là số nguyên (`estCost`), `scoreBonus`/`rateDiscount` là số thập phân (`5.0`, JS đọc ra `5`). `BranchDto` không có `openApplications` (chỉ thêm ở `GET /admin/branches`, B7). Mã gói lạ ở `/checklist` trả `[]` (mock cũng vậy). Tên giấy tờ `id = 1` được nối thêm “ – hệ thống tự lập” (hằng `DocumentType.SYSTEM_DOC_TYPE`).
+- **Thứ tự checklist**: bảng `product_document_type` không có cột thứ tự, mock thì giữ thứ tự chèn. Backend sắp **bắt buộc trước, rồi theo `document_type.id`**: khớp mock với dữ liệu mẫu (TC: giấy đề nghị, CCCD, sao kê, rồi hợp đồng lao động tùy chọn). Nếu B7 cho thêm quy tắc, giấy tờ mới bắt buộc sẽ nằm theo `id`, không nằm cuối như mock.
+- **`ActivePolicy`**: `current()` nạp phiên bản `ACTIVE` một lần và giữ bản chụp bất biến (`PolicySnapshot`: `common(key)`, `product(maGoi, key)`, `weight(maGoi, tieuChi)` trả `BigDecimal`, khóa tham số theo mục 1, tiêu chí theo mục 6 của quy-tac-tinh-toan). Thiếu tham số → `IllegalStateException` nêu tên tham số (lỗi cấu hình, thành 500); không có phiên bản ACTIVE cũng vậy. **B7 phải gọi `ActivePolicy.evict()` sau khi giao dịch kích hoạt đã commit**; sửa tham số bằng SQL tay cũng cần khởi động lại backend. `param_version.test_result` (jsonb) chưa ánh xạ, thêm ở B7.
+- **Dọn từ B1**: `AuthService` lấy tên chi nhánh qua entity `Branch`; đã xóa truy vấn native `StaffRepository.findBranchName`.
+- **Đã sửa test B0**: `endpointCongKhaiKhongBiChan` trước kỳ vọng `/products`… trả 404 (chưa có controller), nay kỳ vọng 200; `/screenings/*` và `POST /screenings`, `/simulations` vẫn 404 đến B3.
+- **Đã chốt (23/10/2026)**: `allowedFormats` của “Sao kê tài khoản nhận lương 03 tháng” theo mock là `PDF,JPG,PNG` (V2 ghi `PDF`). Thêm `V4__sua_dinh_dang_sao_ke.sql` cập nhật `document_type`, không sửa V2; migration của B4 là `V5__…`. Giá trị dùng khi kiểm tra tệp tải lên (B4) và ở `/admin/document-types` (B7).
+- **Nhắc B7**: sau khi giao dịch kích hoạt phiên bản tham số commit, phải gọi `ActivePolicy.evict()`, nếu không backend vẫn dùng bản đã nạp.
+- **Kiểm tra**: `.\mvnw.cmd verify` → 53 test pass (13 test mới `CatalogApiTest`: 4 endpoint đối chiếu từng trường với dữ liệu mẫu/mock, ẩn bản ghi `INACTIVE` của gói/bán chéo/chi nhánh, checklist TD/TC/mã lạ, `ActivePolicy` nạp đúng phiên bản 2026.10, tổng trọng số mỗi gói = 100, thiếu tham số báo rõ, `evict()` nạp lại). Chạy `spring-boot:run -Dspring-boot.run.profiles=dev` trên PostgreSQL Docker và FE `VITE_USE_MOCK=false` (biến môi trường, **chưa đổi** `fe/.env.development`): bằng Playwright trang chủ `/` gọi `GET /api/products` (không qua service worker MSW) và hiện hai thẻ gói vay, không lỗi trang. Để chắc chắn dữ liệu từ DB, tạm đổi tên gói TD trong DB thành “Vay tiêu dùng (kiểm tra B2)”, trang chủ hiện đúng tên đó, rồi đã trả lại tên cũ. Mô tả điều kiện trong thẻ (tuổi, hạn mức, kỳ hạn) do FE tự soạn, chưa đọc từ tham số.

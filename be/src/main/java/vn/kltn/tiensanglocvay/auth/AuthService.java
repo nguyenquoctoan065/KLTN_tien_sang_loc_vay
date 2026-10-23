@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.kltn.tiensanglocvay.audit.ActivityLogService;
+import vn.kltn.tiensanglocvay.catalog.Branch;
+import vn.kltn.tiensanglocvay.catalog.BranchRepository;
 import vn.kltn.tiensanglocvay.common.ApiException;
 import vn.kltn.tiensanglocvay.security.AccountKind;
 import vn.kltn.tiensanglocvay.security.CurrentUser;
@@ -25,6 +27,7 @@ public class AuthService {
 
     private final CustomerRepository customers;
     private final StaffRepository staff;
+    private final BranchRepository branches;
     private final SessionService sessions;
     private final OtpService otp;
     private final ActivityLogService activity;
@@ -33,10 +36,11 @@ public class AuthService {
     /** Băm giả để thời gian phản hồi không lộ tài khoản có tồn tại hay không. */
     private final String dummyHash;
 
-    public AuthService(CustomerRepository customers, StaffRepository staff, SessionService sessions, OtpService otp,
-                       ActivityLogService activity, PasswordEncoder encoder, Clock clock) {
+    public AuthService(CustomerRepository customers, StaffRepository staff, BranchRepository branches, SessionService sessions,
+                       OtpService otp, ActivityLogService activity, PasswordEncoder encoder, Clock clock) {
         this.customers = customers;
         this.staff = staff;
+        this.branches = branches;
         this.sessions = sessions;
         this.otp = otp;
         this.activity = activity;
@@ -76,7 +80,7 @@ public class AuthService {
     }
 
     private AuthUser toUser(Account a) {
-        String branchName = a.branchId() == null ? null : staff.findBranchName(a.branchId()).orElse(null);
+        String branchName = a.branchId() == null ? null : branches.findById(a.branchId()).map(Branch::getName).orElse(null);
         return new AuthUser(a.id(), a.name(), a.role(), a.username(), a.email(), branchName);
     }
 
