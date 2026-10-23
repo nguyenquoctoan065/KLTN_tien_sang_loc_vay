@@ -1,4 +1,6 @@
 app:
+  otp:
+    fixed-code: "123456"
   storage:
     provider: local
   ocr:

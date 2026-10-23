@@ -57,7 +57,7 @@ be/
     │   └── report/        /admin/stats, /admin/model-accuracy, /admin/reports/mb14
     ├── main/resources/
     │   ├── application.yml, application-dev.yml
-    │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__…, V4__dev_history.sql
+    │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__app_support.sql (B1), V4__…, V5__… (mỗi giai đoạn cần thêm bảng/cột một file mới); db/dev/V1000__dev_history.sql
     └── test/java/vn/kltn/tiensanglocvay/…  (+ test/resources/engine-fixtures/*.json)
 ```
 
@@ -105,7 +105,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   `uploader().upload(bytes, ObjectUtils.asMap("type", "authenticated", "resource_type", "auto",
   "folder", "tien-sang-loc-vay/<môi trường>/app-<applicationId>", "public_id", "doc-<documentId>-v<version>", "overwrite", true))`.
   - Lưu vào DB: `public_id`, `resource_type`, `format`, `version`, `bytes`. Cột `storage_path` giữ `public_id`;
-    các cột còn lại thêm vào V3 (`storage_resource_type`, `storage_version`).
+    các cột còn lại thêm bằng migration của giai đoạn B4 (V4 trở đi) (`storage_resource_type`, `storage_version`).
   - Không lưu `secure_url` công khai.
 - **Xem lại tệp**: `previewUrl` trong DTO là URL ký (signed) có hạn 10 phút. Tạo bằng
   `cloudinary.url().type("authenticated").resourceType(rt).signed(true).version(v)…` cùng tham số hết hạn,
@@ -181,18 +181,19 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
 - Mỗi job là một bean `ScheduledJob { code(); run(): String }`; `/admin/jobs/{code}/run` gọi cùng bean. Bảng `scheduled_job` lưu
   `last_run_at`, `last_result`.
 
-### 5.7 Cơ sở dữ liệu bổ sung (V3)
-Trước giai đoạn B2, so từng DTO trong openapi.yaml với V1 và gom phần thiếu vào **`V3__app_support.sql`**. Đã biết cần:
-- `auth_session`, `otp_code`, `notification` (người nhận: customer/staff/branch, title, body, link, read_at),
+### 5.7 Cơ sở dữ liệu bổ sung (V3, V4, V5…)
+Mỗi giai đoạn tự so DTO trong openapi.yaml với lược đồ hiện có và thêm phần thiếu vào **một file migration mới theo thứ tự**
+(`V4__…`, `V5__…`); không sửa file đã chạy. `V3__app_support.sql` (B1) đã có `auth_session`, `otp_code` và unique index `lower(email)`. Còn cần:
+- `notification` (người nhận: customer/staff/branch, title, body, link, read_at),
   `application_status_history` (application_id, from_status, to_status, actor, note, created_at), `scheduled_job`.
 - `loan_application`: `cancel_reason`, các cột còn thiếu so với `Application` DTO (ví dụ thông tin cá nhân khai cho hồ sơ nếu không lưu ở `customer`).
 - `application_document`: `status`, `quality_status`, `quality_message`, `issued_date`, `version_no` nếu V1 chưa có.
-- Unique index `lower(email)` trên `customer`; cột `credit_history` của `screening` (nếu chưa sửa thẳng V1 theo F2).
+- Cột `credit_history` của `screening` (nếu chưa sửa thẳng V1 theo F2).
 Ghi rõ trong comment SQL mỗi cột phục vụ DTO nào.
 
 ### 5.8 Dữ liệu lịch sử cho báo cáo
-Màn hình thống kê/độ chính xác/MB14 cần dữ liệu nhiều tháng. Viết `V4__dev_history.sql` (chỉ chạy profile dev qua
-`spring.flyway.locations` riêng `db/dev`) sinh ~90 hồ sơ 6 tháng ở 3 chi nhánh, bám theo hàm `historical()` trong `fe/src/mocks/db.ts`.
+Màn hình thống kê/độ chính xác/MB14 cần dữ liệu nhiều tháng. Viết `db/dev/V1000__dev_history.sql` (số 1000 để luôn lớn hơn các migration chính; chỉ chạy profile dev qua
+`spring.flyway.locations` thêm `classpath:db/dev`) sinh ~90 hồ sơ 6 tháng ở 3 chi nhánh, bám theo hàm `historical()` trong `fe/src/mocks/db.ts`.
 
 ## 6. Giai đoạn
 
@@ -207,8 +208,8 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] `GET /api/actuator/health` (spring-boot-starter-actuator). Test khởi động với Testcontainers.
 
 ### B1. Tài khoản (1.1–1.4)
-- [ ] V3 phần `auth_session`, `otp_code`. `/auth/login`, `/auth/logout`, `/auth/otp`, `/auth/register`, `/auth/me`, `/auth/change-password`.
-- [ ] Test: đăng nhập đúng/sai/khóa, OTP sai, đăng ký trùng số/email, đổi mật khẩu thu hồi phiên cũ.
+- [x] V3 phần `auth_session`, `otp_code`. `/auth/login`, `/auth/logout`, `/auth/otp`, `/auth/register`, `/auth/me`, `/auth/change-password`.
+- [x] Test: đăng nhập đúng/sai/khóa, OTP sai, đăng ký trùng số/email, đổi mật khẩu thu hồi phiên cũ.
 
 ### B2. Danh mục và tham số đọc
 - [ ] Entity: loan_product, cross_sell_product, branch, document_type, product_document_type, param_version, policy_param, scoring_weight.
@@ -220,7 +221,7 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [ ] Bật FE với backend thật: chạy luồng sàng lọc → phương án.
 
 ### B4. Hồ sơ vay (QT03, 4.1–4.2)
-- [ ] V3 phần còn lại. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
+- [ ] Migration mới (`V4__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
 - [ ] `/personal`, upload `/documents/{docId}` (QualityChecker → StorageService → OcrService), `/fields`, `CrossCheckService` (mục 10),
   `/plan`, `/request-form`, `/submit` (OTP, khóa nội dung mục 11, QR, hạn), `/cancel`.
 - [ ] `NotificationService` + `/notifications`, `/notifications/{id}/read`, `/notifications/read-all`; lịch sử trạng thái.
@@ -241,8 +242,8 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 
 ### B8. Báo cáo (QT09)
 - [ ] `/admin/stats` (phễu, theo tháng/trạng thái/chi nhánh/gói), `/admin/model-accuracy` (mục 15), `/admin/reports/mb14` – viết bằng truy vấn SQL
-  (JPQL/native) thay vì nạp hết vào bộ nhớ; so kết quả với mock trên cùng dữ liệu V4.
-- [ ] `V4__dev_history.sql` (5.8).
+  (JPQL/native) thay vì nạp hết vào bộ nhớ; so kết quả với mock trên cùng dữ liệu `V1000__dev_history.sql`.
+- [ ] `db/dev/V1000__dev_history.sql` (5.8).
 
 ### B9. Ghép nối và kiểm thử toàn luồng
 - [ ] `fe/.env.development`: `VITE_USE_MOCK=false`. Chạy `python tests/e2e/full_flow.py` → `ERRORS []`.
@@ -306,3 +307,21 @@ app:
   Đã đặt `docker-compose.yml` (`5434:5432`), `application.yml` (`jdbc:postgresql://localhost:5434/...`), mẫu cấu hình ở mục 7, `CLAUDE.md`, `be/CLAUDE.md`. Máy không có xung đột có thể đổi lại.
 - Kiểm tra: `.\mvnw.cmd verify` → 12 test pass (6 `GlobalExceptionHandlerTest`, 6 `TienSangLocVayApplicationTests` với Testcontainers: health UP, Flyway V1+V2 đủ 24 bảng, 401 tiếng Việt, endpoint công khai không bị chặn). `.\mvnw.cmd spring-boot:run` với DB Docker mới: Flyway áp V1, V2; `GET /api/actuator/health` → `{"status":"UP"}`; `GET /api/auth/me` → 401 “Chưa đăng nhập.”; `/api/v3/api-docs` → 200.
 - Còn tồn đọng: `@RequireRole` chưa làm (cần khi có controller, B1).
+
+### B1 – xong 23/10/2026
+- **Đã có**: `V3__app_support.sql` (`auth_session`, `otp_code`, unique index `lower(email)` trên `customer`), `auth/` (`AuthController`, `AuthService`, `SessionService`, `OtpService`, `SmsSender` + `LoggingSmsSender`, entity `Customer`/`Staff`/`AuthSession`/`OtpCode`, DTO record), `security/TokenAuthFilter`, `audit/ActivityLogService` (bản tối thiểu: ghi `activity_log`), `common/` thêm `Clock`, `Hashing`, `OkResult`.
+- **Phiên**: token 32 byte Base64URL (43 ký tự), DB chỉ lưu SHA-256; hết hạn sau `app.session-hours` (8 giờ). `TokenAuthFilter` bỏ qua token sai/hết hạn/tài khoản không còn `ACTIVE` (không báo lỗi), nên các endpoint `[{}, bearer]` vẫn chạy; endpoint cần đăng nhập trả 401 “Chưa đăng nhập.”. `/auth/logout` được mở công khai vì openapi quy định luôn trả 200 (mock cũng vậy); chỉ ghi nhật ký “Đăng xuất” khi token còn hiệu lực.
+- **Thông báo lỗi** chép từng chữ từ `handlers/auth.ts` và kiểm tra trong `AuthApiTest`: “Sai tài khoản hoặc mật khẩu.” (401), “Tài khoản đang bị khóa, liên hệ quản trị viên.” (403, chỉ sau khi đúng mật khẩu như mock), “Số điện thoại không hợp lệ.”, “Mã OTP không đúng.”, “Số điện thoại đã được đăng ký.”, “Email đã được sử dụng.”, “Mật khẩu hiện tại không đúng.”, “Mật khẩu mới tối thiểu 6 ký tự.”, “Mật khẩu mới phải khác mật khẩu hiện tại.”. Thứ tự kiểm tra giống mock (đăng ký: OTP → trùng số → trùng email; đổi mật khẩu: mật khẩu cũ → độ dài → trùng mật khẩu cũ).
+- **Khác mock có chủ đích** (mock không có hoặc không thể có):
+  - OTP phải được gửi trước (`/auth/otp`) mới đăng ký được; mock chỉ so với `123456`. Mã hết hạn sau 5 phút, sai quá 5 lần thì mã vô hiệu, gửi lại mã mới thì mã cũ vô hiệu. Hai thông báo **tự đặt** (mock không có): “Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới.” (400). Chưa gửi mã hoặc mã sai vẫn là “Mã OTP không đúng.”. Số lần sai được lưu ngay cả khi yêu cầu lỗi (`OtpService.check` chạy `REQUIRES_NEW`); mã chỉ bị đánh dấu đã dùng khi thao tác gọi thành công (`consume`), nên trùng số/email không làm cháy mã.
+  - Đăng ký kiểm tra thêm `phone` đúng `^0\d{9}$`, `password` ≥ 6 ký tự (trả 400 “Dữ liệu không hợp lệ.” kèm `fields`) và email đúng dạng (sau khi trim); mock không kiểm tra vì FE đã kiểm tra trước.
+  - Đổi mật khẩu thu hồi **mọi phiên khác** của tài khoản nhưng giữ phiên đang dùng (FE không bị đăng xuất, giống mock); với nhân viên và khách như nhau.
+  - Đăng nhập: email khách không phân biệt hoa thường (như mock); email nhân viên so khớp đúng từng chữ (như mock, vì mock so `username ===`).
+- **OTP cho các giai đoạn sau**: `purpose` = `REGISTER` (chưa đăng nhập) hoặc `CONFIRM` (khách đang đăng nhập gọi `/auth/otp` với body `{}`). B4 (`/submit`) và B6 (`/me/consents/withdraw`) kiểm tra bằng `otpService.check(sốĐiệnThoạiKhách, OtpService.PURPOSE_CONFIRM, otp)` rồi `consume(id)` trong giao dịch của thao tác. Dev: `app.otp.fixed-code=123456` (`application-dev.yml` và `application-test.yml`) → `devOtp` có trong `OtpSent`; không có mã cố định thì sinh ngẫu nhiên 6 số và `devOtp = null`. `LoggingSmsSender` chỉ ghi log “chưa cấu hình nhà cung cấp SMS” (không in mã OTP); muốn gửi SMS thật thì thêm bean `SmsSender` và bỏ `@Component` của `LoggingSmsSender`.
+- **Cần quyết định/nhắc cho giai đoạn sau**:
+  - **Đã chốt (23/10/2026)**: migration chính tiếp tục `V4__…`, `V5__…` theo giai đoạn (không sửa V3 đã chạy); dữ liệu lịch sử dev là `db/dev/V1000__dev_history.sql`; đã sửa mục 5.7, 5.8, B4, B8 cho khớp. Tên `V3__app_support.sql` giữ nguyên dù chỉ có phần tài khoản.
+  - **Đã chốt (23/10/2026)**: `docs/openapi.yaml` mô tả bearer là chuỗi ngẫu nhiên (không phải JWT), server lưu SHA-256, hết hạn 8 giờ, thu hồi khi đăng xuất/khóa/đổi mật khẩu; đã thêm thông báo OTP hết hạn mới “Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới.” vào mô tả lỗi chung, `/auth/register`; redocly lint 0 lỗi. Các endpoint `/submit` (B4) và `/me/consents/withdraw` (B6) cũng có thể trả thông báo này khi kiểm tra OTP.
+  - `ActivityLogService` mới có `log(actor, action, detail, applicationId)`; `activity_log` không có cột tên người thực hiện hay `customerId` như mock, nên B7 (`/admin/logs`) lấy tên bằng cách nối `actor_type` + `actor_id` với `customer`/`staff`.
+  - `Customer` mới ánh xạ cột tài khoản (phone, email, password_hash, full_name, status, created_at); thêm cột hồ sơ cá nhân khi cần ở B4. Tên chi nhánh của `AuthUser.branchName` đang lấy bằng truy vấn native trong `StaffRepository`; B2 có entity `Branch` thì đổi sang entity.
+  - `@RequireRole` vẫn chưa làm (B1 chưa có endpoint phân theo vai trò ngoài đăng nhập); làm cùng controller đầu tiên cần phân quyền (B3/B4). `TokenAuthFilter` đã đặt `ROLE_<CUSTOMER|BRANCH_STAFF|ADMIN>` và principal là `CurrentUser` (`@AuthenticationPrincipal CurrentUser`).
+- **Kiểm tra**: `.\mvnw.cmd verify` → 40 test pass (6 `GlobalExceptionHandlerTest`, 6 `TienSangLocVayApplicationTests` – đã sửa: Flyway V1–V3, 26 bảng, `/auth/login` rỗng → 400; 28 `AuthApiTest` MockMvc + Testcontainers: đăng nhập khách bằng SĐT/email, 3 nhân viên + quản trị, sai mật khẩu/không tồn tại/sai loại tài khoản, thiếu trường, tài khoản khóa, phiên hết hạn, đăng xuất, OTP không hợp lệ/hết hạn/sai 5 lần/dùng một lần, đăng ký thành công/trùng số/trùng email/dữ liệu sai, đổi mật khẩu thu hồi phiên khác). Chạy `spring-boot:run -Dspring-boot.run.profiles=dev` trên PostgreSQL Docker (Flyway áp V3), FE chạy `VITE_USE_MOCK=false` (đặt qua biến môi trường, **chưa đổi** `fe/.env.development`, B9 mới đổi): bằng Playwright đăng nhập khách (SĐT, email) → `/cua-toi`, nhân viên 3 chi nhánh → `/noi-bo/ho-so`, quản trị → `/noi-bo/bao-cao`, sai mật khẩu hiện đúng “Sai tài khoản hoặc mật khẩu.”, đăng ký mới với OTP dev `123456` → `/cua-toi`; không có lỗi trang. Các trang sau đăng nhập vẫn gọi endpoint chưa làm (B2 trở đi) nên chưa hiển thị dữ liệu. Chưa chạy `tests/e2e/full_flow.py` (cần đủ endpoint, thuộc B9).

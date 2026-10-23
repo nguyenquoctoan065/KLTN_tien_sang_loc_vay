@@ -10,11 +10,11 @@ info:
 
     Quy ước:
     - Tiền tố mọi đường dẫn: /api
-    - Xác thực: header `Authorization: Bearer <token>` (JWT). Vai trò: CUSTOMER (khách hàng), BRANCH_STAFF (nhân viên chi nhánh), ADMIN (quản trị).
+    - Xác thực: header `Authorization: Bearer <token>` (chuỗi ngẫu nhiên, hết hạn sau 8 giờ; xem securitySchemes). Vai trò: CUSTOMER (khách hàng), BRANCH_STAFF (nhân viên chi nhánh), ADMIN (quản trị).
       Mỗi thao tác ghi vai trò được phép trong phần mở rộng `x-roles` (rỗng = không cần đăng nhập).
       Tài khoản bị khóa (LOCKED) coi như chưa đăng nhập; khóa tài khoản sẽ thu hồi mọi token của tài khoản đó.
     - Lỗi trả về `{ "message": "..." }` bằng tiếng Việt, mã HTTP:
-      400 dữ liệu không hợp lệ / OTP sai; 401 chưa đăng nhập hoặc sai vai trò khách hàng; 403 không có quyền (sai vai trò nội bộ, khác chi nhánh);
+      400 dữ liệu không hợp lệ / OTP sai ("Mã OTP không đúng.") / OTP hết hạn hoặc nhập sai quá 5 lần ("Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới."; mã sống 5 phút, gửi mã mới thì mã cũ vô hiệu); 401 chưa đăng nhập hoặc sai vai trò khách hàng; 403 không có quyền (sai vai trò nội bộ, khác chi nhánh);
       404 không tìm thấy (kể cả khi tài nguyên tồn tại nhưng không thuộc người gọi); 409 xung đột trạng thái nghiệp vụ; 422 phương án vay không đạt ngưỡng.
     - Tiền tệ là số nguyên VNĐ; tỷ lệ (DTI, lãi suất) là số thập phân theo %.
     - Thời điểm theo ISO 8601 (date-time), ngày theo yyyy-MM-dd.
@@ -99,7 +99,7 @@ paths:
       tags: [Xác thực]
       operationId: register
       summary: 1.1 Đăng ký tài khoản khách hàng
-      description: 400 nếu OTP sai; 409 nếu số điện thoại đã đăng ký ("Số điện thoại đã được đăng ký.") hoặc email đã có ("Email đã được sử dụng."). Thành công trả token như đăng nhập.
+      description: 400 nếu OTP sai hoặc chưa gửi ("Mã OTP không đúng."), hoặc OTP hết hạn / nhập sai quá 5 lần ("Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới."); 409 nếu số điện thoại đã đăng ký ("Số điện thoại đã được đăng ký.") hoặc email đã có ("Email đã được sử dụng."). Thành công trả token như đăng nhập.
       security: []
       x-roles: []
       requestBody:
@@ -1166,7 +1166,14 @@ paths:
 
 components:
   securitySchemes:
-    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: |
+        Token là chuỗi ngẫu nhiên 32 byte (Base64URL), không phải JWT. Server chỉ lưu SHA-256 của token, phiên hết hạn sau 8 giờ.
+        Phiên bị thu hồi khi đăng xuất, khóa tài khoản, đổi hoặc đặt lại mật khẩu (đổi mật khẩu giữ lại phiên đang dùng).
+        Token sai, hết hạn hoặc đã thu hồi bị coi như chưa đăng nhập (401).
   parameters:
     Id: { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
     DocId: { name: docId, in: path, required: true, description: 'id của tài liệu trong hồ sơ (AppDocument.id), không phải documentTypeId', schema: { type: integer, format: int64 } }

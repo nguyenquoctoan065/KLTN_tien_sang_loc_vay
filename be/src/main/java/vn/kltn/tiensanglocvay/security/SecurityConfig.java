@@ -15,6 +15,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import vn.kltn.tiensanglocvay.auth.SessionService;
 import vn.kltn.tiensanglocvay.common.ErrorBody;
 
 /**
@@ -29,8 +31,9 @@ public class SecurityConfig {
     static final String MSG_FORBIDDEN = "Không có quyền.";
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper json) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper json, SessionService sessions) throws Exception {
         http
+                .addFilterBefore(new TokenAuthFilter(sessions), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -43,7 +46,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/otp").permitAll()
+                        // /auth/otp là [{}, bearer] và /auth/logout luôn trả 200 (openapi): TokenAuthFilter vẫn nạp CurrentUser nếu có token.
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/otp", "/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products", "/products/*/checklist", "/cross-sell-products", "/branches").permitAll()
                         .requestMatchers(HttpMethod.POST, "/screenings", "/simulations").permitAll()
                         .requestMatchers(HttpMethod.GET, "/screenings/*").permitAll()
