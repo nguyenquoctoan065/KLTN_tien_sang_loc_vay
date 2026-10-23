@@ -9,7 +9,7 @@
 - Định dạng tiền/ngày dùng `src/utils/format.ts`; nhãn trạng thái dùng `src/utils/status.ts` (APP_STATUS).
 - Mock: `src/mocks/db.ts` (dữ liệu, `DB_VERSION` – tăng số này khi đổi cấu trúc dữ liệu mẫu để localStorage tự làm mới),
   `ctx.ts` (hàm dùng chung), `engine.ts` (tính toán), `handlers/*` (API).
-- Chữ hiển thị tiếng Việt, dễ hiểu với người chưa từng vay; không hiện mã biểu mẫu MBxx; không hiện chữ “PoC”,
+- Chữ hiển thị tiếng Việt, dễ hiểu với người chưa từng vay; không hiện mã biểu mẫu MBxx; không hiện nhãn thử nghiệm,
   “đồ án”, “thử nghiệm” ở giao diện khách hàng. Gợi ý tài khoản thử chỉ hiện khi `import.meta.env.VITE_USE_MOCK === 'true'`.
 - `localStorage`/`sessionStorage` luôn bọc try/catch.
 - Trước khi báo xong: `npm run build` và `npx eslint src` (0 lỗi), chạy `python ../tests/e2e/full_flow.py` nếu đụng luồng chính.

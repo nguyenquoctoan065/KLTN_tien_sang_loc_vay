@@ -35,7 +35,7 @@ export default function Login({ internal = false }: { internal?: boolean }) {
                   ? Promise.resolve() : Promise.reject(new Error('Nhập số điện thoại (10 số) hoặc email'));
               },
             }]}>
-            <Input autoFocus placeholder={internal ? 'nhanvien@poc.local' : 'Số điện thoại hoặc email'} />
+            <Input autoFocus placeholder={internal ? 'nhanvien@tiensangloc.local' : 'Số điện thoại hoặc email'} />
           </Form.Item>
           <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }]}>
             <Input.Password />
@@ -45,7 +45,7 @@ export default function Login({ internal = false }: { internal?: boolean }) {
         </Form>
         {import.meta.env.VITE_USE_MOCK === 'true' && (
           <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0, fontSize: 12 }}>
-            Tài khoản thử: {internal ? 'nhanvien@poc.local hoặc quantri@poc.local' : '0901234567 hoặc khachhang@poc.local'} / 123456
+            Tài khoản thử: {internal ? 'nhanvien@tiensangloc.local hoặc quantri@tiensangloc.local' : '0901234567 hoặc khachhang@tiensangloc.local'} / 123456
           </Typography.Paragraph>
         )}
         {!internal && (

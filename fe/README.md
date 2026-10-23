@@ -32,7 +32,7 @@ src/
 | `VITE_USE_MOCK` | `true`: dùng API giả lập; `false`: gọi backend |
 | `VITE_API_BASE_URL` | Mặc định `/api` (dev server proxy tới cổng 8080) |
 
-Dữ liệu giả lập lưu trong localStorage (khóa `poc-mock-db`). Muốn về dữ liệu ban đầu: xóa khóa này rồi tải lại trang.
+Dữ liệu giả lập lưu trong localStorage (khóa `tsl-mock-db`). Muốn về dữ liệu ban đầu: xóa khóa này rồi tải lại trang.
 OTP giả lập luôn là `123456`.
 
 ## Phạm vi – đủ 29 chức năng
@@ -52,7 +52,7 @@ OTP giả lập luôn là `123456`.
 | Vai trò | Tài khoản |
 |---|---|
 | Khách hàng | 0901234567 |
-| Nhân viên Chi nhánh Hà Nội | nhanvien@poc.local |
-| Nhân viên Chi nhánh Hồ Chí Minh | nv.hcm@poc.local |
-| Nhân viên Chi nhánh Đà Nẵng | nv.danang@poc.local |
-| Quản trị viên chính sách | quantri@poc.local |
+| Nhân viên Chi nhánh Hà Nội | nhanvien@tiensangloc.local |
+| Nhân viên Chi nhánh Hồ Chí Minh | nv.hcm@tiensangloc.local |
+| Nhân viên Chi nhánh Đà Nẵng | nv.danang@tiensangloc.local |
+| Quản trị viên chính sách | quantri@tiensangloc.local |

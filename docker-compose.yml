@@ -1,19 +1,18 @@
 # Chạy PostgreSQL cho phát triển: docker compose up -d
-# Lần đầu khởi tạo sẽ chạy database/*.sql theo thứ tự tên. Khi backend dùng Flyway, bỏ phần mount và chép
-# hai file vào src/main/resources/db/migration của Spring Boot.
+# Bảng và dữ liệu mẫu do Flyway của backend tạo khi khởi động (be/src/main/resources/db/migration).
+# Database chỉ còn là PostgreSQL rỗng, nên nếu volume cũ đã nạp sẵn V1/V2 bằng initdb thì xóa đi: docker compose down -v
 services:
   db:
     image: postgres:16
-    container_name: loan-poc-db
+    container_name: tien-sang-loc-vay-db
     environment:
-      POSTGRES_DB: loan_prescreening
-      POSTGRES_USER: loan
-      POSTGRES_PASSWORD: loan123
+      POSTGRES_DB: tien_sang_loc_vay
+      POSTGRES_USER: tiensangloc
+      POSTGRES_PASSWORD: tiensangloc123
       TZ: Asia/Ho_Chi_Minh
     ports:
-      - "5432:5432"
+      - "5434:5432"   # 5432 bị dịch vụ Windows postgresql-x64-18 chiếm, 5433 dùng cho dự án khác
     volumes:
-      - ./database:/docker-entrypoint-initdb.d:ro
       - pgdata:/var/lib/postgresql/data
 volumes:
   pgdata:

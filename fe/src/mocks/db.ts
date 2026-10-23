@@ -59,7 +59,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 6;
+export const DB_VERSION = 7;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',
@@ -279,11 +279,11 @@ export function seed(): Db {
   ];
   const created = iso(addDays(now, -200));
   const accounts: Account[] = [
-    { id: 1, kind: 'CUSTOMER', username: '0901234567', email: 'khachhang@poc.local', password: '123456', name: 'Khách hàng mẫu', role: 'CUSTOMER', branchId: null, status: 'ACTIVE', createdAt: created },
-    { id: 101, kind: 'STAFF', username: 'nhanvien@poc.local', password: '123456', name: 'Nguyễn Thu Hà', role: 'BRANCH_STAFF', branchId: 1, status: 'ACTIVE', createdAt: created },
-    { id: 103, kind: 'STAFF', username: 'nv.hcm@poc.local', password: '123456', name: 'Lê Hoàng Phúc', role: 'BRANCH_STAFF', branchId: 2, status: 'ACTIVE', createdAt: created },
-    { id: 104, kind: 'STAFF', username: 'nv.danang@poc.local', password: '123456', name: 'Phan Thị Mỹ', role: 'BRANCH_STAFF', branchId: 3, status: 'ACTIVE', createdAt: created },
-    { id: 102, kind: 'STAFF', username: 'quantri@poc.local', password: '123456', name: 'Trần Minh Đức', role: 'ADMIN', branchId: null, status: 'ACTIVE', createdAt: created },
+    { id: 1, kind: 'CUSTOMER', username: '0901234567', email: 'khachhang@tiensangloc.local', password: '123456', name: 'Khách hàng mẫu', role: 'CUSTOMER', branchId: null, status: 'ACTIVE', createdAt: created },
+    { id: 101, kind: 'STAFF', username: 'nhanvien@tiensangloc.local', password: '123456', name: 'Nguyễn Thu Hà', role: 'BRANCH_STAFF', branchId: 1, status: 'ACTIVE', createdAt: created },
+    { id: 103, kind: 'STAFF', username: 'nv.hcm@tiensangloc.local', password: '123456', name: 'Lê Hoàng Phúc', role: 'BRANCH_STAFF', branchId: 2, status: 'ACTIVE', createdAt: created },
+    { id: 104, kind: 'STAFF', username: 'nv.danang@tiensangloc.local', password: '123456', name: 'Phan Thị Mỹ', role: 'BRANCH_STAFF', branchId: 3, status: 'ACTIVE', createdAt: created },
+    { id: 102, kind: 'STAFF', username: 'quantri@tiensangloc.local', password: '123456', name: 'Trần Minh Đức', role: 'ADMIN', branchId: null, status: 'ACTIVE', createdAt: created },
   ];
   const docTypes = docTypesSeed();
   const rules = productDocsSeed();
@@ -348,7 +348,7 @@ export function seed(): Db {
   };
 }
 
-const KEY = 'poc-mock-db';
+const KEY = 'tsl-mock-db';
 
 export function loadDb(): Db {
   try {

@@ -1,0 +1,58 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: tien-sang-loc-vay
+  datasource:
+    url: jdbc:postgresql://localhost:5434/tien_sang_loc_vay
+    username: tiensangloc
+    password: tiensangloc123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
+  flyway:
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 16MB
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+    default-property-inclusion: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: false
+
+app:
+  session-hours: 8
+  otp:
+    fixed-code: ""          # dev: 123456 (application-dev.yml)
+  storage:
+    provider: cloudinary    # cloudinary | local
+    folder: tien-sang-loc-vay/dev
+    signed-url-minutes: 10
+    local-dir: ./data/uploads
+  ocr:
+    provider: gemini        # gemini | fake
+    model: gemini-3.5-flash-lite
+    timeout-seconds: 30
+  # Bí mật chỉ đặt qua biến môi trường (be/.env đã nằm trong .gitignore, hoặc Run Configuration của IDE):
+  #   CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+  #   GEMINI_API_KEY=<khóa từ Google AI Studio>
+  jobs:
+    expire-documents: "0 0 1 * * *"
+    purge-retention: "0 0 2 1 * *"
+    remind-drafts: "0 0 9 * * *"

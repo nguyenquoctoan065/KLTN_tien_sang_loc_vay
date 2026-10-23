@@ -36,8 +36,8 @@ be/
 ├── pom.xml, mvnw, .mvn/
 ├── CLAUDE.md
 └── src/
-    ├── main/java/vn/loanpoc/
-    │   ├── LoanPocApplication.java
+    ├── main/java/vn/kltn/tiensanglocvay/
+    │   ├── TienSangLocVayApplication.java
     │   ├── common/        ApiException, GlobalExceptionHandler, Clock/IdGen, Money/Percent helpers, PageDto
     │   ├── security/      SecurityConfig, TokenAuthFilter, CurrentUser (record: kind, id, role, branchId), @RequireRole
     │   ├── auth/          AuthController, AuthService, OtpService, SessionRepository…
@@ -58,7 +58,7 @@ be/
     ├── main/resources/
     │   ├── application.yml, application-dev.yml
     │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__…, V4__dev_history.sql
-    └── test/java/vn/loanpoc/…  (+ test/resources/engine-fixtures/*.json)
+    └── test/java/vn/kltn/tiensanglocvay/…  (+ test/resources/engine-fixtures/*.json)
 ```
 
 Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → `XxxService` (nghiệp vụ, `@Transactional`)
@@ -103,7 +103,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   Khởi tạo `new Cloudinary(System.getenv("CLOUDINARY_URL"))`. Không ghi khóa vào code hay `application.yml` đã commit.
 - **Tải lên** (giấy tờ có CCCD là dữ liệu cá nhân, không để công khai):
   `uploader().upload(bytes, ObjectUtils.asMap("type", "authenticated", "resource_type", "auto",
-  "folder", "loan-poc/<môi trường>/app-<applicationId>", "public_id", "doc-<documentId>-v<version>", "overwrite", true))`.
+  "folder", "tien-sang-loc-vay/<môi trường>/app-<applicationId>", "public_id", "doc-<documentId>-v<version>", "overwrite", true))`.
   - Lưu vào DB: `public_id`, `resource_type`, `format`, `version`, `bytes`. Cột `storage_path` giữ `public_id`;
     các cột còn lại thêm vào V3 (`storage_resource_type`, `storage_version`).
   - Không lưu `secure_url` công khai.
@@ -200,11 +200,11 @@ Mỗi giai đoạn hoàn thành khi: `./mvnw verify` pass (có test MockMvc + Te
 các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và thông báo lỗi giống mock.
 
 ### B0. Khung dự án
-- [ ] Tạo Spring Boot (Maven wrapper, Java 21), các dependency mục 2, `application.yml` (datasource tới docker-compose, `server.servlet.context-path=/api`).
-- [ ] Flyway: chép `database/V1__init.sql`, `V2__seed.sql`; `spring.jpa.hibernate.ddl-auto=validate`.
+- [x] Tạo Spring Boot (Maven wrapper, Java 21), các dependency mục 2, `application.yml` (datasource tới docker-compose, `server.servlet.context-path=/api`).
+- [x] Flyway: chép `database/V1__init.sql`, `V2__seed.sql`; `spring.jpa.hibernate.ddl-auto=validate`.
   Sửa docker-compose: bỏ mount `./database` vào initdb (Flyway sẽ tạo bảng) – hỏi người dùng trước khi sửa.
-- [ ] `GlobalExceptionHandler`, `ApiException`, `CurrentUser`, SecurityConfig (mọi `/api/**` cần đăng nhập trừ các endpoint `security: []` trong openapi).
-- [ ] `GET /api/actuator/health` (spring-boot-starter-actuator). Test khởi động với Testcontainers.
+- [x] `GlobalExceptionHandler`, `ApiException`, `CurrentUser`, SecurityConfig (mọi `/api/**` cần đăng nhập trừ các endpoint `security: []` trong openapi).
+- [x] `GET /api/actuator/health` (spring-boot-starter-actuator). Test khởi động với Testcontainers.
 
 ### B1. Tài khoản (1.1–1.4)
 - [ ] V3 phần `auth_session`, `otp_code`. `/auth/login`, `/auth/logout`, `/auth/otp`, `/auth/register`, `/auth/me`, `/auth/change-password`.
@@ -254,7 +254,7 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 ```yaml
 server: { port: 8080, servlet: { context-path: /api } }
 spring:
-  datasource: { url: jdbc:postgresql://localhost:5432/loan_prescreening, username: loan, password: loan123 }
+  datasource: { url: jdbc:postgresql://localhost:5434/tien_sang_loc_vay, username: tiensangloc, password: tiensangloc123 }
   jpa: { hibernate: { ddl-auto: validate }, open-in-view: false, properties: { hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh } }
   flyway: { locations: classpath:db/migration }
   servlet: { multipart: { max-file-size: 15MB, max-request-size: 16MB } }
@@ -264,7 +264,7 @@ app:
   otp: { fixed-code: ""}          # dev: 123456
   storage:
     provider: cloudinary          # cloudinary | local
-    folder: loan-poc/dev
+    folder: tien-sang-loc-vay/dev
     signed-url-minutes: 10
     local-dir: ./data/uploads
   ocr:
@@ -289,3 +289,20 @@ app:
 
 ## 9. Ghi chú tiến độ
 (Claude Code ghi lại tại đây: quyết định đã chốt với người dùng, việc còn tồn đọng.)
+
+### B0 – xong 23/10/2026
+- Khung `be/`: Spring Boot **3.3.13**, Java 21, Maven wrapper (Maven 3.9.9). start.spring.io hiện chỉ còn Boot ≥ 4.0 nên `pom.xml` viết tay; wrapper chép từ skeleton Boot 4.0.8 rồi đổi sang Maven 3.9.9.
+  Dependency đúng mục 2 (springdoc 2.6.0, MapStruct 1.6.3 + lombok-mapstruct-binding 0.2.0, cloudinary-http5 2.5.0, google-genai 1.78.0, Testcontainers qua `spring-boot-testcontainers`). Flyway 10 cần thêm `flyway-database-postgresql`.
+- Đã có: `ApiException`, `ErrorBody` (record `{message, fields}`, `fields` chỉ khi có), `GlobalExceptionHandler`, `CurrentUser`/`Role`/`AccountKind`, `SecurityConfig` (stateless, CSRF tắt, BCrypt bean; 401 “Chưa đăng nhập.”, 403 “Không có quyền.” dạng JSON).
+  Chưa có `TokenAuthFilter` (làm ở B1 cùng bảng `auth_session`), nên hiện mọi endpoint cần đăng nhập đều trả 401.
+- Endpoint không cần đăng nhập (rút từ `security: []` / `[{}, bearer]` trong openapi): POST `/auth/login`, `/auth/register`, `/auth/otp`, `/screenings`, `/simulations`; GET `/products`, `/products/*/checklist`, `/cross-sell-products`, `/branches`, `/screenings/*`.
+  Thêm cho tiện phát triển: `/actuator/health`, Swagger UI và `/v3/api-docs`. Khi làm B1 cần để `TokenAuthFilter` vẫn nạp `CurrentUser` (nếu có token) trên các endpoint `[{}, bearer]`.
+- `UserDetailsServiceAutoConfiguration` bị loại để Spring Security không tạo tài khoản `user` với mật khẩu ngẫu nhiên.
+- Thông báo lỗi chung chưa có trong mock nên tự đặt: “Dữ liệu không hợp lệ.” (400), “Không tìm thấy.” (404 đường dẫn lạ), “Phương thức không được hỗ trợ.” (405), “Lỗi hệ thống, vui lòng thử lại sau.” (500), “Tệp lớn hơn 10 MB.” (vượt `max-file-size`). Đối chiếu lại với mock khi làm B1/B4.
+- Actuator chỉ mở `health` (không chi tiết). `application-dev.yml` chỉ đặt OTP cố định `123456`; `src/test/resources/application-test.yml` đặt storage `local`, OCR `fake`.
+  Chưa thêm `classpath:db/dev` vào `spring.flyway.locations` của profile test vì thư mục này chỉ có ở B8.
+- **docker-compose.yml** (đã hỏi và được đồng ý): bỏ mount `./database` vào initdb để Flyway tạo bảng; chạy `docker compose down -v` rồi `up -d` để bỏ dữ liệu initdb cũ.
+- **Cổng PostgreSQL: 5434** (đã hỏi và được đồng ý): 5432 bị dịch vụ Windows `postgresql-x64-18` chiếm (app kết nối nhầm vào đó và báo sai mật khẩu), 5433 dùng cho dự án khác (container `emagazine-dev-db`).
+  Đã đặt `docker-compose.yml` (`5434:5432`), `application.yml` (`jdbc:postgresql://localhost:5434/...`), mẫu cấu hình ở mục 7, `CLAUDE.md`, `be/CLAUDE.md`. Máy không có xung đột có thể đổi lại.
+- Kiểm tra: `.\mvnw.cmd verify` → 12 test pass (6 `GlobalExceptionHandlerTest`, 6 `TienSangLocVayApplicationTests` với Testcontainers: health UP, Flyway V1+V2 đủ 24 bảng, 401 tiếng Việt, endpoint công khai không bị chặn). `.\mvnw.cmd spring-boot:run` với DB Docker mới: Flyway áp V1, V2; `GET /api/actuator/health` → `{"status":"UP"}`; `GET /api/auth/me` → 401 “Chưa đăng nhập.”; `/api/v3/api-docs` → 200.
+- Còn tồn đọng: `@RequireRole` chưa làm (cần khi có controller, B1).

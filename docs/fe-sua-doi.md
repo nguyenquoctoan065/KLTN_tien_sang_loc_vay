@@ -23,18 +23,18 @@ Dòng “Tài khoản thử: 0901234567 / 123456” cũng hiện cả khi chạy
 - [x] Mock `fe/src/mocks/handlers/auth.ts`:
   - Đăng nhập khách hàng: nếu `username` có `@` thì tìm theo email (không phân biệt hoa thường), ngược lại tìm theo số điện thoại.
   - Đăng ký: nếu email đã có thì trả 409 “Email đã được sử dụng”.
-  - Thêm trường `email` vào `Account` trong `db.ts`. Khách mẫu 0901234567 có email `khachhang@poc.local`. Tăng `DB_VERSION`.
+  - Thêm trường `email` vào `Account` trong `db.ts`. Khách mẫu 0901234567 có email `khachhang@tiensangloc.local`. Tăng `DB_VERSION`.
 - [x] Trang “Tài khoản” trong `/cua-toi` (nếu đang hiện thông tin tài khoản) hiển thị email.
 
 **Hợp đồng API**
 - `LoginRequest.username`: mô tả “Khách hàng: số điện thoại hoặc email; nội bộ: email”.
 - `RegisterRequest`: thêm `email` (string, format email, không bắt buộc). Thêm phản hồi 409.
 - `AuthUser`: thêm `email` (nullable).
-- `database/V2__seed.sql`: đặt email `khachhang@poc.local` cho khách mẫu. Backend cần unique index
+- `database/V2__seed.sql`: đặt email `khachhang@tiensangloc.local` cho khách mẫu. Backend cần unique index
   `lower(email)` trên `customer` (thêm vào V1 nếu backend chưa chạy lần nào, nếu không thì thêm V3).
 
 **Tiêu chí hoàn thành.**
-- Đăng nhập được bằng `0901234567` và bằng `KhachHang@poc.local`.
+- Đăng nhập được bằng `0901234567` và bằng `KhachHang@tiensangloc.local`.
 - Đăng ký kèm email đã có thì báo lỗi rõ ràng.
 - Khi `VITE_USE_MOCK=false`, không còn dòng tài khoản thử.
 
@@ -89,7 +89,7 @@ Hai câu hỏi gộp thành một trường mới `creditHistory`:
   - Thay `self_declared_bad_debt boolean` bằng `credit_history varchar(20) NOT NULL CHECK (credit_history IN ('NEVER_BORROWED','ON_TIME','LATE_OVER_90','UNSURE'))`.
   - Sửa COMMENT.
   - Sửa V2 nếu có dữ liệu mẫu bảng này.
-- `docs/quy-tac-tinh-toan.md` mục 4: thay dòng nợ xấu bằng bảng ở trên. Ghi chú để đối chiếu với báo cáo đồ án:
+- `docs/quy-tac-tinh-toan.md` mục 4: thay dòng nợ xấu bằng bảng ở trên. Ghi chú để đối chiếu với báo cáo thử nghiệm|đồ án:
   `LATE_OVER_90` tương ứng “nợ nhóm 3 trở lên hoặc nợ đã cơ cấu”.
 
 - [x] F2 hoàn thành (wizard, engine, notes ở trang kết quả, openapi, V1, quy-tắc-tính-toán).
@@ -162,21 +162,21 @@ và V2 cho khớp.
 
 ---
 
-## F5. Bỏ chữ “thử nghiệm/đồ án” khỏi giao diện khách hàng
+## F5. Bỏ chữ “thử nghiệm|đồ án/đồ án” khỏi giao diện khách hàng
 
-**Vấn đề.** Chân trang khách hàng ghi “Hệ thống web thử nghiệm phục vụ đồ án tốt nghiệp… · Đăng nhập nội bộ”.
+**Vấn đề.** Chân trang khách hàng ghi “Hệ thống web thử nghiệm|đồ án phục vụ đồ án tốt nghiệp… · Đăng nhập nội bộ”.
 Dòng này không nên xuất hiện ở giao diện khách hàng.
 
 **Việc cần làm**
 - [x] `fe/src/layouts/CustomerLayout.tsx`:
   - Xóa toàn bộ `<Footer>…</Footer>`. Nếu muốn giữ chân trang thì chỉ để tên hệ thống và năm, không có link nội bộ.
-  - Xóa luôn `<Tag>PoC</Tag>` cạnh tên hệ thống ở header.
+  - Xóa luôn thẻ nhãn thử nghiệm|đồ án cạnh tên hệ thống ở header.
 - [x] Nhân viên và quản trị vào thẳng `/noi-bo/dang-nhap`; ghi đường dẫn này trong README.
 - [x] Vẫn giữ lưu ý pháp lý “kết quả chỉ để tham khảo, quyết định thuộc về ngân hàng” (`components/Disclaimer.tsx`)
-  trên trang kết quả sàng lọc, mô phỏng và phương án. Đây là nội dung nghiệp vụ, không phải chữ “thử nghiệm”.
+  trên trang kết quả sàng lọc, mô phỏng và phương án. Đây là nội dung nghiệp vụ, không phải chữ “thử nghiệm|đồ án”.
 
-**Tiêu chí hoàn thành.** Mọi trang khách hàng không còn chữ “thử nghiệm”, “đồ án”, “PoC”, “Đăng nhập nội bộ”.
-Kiểm tra bằng `grep -rn "thử nghiệm\|đồ án\|PoC" fe/src/layouts fe/src/pages/customer fe/src/components`.
+**Tiêu chí hoàn thành.** Mọi trang khách hàng không còn chữ “thử nghiệm”, “đồ án”, “Đăng nhập nội bộ”.
+Kiểm tra bằng `grep -rn "thử nghiệm\|đồ án" fe/src/layouts fe/src/pages/customer fe/src/components`.
 
 ---
 
@@ -199,4 +199,4 @@ Có thể hiện chữ đầy đủ ở lần đầu xuất hiện và giữ ch�
 - [x] Sửa `tests/e2e/full_flow.py` theo F2 (chọn “Đã từng” → “Không”), F4 (tên tab mới), F1 (đăng nhập bằng email ở lần đăng nhập thứ hai).
   Chạy `npm run dev`, sau đó chạy `python tests/e2e/full_flow.py`; kết quả in ra phải là `ERRORS []`.
 - [x] Xem ảnh trong `tests/e2e/shots/` để kiểm tra bằng mắt các trang đã sửa.
-- [x] Thêm thử nghiệm tay F3: sàng lọc, “Sàng lọc lại”, kiểm tra dữ liệu còn nguyên.
+- [x] Thêm thử nghiệm|đồ án tay F3: sàng lọc, “Sàng lọc lại”, kiểm tra dữ liệu còn nguyên.

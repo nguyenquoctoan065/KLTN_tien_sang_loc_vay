@@ -40,7 +40,7 @@ Dịch vụ ngoài của backend: Cloudinary (lưu ảnh/tệp giấy tờ), Gem
 ## Lệnh thường dùng (PowerShell)
 
 ```powershell
-docker compose up -d                          # PostgreSQL (db loan_prescreening, user loan / loan123)
+docker compose up -d                          # PostgreSQL, cổng 5434 (db tien_sang_loc_vay, user tiensangloc / tiensangloc123)
 cd fe; npm install; npm run dev               # http://localhost:5173 ; build: npm run build ; lint: npx eslint src
 cd be; .\mvnw.cmd spring-boot:run             # http://localhost:8080/api  (khi đã có backend)
 cd be; .\mvnw.cmd verify                      # build + test backend (cần Docker cho Testcontainers)
@@ -54,8 +54,8 @@ Frontend gọi backend thật khi `fe/.env.development` có `VITE_USE_MOCK=false
 | Vai trò                             | Đăng nhập         | Tài khoản                                                   |
 | ----------------------------------- | ----------------- | ----------------------------------------------------------- |
 | Khách hàng                          | /dang-nhap        | 0901234567                                                  |
-| Nhân viên CN Hà Nội / HCM / Đà Nẵng | /noi-bo/dang-nhap | nhanvien@poc.local / nv.hcm@poc.local / nv.danang@poc.local |
-| Quản trị viên                       | /noi-bo/dang-nhap | quantri@poc.local                                           |
+| Nhân viên CN Hà Nội / HCM / Đà Nẵng | /noi-bo/dang-nhap | nhanvien@tiensangloc.local / nv.hcm@tiensangloc.local / nv.danang@tiensangloc.local |
+| Quản trị viên                       | /noi-bo/dang-nhap | quantri@tiensangloc.local                                           |
 
 ## Cách làm việc
 

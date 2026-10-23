@@ -1,6 +1,6 @@
 # Backend – quy ước
 
-Spring Boot 3.3 · Java 21 · Maven · PostgreSQL 16 · Flyway. Package gốc `vn.loanpoc`, chia theo chức năng.
+Spring Boot 3.3 · Java 21 · Maven · PostgreSQL 16 · Flyway. Package gốc `vn.kltn.tiensanglocvay`, chia theo chức năng.
 
 - Kế hoạch, quyết định kỹ thuật và danh sách giai đoạn: `../docs/be-huong-dan.md` – đọc trước khi làm, đánh dấu `[x]` khi xong.
 - Hợp đồng API: `../docs/openapi.yaml`. DTO là `record`, tên trường giống hệt schema. Không thêm/bớt trường khi chưa sửa openapi + fe.
@@ -16,7 +16,7 @@ Spring Boot 3.3 · Java 21 · Maven · PostgreSQL 16 · Flyway. Package gốc `v
 - Trước khi báo xong: `./mvnw verify` (Testcontainers cần Docker đang chạy).
 
 ```bash
-docker compose up -d            # ở thư mục gốc
+docker compose up -d            # ở thư mục gốc; PostgreSQL ở cổng 5434
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ./mvnw verify
 ```

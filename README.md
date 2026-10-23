@@ -36,8 +36,8 @@ Tài khoản thử (mật khẩu `123456`):
 | Vai trò                         | Đăng nhập tại     | Tài khoản                                                          |
 | ------------------------------- | ----------------- | ------------------------------------------------------------------ |
 | Khách hàng                      | /dang-nhap        | 0901234567                                                         |
-| Nhân viên chi nhánh (BP01)      | /noi-bo/dang-nhap | nhanvien@poc.local (Hà Nội), nv.hcm@poc.local, nv.danang@poc.local |
-| Quản trị viên chính sách (BP02) | /noi-bo/dang-nhap | quantri@poc.local                                                  |
+| Nhân viên chi nhánh (BP01)      | /noi-bo/dang-nhap | nhanvien@tiensangloc.local (Hà Nội), nv.hcm@tiensangloc.local, nv.danang@tiensangloc.local |
+| Quản trị viên chính sách (BP02) | /noi-bo/dang-nhap | quantri@tiensangloc.local                                                  |
 
 ## Nối với backend thật
 

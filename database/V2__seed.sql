@@ -7,13 +7,13 @@ INSERT INTO branch (id, code, name, address, phone, status) VALUES
  (3, 'DN01', 'Chi nhánh Đà Nẵng', 'Đà Nẵng', '02360000001', 'ACTIVE');
 
 INSERT INTO staff (id, branch_id, full_name, email, password_hash, role, status) VALUES
- (101, 1, 'Nguyễn Thu Hà', 'nhanvien@poc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'BRANCH_STAFF', 'ACTIVE'),
- (103, 2, 'Lê Hoàng Phúc', 'nv.hcm@poc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'BRANCH_STAFF', 'ACTIVE'),
- (104, 3, 'Phan Thị Mỹ', 'nv.danang@poc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'BRANCH_STAFF', 'ACTIVE'),
- (102, NULL, 'Trần Minh Đức', 'quantri@poc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'ADMIN', 'ACTIVE');
+ (101, 1, 'Nguyễn Thu Hà', 'nhanvien@tiensangloc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'BRANCH_STAFF', 'ACTIVE'),
+ (103, 2, 'Lê Hoàng Phúc', 'nv.hcm@tiensangloc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'BRANCH_STAFF', 'ACTIVE'),
+ (104, 3, 'Phan Thị Mỹ', 'nv.danang@tiensangloc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'BRANCH_STAFF', 'ACTIVE'),
+ (102, NULL, 'Trần Minh Đức', 'quantri@tiensangloc.local', '$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'ADMIN', 'ACTIVE');
 
 INSERT INTO customer (id, phone, email, password_hash, full_name, status) VALUES
- (1, '0901234567', 'khachhang@poc.local','$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'Khách hàng mẫu', 'ACTIVE');
+ (1, '0901234567', 'khachhang@tiensangloc.local','$2b$10$HlSDoPkE1d9WhpUrxM53j.SHPexrEC0l5dx9oBlmE7Bvw9F.PkPjS', 'Khách hàng mẫu', 'ACTIVE');
 
 INSERT INTO loan_product (id, code, name, product_type, repayment_method, description, status) VALUES
  (1, 'TD', 'Vay tiêu dùng không tài sản bảo đảm', 'CONSUMER', 'Gốc trả đều hằng tháng, lãi trên dư nợ giảm dần',

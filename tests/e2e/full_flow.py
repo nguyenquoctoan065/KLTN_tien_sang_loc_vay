@@ -104,8 +104,8 @@ async def main():
         qr = (await pg.locator('.print-area code').last.inner_text()).strip()
         print('QR', qr, app_url)
         # ---------- 5.2 nhân viên: không khớp ----------
-        await pg.evaluate("localStorage.removeItem('poc-token'); localStorage.removeItem('poc-user')")
-        await login(pg, 'nhanvien@poc.local', internal=True)
+        await pg.evaluate("localStorage.removeItem('tsl-token'); localStorage.removeItem('tsl-user')")
+        await login(pg, 'nhanvien@tiensangloc.local', internal=True)
         await shot(pg, '25_staff_home')
         await pg.fill('input[placeholder="Nhập hoặc quét mã QR trên phiếu tóm tắt"]', qr); await pg.keyboard.press('Enter')
         await pg.wait_for_selector('text=Phiếu đối chiếu giấy tờ bản gốc')
@@ -115,8 +115,8 @@ async def main():
         await shot(pg, '26_verify_form')
         await pg.click('button:has-text("Lưu và yêu cầu bổ sung")'); await pg.wait_for_timeout(800)
         # ---------- khách hàng bổ sung ----------
-        await pg.evaluate("localStorage.removeItem('poc-token'); localStorage.removeItem('poc-user')")
-        await login(pg, 'khachhang@poc.local')
+        await pg.evaluate("localStorage.removeItem('tsl-token'); localStorage.removeItem('tsl-user')")
+        await login(pg, 'khachhang@tiensangloc.local')
         await pg.goto(app_url); await pg.wait_for_selector('text=Hồ sơ cần bổ sung')
         await shot(pg, '27_need_more')
         await upload(pg, 'Sao kê', 'saoke.pdf')
@@ -124,8 +124,8 @@ async def main():
         await otp(pg, 'Nộp lại')
         await pg.wait_for_selector('text=Chờ đối chiếu tại', timeout=8000)
         # ---------- nhân viên: khớp, duyệt, giải ngân ----------
-        await pg.evaluate("localStorage.removeItem('poc-token'); localStorage.removeItem('poc-user')")
-        await login(pg, 'nhanvien@poc.local', internal=True)
+        await pg.evaluate("localStorage.removeItem('tsl-token'); localStorage.removeItem('tsl-user')")
+        await login(pg, 'nhanvien@tiensangloc.local', internal=True)
         await pg.fill('input[placeholder="Nhập hoặc quét mã QR trên phiếu tóm tắt"]', qr); await pg.keyboard.press('Enter')
         await pg.wait_for_selector('text=Phiếu đối chiếu giấy tờ bản gốc')
         await pg.click('button:has-text("Xác nhận khớp toàn bộ")'); await pg.wait_for_timeout(800)
@@ -136,7 +136,7 @@ async def main():
         await pg.click('button:has-text("Xác nhận đã giải ngân")'); await pg.wait_for_timeout(800)
         await shot(pg, '29_disbursed_staff')
         # ---------- khách hàng: theo dõi, dữ liệu cá nhân ----------
-        await pg.evaluate("localStorage.removeItem('poc-token'); localStorage.removeItem('poc-user')")
+        await pg.evaluate("localStorage.removeItem('tsl-token'); localStorage.removeItem('tsl-user')")
         await login(pg, '0901234567')
         await pg.goto(app_url + '?tab=theo-doi'); await pg.wait_for_selector('text=Lịch sử trạng thái')
         await shot(pg, '30_timeline')
@@ -146,8 +146,8 @@ async def main():
         await pg.goto(B + '/cua-toi?tab=du-lieu'); await pg.wait_for_selector('text=Nhật ký truy cập và thao tác')
         await shot(pg, '32_mydata')
         # ---------- quản trị ----------
-        await pg.evaluate("localStorage.removeItem('poc-token'); localStorage.removeItem('poc-user')")
-        await login(pg, 'quantri@poc.local', internal=True)
+        await pg.evaluate("localStorage.removeItem('tsl-token'); localStorage.removeItem('tsl-user')")
+        await login(pg, 'quantri@tiensangloc.local', internal=True)
         await pg.wait_for_selector('text=Phễu chuyển đổi'); await pg.wait_for_timeout(1200)
         await shot(pg, '40_stats')
         await pg.click('div[role=tab]:has-text("Độ chính xác mô hình")'); await pg.wait_for_timeout(1200)

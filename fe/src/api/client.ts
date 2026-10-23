@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import type { ApiError } from './types';
 
-export const TOKEN_KEY = 'poc-token';
+export const TOKEN_KEY = 'tsl-token';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',

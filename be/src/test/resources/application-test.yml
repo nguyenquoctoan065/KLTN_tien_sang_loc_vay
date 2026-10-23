@@ -1,0 +1,5 @@
+app:
+  storage:
+    provider: local
+  ocr:
+    provider: fake

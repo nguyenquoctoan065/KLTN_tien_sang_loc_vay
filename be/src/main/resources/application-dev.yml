@@ -1,0 +1,3 @@
+app:
+  otp:
+    fixed-code: "123456"

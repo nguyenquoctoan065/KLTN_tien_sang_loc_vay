@@ -3,7 +3,7 @@ import { TOKEN_KEY } from '../api/client';
 import type { AuthUser, LoginResponse, Role } from '../api/types';
 import { Navigate, useLocation } from 'react-router-dom';
 
-const USER_KEY = 'poc-user';
+const USER_KEY = 'tsl-user';
 
 interface AuthCtx {
   user: AuthUser | null;
