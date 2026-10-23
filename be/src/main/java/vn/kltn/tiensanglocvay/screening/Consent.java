@@ -70,4 +70,13 @@ public class Consent {
     public String getDocVersion() {
         return docVersion;
     }
+
+    public OffsetDateTime getWithdrawnAt() {
+        return withdrawnAt;
+    }
+
+    /** Rút đồng ý (mock {@code c.withdrawnAt = at}). */
+    public void withdraw(OffsetDateTime at) {
+        this.withdrawnAt = at;
+    }
 }

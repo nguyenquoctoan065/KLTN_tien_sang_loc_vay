@@ -43,6 +43,7 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import vn.kltn.tiensanglocvay.document.CorruptedFileException;
 import vn.kltn.tiensanglocvay.document.LocalStorageService;
 import vn.kltn.tiensanglocvay.document.OcrResult;
 import vn.kltn.tiensanglocvay.document.OcrService;
@@ -75,7 +76,8 @@ class ApplicationApiTest {
     @Autowired
     ObjectMapper json;
 
-    @Autowired
+    /** LocalStorageService thật, chỉ giả lập kho từ chối tệp trong vài test (Mockito tự đặt lại sau mỗi test). */
+    @SpyBean
     LocalStorageService storage;
 
     /** FakeOcrService thật, chỉ giả lập kết quả trong vài test (Mockito tự đặt lại sau mỗi test). */
@@ -429,6 +431,57 @@ class ApplicationApiTest {
         jdbc.update("update loan_application set status = 'VERIFIED' where public_id = ?::uuid", appId);
         upload(appId, cccd, token, "cccd.jpg", "image/jpeg", 60).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Hồ sơ đã khóa, không tải thêm được."));
+    }
+
+    @Test
+    void upload_corruptedFileIsRejectedQuality() throws Exception {
+        String token = newCustomer();
+        String appId = newApp(token);
+        long statement = docId(appId, token, 5);
+        String path = "$.documents[?(@.id == " + statement + ")]";
+        String message = "Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.";
+        upload(appId, statement, token, "saoke.pdf", "application/pdf", 20).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("UPLOADED"));
+        String oldPath = jdbc.queryForObject("select storage_path from application_document where id = ?", String.class, statement);
+        assertThat(Files.exists(Path.of("target/test-uploads", oldPath + ".pdf"))).isTrue();
+
+        // Kho (Cloudinary) từ chối PDF cắt cụt bằng "Invalid PDF file": không phải lỗi 500, giấy tờ không đạt chất lượng
+        byte[] truncated = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R".getBytes(StandardCharsets.US_ASCII);
+        doThrow(new CorruptedFileException("Invalid PDF file")).when(storage).upload(any(), any(), any());
+        upload(appId, statement, token, new MockMultipartFile("file", "saoke.pdf", "application/pdf", truncated))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("REJECTED_QUALITY"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("CORRUPTED"))
+                .andExpect(jsonPath(path + ".qualityMessage").value(message))
+                .andExpect(jsonPath(path + ".versionNo").value(2))
+                .andExpect(jsonPath(path + ".fileName").value("saoke.pdf"))
+                .andExpect(jsonPath(path + ".previewUrl").value(org.hamcrest.Matchers.contains((Object) null)))
+                .andExpect(jsonPath(path + ".fileUrl").value(org.hamcrest.Matchers.contains((Object) null)))
+                .andExpect(jsonPath(path + ".fields.length()").value(0));
+        // Như BLURRY: bản thay thế bị từ chối, tệp phiên bản cũ bị xóa, không còn tệp nào trong kho cho giấy tờ này
+        assertThat(Files.exists(Path.of("target/test-uploads", oldPath + ".pdf"))).isFalse();
+        assertThat(jdbc.queryForObject("select storage_path from application_document where id = ?", String.class, statement)).isNull();
+        assertThat(jdbc.queryForObject("select quality_status from application_document where id = ?", String.class, statement))
+                .isEqualTo("CORRUPTED");
+
+        // Lỗi khác của kho (khóa sai, mạng…) vẫn là lỗi hệ thống, không bị coi là tệp hỏng
+        org.mockito.Mockito.reset(storage);
+        doThrow(new IllegalStateException("Invalid API Key")).when(storage).upload(any(), any(), any());
+        upload(appId, statement, token, "saoke.pdf", "application/pdf", 20).andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Lỗi hệ thống, vui lòng thử lại sau."));
+        org.mockito.Mockito.reset(storage);
+
+        // Kho cục bộ từ chối tệp rỗng; tải lại tệp tốt thì đạt bình thường
+        upload(appId, statement, token, new MockMultipartFile("file", "saoke.pdf", "application/pdf", new byte[0]))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("REJECTED_QUALITY"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("CORRUPTED"))
+                .andExpect(jsonPath(path + ".qualityMessage").value(message));
+        upload(appId, statement, token, "saoke.pdf", "application/pdf", 20).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("UPLOADED"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("OK"))
+                .andExpect(jsonPath(path + ".qualityMessage").value((Object) null))
+                .andExpect(jsonPath(path + ".fields[0].name").isNotEmpty());
     }
 
     @Test

@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class CloudinaryStorageService implements StorageService {
 
     static final String KIND_ORIGINAL = "original";
 
+    private static final Pattern CORRUPTED = Pattern.compile("(?i)(invalid(\\s+\\w+)?\\s+file|empty file|corrupt.*)");
+
     /** Tệp (ảnh xem trước hoặc tệp gốc) tải từ Cloudinary. */
     public record Preview(byte[] body, String contentType) {
     }
@@ -65,7 +68,17 @@ public class CloudinaryStorageService implements StorageService {
                     ((Number) r.get("version")).longValue(), ((Number) r.get("bytes")).longValue());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        } catch (RuntimeException e) {
+            if (rejectsFile(e.getMessage())) {
+                throw new CorruptedFileException(e.getMessage(), e);
+            }
+            throw e;
         }
+    }
+
+    /** Cloudinary trả 400 với "Invalid image file", "Invalid PDF file", "Empty file"… khi không đọc được tệp. */
+    static boolean rejectsFile(String message) {
+        return message != null && CORRUPTED.matcher(message.trim()).matches();
     }
 
     @Override

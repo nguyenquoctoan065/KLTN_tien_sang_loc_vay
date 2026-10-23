@@ -11,6 +11,7 @@ public interface StorageService {
     /**
      * @param fileName tên tệp trong kho, gồm đuôi (ví dụ {@code doc-12-v2.jpg}); phần trước đuôi là public_id trong {@code folder}
      * @param folder   thư mục, ví dụ {@code tien-sang-loc-vay/dev/app-5}
+     * @throws CorruptedFileException kho từ chối vì tệp hỏng / không mở được (người gọi coi là giấy tờ không đạt chất lượng)
      */
     StoredFile upload(byte[] data, String fileName, String folder);
 

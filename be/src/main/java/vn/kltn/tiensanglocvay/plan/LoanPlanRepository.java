@@ -15,6 +15,9 @@ public interface LoanPlanRepository extends JpaRepository<LoanPlan, Long> {
     @Query("select p from LoanPlan p, Screening s where s.id = p.screeningId and s.customerId = :customerId order by p.id desc")
     List<LoanPlan> findByCustomer(@Param("customerId") long customerId);
 
+    @Query("select count(p) from LoanPlan p, Screening s where s.id = p.screeningId and s.customerId = :customerId")
+    long countByCustomer(@Param("customerId") long customerId);
+
     @Query("select s.customerId from LoanPlan p, Screening s where p.id = :planId and s.id = p.screeningId")
     Optional<Long> findCustomerId(@Param("planId") long planId);
 

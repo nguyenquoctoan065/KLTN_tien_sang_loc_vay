@@ -50,6 +50,10 @@ public class Customer {
         return id;
     }
 
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public String getPhone() {
         return phone;
     }

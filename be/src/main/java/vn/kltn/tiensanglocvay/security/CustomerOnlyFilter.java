@@ -45,14 +45,17 @@ public class CustomerOnlyFilter extends OncePerRequestFilter {
 
     /** Thông báo 401 của thao tác (theo fe/src/mocks/handlers/screening.ts, applications.ts), hoặc null nếu không thuộc nhóm này. */
     static String messageFor(HttpServletRequest req) {
+        String path = req.getRequestURI().substring(req.getContextPath().length());
+        if (HttpMethod.GET.matches(req.getMethod())) {
+            return PATHS.match("/me/data", path) ? "Cần đăng nhập tài khoản khách hàng." : null;
+        }
         if (!HttpMethod.POST.matches(req.getMethod())) {
             return null;
         }
-        String path = req.getRequestURI().substring(req.getContextPath().length());
         if (PATHS.match("/plans", path)) {
             return "Cần đăng nhập tài khoản khách hàng để lưu phương án.";
         }
-        if (PATHS.match("/screenings/*/save", path) || PATHS.match("/applications", path)) {
+        if (PATHS.match("/screenings/*/save", path) || PATHS.match("/applications", path) || PATHS.match("/me/consents/withdraw", path)) {
             return "Cần đăng nhập tài khoản khách hàng.";
         }
         return null;

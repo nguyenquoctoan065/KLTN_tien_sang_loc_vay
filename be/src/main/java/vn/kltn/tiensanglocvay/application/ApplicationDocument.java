@@ -120,6 +120,23 @@ public class ApplicationDocument {
         this.qualityStatus = "OK";
     }
 
+    /**
+     * Xóa thông tin tệp, về MISSING như mock khi rút đồng ý phần (b). Người gọi xóa tệp trong kho và các trường trích xuất.
+     */
+    public void clearFile() {
+        this.status = MISSING;
+        this.fileName = null;
+        this.fileFormat = null;
+        this.fileSize = null;
+        this.storagePath = null;
+        this.storageResourceType = null;
+        this.storageVersion = null;
+        this.issuedDate = null;
+        this.qualityStatus = null;
+        this.qualityMessage = null;
+        this.uploadedAt = null;
+    }
+
     /** Tệp đang lưu trong kho, hoặc null. */
     public StoredFile stored() {
         if (storagePath == null) {

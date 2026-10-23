@@ -15,6 +15,8 @@ public class QualityChecker {
     public static final String WRONG_FORMAT = "WRONG_FORMAT";
     public static final String TOO_LARGE = "TOO_LARGE";
     public static final String BLURRY = "BLURRY";
+    /** Kho lưu tệp từ chối vì tệp hỏng (xem {@link CorruptedFileException}); QualityChecker không tự phát hiện. */
+    public static final String CORRUPTED = "CORRUPTED";
 
     static final int MAX_KB = 10 * 1024;
     static final int MIN_IMAGE_KB = 25;

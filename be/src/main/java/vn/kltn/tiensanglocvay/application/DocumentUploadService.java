@@ -24,6 +24,7 @@ import vn.kltn.tiensanglocvay.audit.ActivityLogService;
 import vn.kltn.tiensanglocvay.catalog.DocumentType;
 import vn.kltn.tiensanglocvay.common.ApiException;
 import vn.kltn.tiensanglocvay.document.DocumentFields;
+import vn.kltn.tiensanglocvay.document.CorruptedFileException;
 import vn.kltn.tiensanglocvay.document.OcrContext;
 import vn.kltn.tiensanglocvay.document.OcrResult;
 import vn.kltn.tiensanglocvay.document.OcrService;
@@ -41,6 +42,7 @@ import vn.kltn.tiensanglocvay.security.CurrentUser;
 public class DocumentUploadService {
 
     private static final Logger log = LoggerFactory.getLogger(DocumentUploadService.class);
+    static final String MSG_CORRUPTED = "Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.";
     static final String MSG_OCR_FAILED = "Chưa đọc được thông tin tự động, vui lòng nhập tay";
 
     private final ApplicationService applications;
@@ -105,35 +107,44 @@ public class DocumentUploadService {
         List<OcrResult.Field> extracted = List.of();
         if (q.ok()) {
             byte[] data = bytes(file);
-            stored = storage.upload(data, "doc-" + docId + "-v" + p.nextVersion() + "." + q.ext().toLowerCase(Locale.ROOT),
-                    folder + "/app-" + p.appId());
-            OcrResult r = null;
             try {
-                r = ocr.extract(p.type(), data, mimeType(file, q.ext()), p.ctx().seed(q.kb()));
-            } catch (RuntimeException e) {
-                log.warn("Đọc giấy tờ #{} thất bại: {}", docId, e.toString());
+                stored = storage.upload(data, "doc-" + docId + "-v" + p.nextVersion() + "." + q.ext().toLowerCase(Locale.ROOT),
+                        folder + "/app-" + p.appId());
+            } catch (CorruptedFileException ex) {
+                // Kho từ chối vì tệp hỏng (Cloudinary "Invalid PDF file"…): giấy tờ không đạt chất lượng, không phải lỗi hệ thống.
+                log.info("Kho lưu tệp từ chối giấy tờ #{} vì hỏng: {}", docId, ex.getMessage());
+                qualityStatus = QualityChecker.CORRUPTED;
+                message = MSG_CORRUPTED;
             }
-            if (r == null) {
-                // Dòng trống để khách nhập tay rồi xác nhận (FE chỉ hiện ô nhập khi có trường).
-                status = ApplicationDocument.UPLOADED;
-                qualityStatus = QualityChecker.OK;
-                message = MSG_OCR_FAILED;
-                extracted = DocumentFields.blank(p.type().getId());
-            } else if (!r.readable()) {
-                qualityStatus = QualityChecker.BLURRY;
-                message = r.issue() != null ? r.issue() : "Ảnh có độ phân giải thấp hoặc bị mờ, vui lòng chụp lại rõ nét, đủ bốn góc.";
-            } else if (!r.documentMatchesType()) {
-                qualityStatus = "WRONG_TYPE";
-                message = "Tệp không phải " + p.type().getName() + ".";
-            } else {
-                status = ApplicationDocument.UPLOADED;
-                qualityStatus = QualityChecker.OK;
-                message = null;
-                extracted = r.fields();
-            }
-            if (ApplicationDocument.REJECTED_QUALITY.equals(status)) {
-                storage.delete(stored);
-                stored = null;
+            if (stored != null) {
+                OcrResult r = null;
+                try {
+                    r = ocr.extract(p.type(), data, mimeType(file, q.ext()), p.ctx().seed(q.kb()));
+                } catch (RuntimeException e) {
+                    log.warn("Đọc giấy tờ #{} thất bại: {}", docId, e.toString());
+                }
+                if (r == null) {
+                    // Dòng trống để khách nhập tay rồi xác nhận (FE chỉ hiện ô nhập khi có trường).
+                    status = ApplicationDocument.UPLOADED;
+                    qualityStatus = QualityChecker.OK;
+                    message = MSG_OCR_FAILED;
+                    extracted = DocumentFields.blank(p.type().getId());
+                } else if (!r.readable()) {
+                    qualityStatus = QualityChecker.BLURRY;
+                    message = r.issue() != null ? r.issue() : "Ảnh có độ phân giải thấp hoặc bị mờ, vui lòng chụp lại rõ nét, đủ bốn góc.";
+                } else if (!r.documentMatchesType()) {
+                    qualityStatus = "WRONG_TYPE";
+                    message = "Tệp không phải " + p.type().getName() + ".";
+                } else {
+                    status = ApplicationDocument.UPLOADED;
+                    qualityStatus = QualityChecker.OK;
+                    message = null;
+                    extracted = r.fields();
+                }
+                if (ApplicationDocument.REJECTED_QUALITY.equals(status)) {
+                    storage.delete(stored);
+                    stored = null;
+                }
             }
         }
 

@@ -155,11 +155,11 @@ public class ApplicationSupport {
         return new Actor("STAFF", u.id(), staffName((int) u.id()));
     }
 
-    String staffName(Integer staffId) {
+    public String staffName(Integer staffId) {
         return staffId == null ? "Nhân viên" : staff.findById(staffId).map(s -> s.getFullName()).orElse("Nhân viên");
     }
 
-    private static String customerName(Customer c) {
+    public static String customerName(Customer c) {
         if (c.getFullName() != null) {
             return c.getFullName();
         }
@@ -262,9 +262,13 @@ public class ApplicationSupport {
     }
 
     static PersonalInfo personal(AppBundle b) {
-        LoanApplication a = b.app;
+        return personal(b.app, b.phone);
+    }
+
+    /** Thông tin cá nhân khai cho hồ sơ; {@code phone} là số điện thoại tài khoản khách hàng. */
+    public static PersonalInfo personal(LoanApplication a, String phone) {
         return new PersonalInfo(nz(a.getFullName()), nz(a.getNationalId()), a.getDob() == null ? "" : a.getDob().toString(),
-                a.getGender() == null ? "MALE" : a.getGender(), nz(a.getAddress()), b.phone, nz(a.getEmail()));
+                a.getGender() == null ? "MALE" : a.getGender(), nz(a.getAddress()), phone, nz(a.getEmail()));
     }
 
     private AppDocument document(AppBundle b, ApplicationDocument d) {

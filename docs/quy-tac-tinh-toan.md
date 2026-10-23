@@ -117,7 +117,10 @@ Thứ tự kiểm tra; trượt bước nào thì giấy tờ ở trạng thái 
 | 2 | Dung lượng > 10 MB | `TOO_LARGE` |
 | 3 | Ảnh (không phải PDF) < 25 KB – coi là mờ hoặc độ phân giải thấp. Backend thật nên thay bằng đo độ nét (phương sai Laplacian) | `BLURRY` |
 
-Ở backend thật, sau 3 bước trên tệp được gửi Gemini đọc thông tin (xem `docs/be-huong-dan.md` 5.4): Gemini báo ảnh không đọc được → `BLURRY`;
+Sau 3 bước trên tệp được lưu kho; kho từ chối vì tệp hỏng / không mở được (Cloudinary "Invalid PDF file", "Invalid image file"; kho cục bộ: tệp rỗng) → `CORRUPTED`,
+lời nhắc “Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.”, không gửi Gemini. Lỗi khác của kho vẫn là lỗi hệ thống. Mock kiểm tra chữ ký đầu tệp (`%PDF-`, `FF D8 FF`, `89 50 4E 47`) hoặc tệp rỗng.
+
+Ở backend thật, sau đó tệp được gửi Gemini đọc thông tin (xem `docs/be-huong-dan.md` 5.4): Gemini báo ảnh không đọc được → `BLURRY`;
 báo không đúng loại giấy tờ → `WRONG_TYPE`.
 
 Đạt thì giấy tờ sang `UPLOADED`, `version_no` tăng 1, chạy trích xuất (MB06) theo loại giấy tờ. Mỗi trường có `ocrValue` và `confidence`; khách hàng sửa thành `confirmedValue` rồi xác nhận, giấy tờ chuyển `CONFIRMED`. Tải lại tệp xóa kết quả đối chiếu cũ của giấy tờ đó.
@@ -180,7 +183,9 @@ Backend dùng `@Scheduled` của Spring; API `POST /admin/jobs/{code}/run` để
 ## 14. Rút quyền đồng ý (chức năng 6.1)
 
 - Rút phạm vi **A** (sàng lọc): xóa kết quả sàng lọc và phương án chưa gắn hồ sơ đang mở.
-- Rút phạm vi **B** (hồ sơ): hủy mọi hồ sơ đang mở (`DRAFTING`, `WAITING_VERIFY`, `NEED_MORE`), xóa tệp giấy tờ của chúng. Hồ sơ đã đối chiếu xong phải liên hệ chi nhánh.
+- Rút phạm vi **B** (hồ sơ): hủy mọi hồ sơ đang mở (`DRAFTING`, `WAITING_VERIFY`, `NEED_MORE`) và hồ sơ `EXPIRED`; với các hồ sơ đó (kể cả hồ sơ `CANCELLED` từ trước còn giấy tờ) xóa tệp giấy tờ trong kho, trường trích xuất, giấy đề nghị, số CCCD, địa chỉ, email. Hồ sơ đã đối chiếu xong phải liên hệ chi nhánh.
+- Phạm vi A chỉ xóa lượt sàng lọc không có phương án nào đã lập hồ sơ (kể cả hồ sơ đã hủy, vì hồ sơ còn tham chiếu phương án); lượt gắn hồ sơ được giữ theo phạm vi B.
+- Xóa tệp trong kho chạy trong cùng giao dịch: không xóa được thì hoàn tác toàn bộ và khách hàng thử lại.
 - Cả hai đều yêu cầu OTP và ghi `consent_record` với `withdrawn_at`.
 
 ## 15. Độ chính xác mô hình và báo cáo MB14 (QT09)

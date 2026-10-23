@@ -399,7 +399,10 @@ paths:
         - Định dạng không thuộc `allowedFormats` → status REJECTED_QUALITY, qualityStatus WRONG_FORMAT.
         - Lớn hơn 10 MB → REJECTED_QUALITY / TOO_LARGE.
         - Ảnh (không phải PDF) dưới 25 KB → REJECTED_QUALITY / BLURRY.
-        - Đạt thì lưu kho và gửi máy đọc (Gemini): báo không đọc được → REJECTED_QUALITY / BLURRY, `qualityMessage` là lời nhắc
+        - Đạt thì lưu kho; kho từ chối vì tệp hỏng / không mở được (Cloudinary "Invalid PDF file", "Invalid image file"; kho cục bộ: tệp rỗng)
+          → REJECTED_QUALITY / CORRUPTED, “Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.”,
+          không gửi máy đọc, không có `previewUrl` / `fileUrl`. Lỗi khác của kho (khóa sai, mạng, hết hạn mức) vẫn là 500.
+        - Gửi máy đọc (Gemini): báo không đọc được → REJECTED_QUALITY / BLURRY, `qualityMessage` là lời nhắc
           của máy đọc; báo không đúng loại giấy tờ → REJECTED_QUALITY / WRONG_TYPE, “Tệp không phải <tên giấy tờ>.”.
         - Đạt → status UPLOADED, qualityStatus OK, sinh `fields` (OCR) chờ khách hàng xác nhận.
         - Máy đọc lỗi (mạng, hết hạn mức, kết quả sai định dạng) → vẫn UPLOADED / OK, `qualityMessage`
@@ -509,7 +512,7 @@ paths:
         Frontend không có đường dẫn riêng cho nộp lại; dùng chính thao tác này.
 
         Kiểm tra theo thứ tự:
-        - 400 OTP sai.
+        - 400 OTP sai hoặc chưa gửi ("Mã OTP không đúng."), hoặc OTP hết hạn / nhập sai quá 5 lần ("Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới.").
         - 409 trạng thái không phải DRAFTING / NEED_MORE / EXPIRED.
         - 409 chưa đủ điều kiện (thiếu thông tin cá nhân, giấy tờ bắt buộc chưa CONFIRMED, cảnh báo BLOCKING);
           khi nộp lại còn yêu cầu tải lại giấy tờ có kết quả đối chiếu MISMATCH/MISSING, và (với EXPIRED) giấy tờ
@@ -667,11 +670,17 @@ paths:
       operationId: withdrawConsent
       summary: 6.3 Rút lại sự đồng ý (MB02 phần a hoặc b), xác nhận bằng OTP
       description: |
-        - Phần (a): xóa các lượt sàng lọc đã lưu (và phương án liên quan) không gắn với hồ sơ vay; lượt gắn hồ sơ được giữ theo phần (b).
+        - Phần (a): xóa các lượt sàng lọc đã lưu (và phương án, nợ khác, kết quả sàng lọc liên quan) không gắn với hồ sơ vay
+          (kể cả hồ sơ đã hủy, vì hồ sơ còn tham chiếu phương án); lượt gắn hồ sơ được giữ theo phần (b).
         - Phần (b): với hồ sơ ở DRAFTING / WAITING_VERIFY / NEED_MORE / EXPIRED / CANCELLED: chuyển CANCELLED (nếu chưa),
-          xóa tệp giấy tờ, số CCCD, địa chỉ, email, cảnh báo; thông báo chi nhánh. Hồ sơ đã đối chiếu trở đi
-          (VERIFIED, APPROVED, DISBURSED, REJECTED) được giữ theo quy định (`keptApplications`).
-        Đánh dấu `withdrawnAt` cho các bản ghi đồng ý tương ứng. 400 nếu OTP sai; 401 nếu không phải khách hàng.
+          xóa tệp giấy tờ (cả tệp trong kho Cloudinary / cục bộ), trường trích xuất, giấy đề nghị, số CCCD, địa chỉ, email, cảnh báo;
+          thông báo chi nhánh (hồ sơ vừa hủy). Hồ sơ đã đối chiếu trở đi (VERIFIED, APPROVED, DISBURSED, REJECTED)
+          được giữ theo quy định (`keptApplications`).
+        Đánh dấu `withdrawnAt` cho các bản ghi đồng ý tương ứng; ghi nhật ký. Thao tác nằm trong một giao dịch: không xóa được
+        tệp trong kho thì hoàn tác toàn bộ (502) và khách hàng thử lại (OTP chưa bị dùng).
+
+        Kiểm tra theo thứ tự: 401 không phải khách hàng; 400 `scope` không phải A / B ("Dữ liệu không hợp lệ.", kèm `fields`);
+        400 OTP sai hoặc chưa gửi ("Mã OTP không đúng.") hoặc OTP hết hạn / nhập sai quá 5 lần ("Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới.").
       x-roles: [CUSTOMER]
       requestBody:
         required: true
@@ -682,6 +691,10 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/WithdrawConsentResult' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '502':
+          description: 'Không xóa được tệp trên kho lưu trữ ("Không xóa được tệp trên kho lưu trữ, vui lòng thử lại sau."); không có gì bị đổi'
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/ApiError' } }
 
   # ============================ Nhân viên chi nhánh ============================
   /staff/applications:
@@ -1607,7 +1620,7 @@ components:
         fileSize: { type: number, nullable: true, description: KB }
         versionNo: { type: integer, description: Tăng mỗi lần tải lên }
         issuedDate: { type: string, format: date, nullable: true }
-        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE, WRONG_TYPE], nullable: true, description: 'WRONG_TYPE: máy đọc báo tệp không đúng loại giấy tờ (chỉ backend thật)' }
+        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE, WRONG_TYPE, CORRUPTED], nullable: true, description: 'WRONG_TYPE: máy đọc báo tệp không đúng loại giấy tờ (chỉ backend thật). CORRUPTED: tệp hỏng hoặc không mở được (kho lưu tệp từ chối, ví dụ Cloudinary "Invalid PDF file"; mock kiểm tra chữ ký đầu tệp)' }
         qualityMessage: { type: string, nullable: true }
         uploadedAt: { type: string, format: date-time, nullable: true }
         previewUrl: { type: string, nullable: true, description: 'Đường dẫn xem trước ký có hạn (mặc định 10 phút, sinh mới mỗi lần trả hồ sơ); chỉ có với tệp đã đạt chất lượng. Kho cục bộ: /api/files/local?… (chỉ ảnh); Cloudinary: /api/files/cloud?… (ảnh thu nhỏ rộng 480 px, PDF là ảnh trang đầu)' }

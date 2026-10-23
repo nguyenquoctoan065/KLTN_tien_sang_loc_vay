@@ -1,8 +1,10 @@
 package vn.kltn.tiensanglocvay.document;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Uploader;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
@@ -11,6 +13,8 @@ import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 /** CloudinaryStorageService không cần mạng: URL giao tệp đã ký của Cloudinary và URL proxy ký có hạn. */
 class CloudinaryStorageServiceTest {
@@ -66,6 +70,28 @@ class CloudinaryStorageServiceTest {
         // Hết hạn sau 10 phút
         CloudinaryStorageService later = service(NOW.plusSeconds(601));
         assertThat(later.verify(q.get("path"), "image", 1761188400L, "jpg", exp, q.get("sig"))).isEmpty();
+    }
+
+    @Test
+    void upload_translatesCloudinaryFileRejectionToCorruptedFile() throws Exception {
+        Cloudinary c = Mockito.spy(new Cloudinary("cloudinary://123456:bi-mat@demo"));
+        Uploader uploader = Mockito.mock(Uploader.class);
+        Mockito.doReturn(uploader).when(c).uploader();
+        CloudinaryStorageService s = new CloudinaryStorageService(c, new UrlSigner("khoa-thu", Clock.fixed(NOW, ZoneOffset.UTC)), "/api");
+
+        for (String message : new String[] {"Invalid PDF file", "Invalid image file", "Invalid file", "Empty file"}) {
+            Mockito.doThrow(new RuntimeException(message)).when(uploader).upload(ArgumentMatchers.any(), ArgumentMatchers.anyMap());
+            assertThatThrownBy(() -> s.upload(new byte[10], "doc-1-v1.pdf", "tien-sang-loc-vay/test/app-1"))
+                    .as(message).isInstanceOf(CorruptedFileException.class).hasMessage(message);
+        }
+        // Lỗi khác của Cloudinary (khóa sai, hết hạn mức…) không phải tệp hỏng: giữ nguyên là lỗi hệ thống
+        for (String message : new String[] {"Invalid Signature abc", "Must supply api_key", "Rate Limit Exceeded", null}) {
+            Mockito.doThrow(new RuntimeException(message)).when(uploader).upload(ArgumentMatchers.any(), ArgumentMatchers.anyMap());
+            assertThatThrownBy(() -> s.upload(new byte[10], "doc-1-v1.pdf", "tien-sang-loc-vay/test/app-1"))
+                    .as(String.valueOf(message)).isInstanceOf(RuntimeException.class).isNotInstanceOf(CorruptedFileException.class);
+        }
+        assertThat(CloudinaryStorageService.rejectsFile("  invalid pdf file ")).isTrue();
+        assertThat(CloudinaryStorageService.rejectsFile("Invalid extension in transformation: x")).isFalse();
     }
 
     @Test

@@ -41,6 +41,9 @@ public class LocalStorageService implements StorageService {
 
     @Override
     public StoredFile upload(byte[] data, String fileName, String folder) {
+        if (data.length == 0) {
+            throw new CorruptedFileException("Tệp rỗng");
+        }
         int dot = fileName.lastIndexOf('.');
         String format = dot < 0 ? "" : fileName.substring(dot + 1).toLowerCase(Locale.ROOT);
         String publicId = folder + "/" + (dot < 0 ? fileName : fileName.substring(0, dot));

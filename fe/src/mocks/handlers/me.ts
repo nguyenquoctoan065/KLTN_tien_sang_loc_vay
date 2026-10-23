@@ -74,7 +74,7 @@ export const meHandlers = [
             Object.assign(d, { status: 'MISSING', fileName: null, fileFormat: null, fileSize: null, previewUrl: null, fileUrl: null, fields: [], issuedDate: null, qualityStatus: null });
           }
           a.personal = { ...a.personal, nationalId: '', address: '', email: '' };
-          a.warnings = []; a.recalc = null;
+          a.warnings = []; a.recalc = null; a.requestForm = null; // giấy đề nghị chứa CCCD, địa chỉ nên xóa cùng (backend làm vậy)
         } else {
           res.keptApplications.push(a.code);
         }

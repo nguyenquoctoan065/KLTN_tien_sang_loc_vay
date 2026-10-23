@@ -21,6 +21,14 @@ public interface LoanApplicationRepository extends JpaRepository<LoanApplication
 
     Optional<LoanApplication> findByQrToken(String qrToken);
 
+    /** Hồ sơ của khách hàng theo thứ tự tạo (GET /me/data, như thứ tự của mock). */
+    List<LoanApplication> findByCustomerIdOrderByIdAsc(Long customerId);
+
+    /** Khóa các hồ sơ của khách hàng đến hết giao dịch (rút đồng ý không chạy song song với nhân viên đang đối chiếu). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from LoanApplication a where a.customerId = :customerId order by a.id")
+    List<LoanApplication> findByCustomerIdForUpdate(@Param("customerId") long customerId);
+
     List<LoanApplication> findByCustomerIdOrderByIdDesc(Long customerId);
 
     boolean existsByPlanIdAndStatusNot(Long planId, ApplicationStatus status);

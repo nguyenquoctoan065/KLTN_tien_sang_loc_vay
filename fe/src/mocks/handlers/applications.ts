@@ -10,6 +10,17 @@ import { simulate } from '../engine';
 
 const findApp = (id: unknown) => db.applications.find(a => a.id === String(id));
 
+/** Giả lập kho lưu tệp (Cloudinary) từ chối tệp hỏng: tệp rỗng hoặc đầu tệp sai chữ ký của PDF / JPG / PNG */
+async function isCorrupted(file: File, ext: string) {
+  if (file.size === 0) return true;
+  const h = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  const starts = (...b: number[]) => b.every((x, i) => h[i] === x);
+  if (ext === 'PDF') return !starts(0x25, 0x50, 0x44, 0x46, 0x2d);
+  if (ext === 'JPG') return !starts(0xff, 0xd8, 0xff);
+  if (ext === 'PNG') return !starts(0x89, 0x50, 0x4e, 0x47);
+  return false;
+}
+
 function own(request: Request, id: unknown): { app: AppRecord; u: NonNullable<ReturnType<typeof currentUser>> } | Response {
   const u = currentUser(request);
   if (!u) return err(401, 'Chưa đăng nhập.');
@@ -154,6 +165,8 @@ export const applicationHandlers = [
       d.status = 'REJECTED_QUALITY'; d.qualityStatus = 'TOO_LARGE'; d.qualityMessage = 'Tệp lớn hơn 10 MB.'; d.fields = [];
     } else if (ext !== 'PDF' && kb < 25) {
       d.status = 'REJECTED_QUALITY'; d.qualityStatus = 'BLURRY'; d.qualityMessage = 'Ảnh có độ phân giải thấp hoặc bị mờ, vui lòng chụp lại rõ nét, đủ bốn góc.'; d.fields = [];
+    } else if (await isCorrupted(file, ext)) {
+      d.status = 'REJECTED_QUALITY'; d.qualityStatus = 'CORRUPTED'; d.qualityMessage = 'Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.'; d.fields = [];
     } else {
       d.status = 'UPLOADED'; d.qualityStatus = 'OK'; d.qualityMessage = null;
       d.fields = ocrFields(d.documentTypeId, app, screeningOf(app)?.input ?? null, kb);
