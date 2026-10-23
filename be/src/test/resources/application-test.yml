@@ -3,6 +3,7 @@ app:
     fixed-code: "123456"
   storage:
     provider: local
+    folder: tien-sang-loc-vay/test
     local-dir: target/test-uploads
   ocr:
     provider: fake

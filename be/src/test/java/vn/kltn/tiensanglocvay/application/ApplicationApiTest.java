@@ -1,6 +1,9 @@
 package vn.kltn.tiensanglocvay.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,6 +44,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.kltn.tiensanglocvay.document.LocalStorageService;
+import vn.kltn.tiensanglocvay.document.OcrResult;
+import vn.kltn.tiensanglocvay.document.OcrService;
 import vn.kltn.tiensanglocvay.document.StoredFile;
 
 /**
@@ -71,6 +77,10 @@ class ApplicationApiTest {
 
     @Autowired
     LocalStorageService storage;
+
+    /** FakeOcrService thật, chỉ giả lập kết quả trong vài test (Mockito tự đặt lại sau mỗi test). */
+    @SpyBean
+    OcrService ocr;
 
     // ---------------------------------------------------------------- tiện ích
 
@@ -419,6 +429,48 @@ class ApplicationApiTest {
         jdbc.update("update loan_application set status = 'VERIFIED' where public_id = ?::uuid", appId);
         upload(appId, cccd, token, "cccd.jpg", "image/jpeg", 60).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Hồ sơ đã khóa, không tải thêm được."));
+    }
+
+    @Test
+    void upload_ocrResultMapping() throws Exception {
+        String token = newCustomer();
+        String appId = newApp(token);
+        long hdld = docId(appId, token, 4);
+        List<String> names = read(send(get("/applications/" + appId), null, token), "$.documents[?(@.id == " + hdld + ")].typeName");
+        String typeName = names.get(0);
+
+        // Máy đọc lỗi (mạng, hết hạn mức, JSON sai) → vẫn UPLOADED, nhắc nhập tay, dòng trống để khách nhập và xác nhận
+        doThrow(new IllegalStateException("Gemini lỗi")).when(ocr).extract(any(), any(), any(), any());
+        String path = "$.documents[?(@.id == " + hdld + ")]";
+        upload(appId, hdld, token, "hdld.jpg", "image/jpeg", 60).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("UPLOADED"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("OK"))
+                .andExpect(jsonPath(path + ".qualityMessage").value("Chưa đọc được thông tin tự động, vui lòng nhập tay"))
+                .andExpect(jsonPath(path + ".previewUrl").value(org.hamcrest.Matchers.contains(org.hamcrest.Matchers.startsWith("/api/files/local?"))))
+                .andExpect(jsonPath(path + ".fields[*].name").value(org.hamcrest.Matchers.contains("employer", "salary")))
+                .andExpect(jsonPath(path + ".fields[*].label").value(org.hamcrest.Matchers.contains("Đơn vị công tác", "Mức lương theo hợp đồng")))
+                .andExpect(jsonPath(path + ".fields[*].ocrValue").value(org.hamcrest.Matchers.contains("", "")))
+                .andExpect(jsonPath(path + ".fields[*].confidence").value(org.hamcrest.Matchers.contains(0.0, 0.0)));
+        confirm(appId, hdld, token, Map.of("employer", "Công ty ABC", "salary", "21.000.000")).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("CONFIRMED"))
+                .andExpect(jsonPath(path + ".fields[*].confirmedValue").value(org.hamcrest.Matchers.contains("Công ty ABC", "21.000.000")));
+
+        // Không đúng loại giấy tờ → WRONG_TYPE, không lưu tệp, không có trường
+        doReturn(new OcrResult(true, false, null, List.of())).when(ocr).extract(any(), any(), any(), any());
+        upload(appId, hdld, token, "hdld.jpg", "image/jpeg", 60).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("REJECTED_QUALITY"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("WRONG_TYPE"))
+                .andExpect(jsonPath(path + ".qualityMessage").value("Tệp không phải " + typeName + "."))
+                .andExpect(jsonPath(path + ".previewUrl").value(org.hamcrest.Matchers.contains((Object) null)))
+                .andExpect(jsonPath(path + ".fields.length()").value(0));
+
+        // Máy đọc báo không đọc được → BLURRY kèm lời nhắc của máy đọc
+        doReturn(new OcrResult(false, true, "Ảnh bị lóa ở phần mức lương, vui lòng chụp lại.", List.of()))
+                .when(ocr).extract(any(), any(), any(), any());
+        upload(appId, hdld, token, "hdld.jpg", "image/jpeg", 60).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("REJECTED_QUALITY"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("BLURRY"))
+                .andExpect(jsonPath(path + ".qualityMessage").value("Ảnh bị lóa ở phần mức lương, vui lòng chụp lại."));
     }
 
     @Test

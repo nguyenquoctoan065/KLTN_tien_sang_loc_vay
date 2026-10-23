@@ -35,6 +35,7 @@ export default function DocumentCard({ app, doc, editable }: { app: Application;
       set(a);
       const d = a.documents.find(x => x.id === doc.id);
       if (d?.status === 'REJECTED_QUALITY') message.warning(d.qualityMessage ?? 'Giấy tờ không đạt chất lượng');
+      else if (d?.qualityMessage) message.warning(d.qualityMessage);
       else message.success('Đã tải lên và trích xuất thông tin, vui lòng kiểm tra và xác nhận');
     },
     onError: e => message.error(errorMessage(e)),
@@ -84,13 +85,14 @@ export default function DocumentCard({ app, doc, editable }: { app: Application;
             )}
           </Space>
           {doc.status === 'REJECTED_QUALITY' && <Alert style={{ marginTop: 8 }} type="error" showIcon message={doc.qualityMessage} />}
+          {doc.status === 'UPLOADED' && doc.qualityMessage && <Alert style={{ marginTop: 8 }} type="warning" showIcon message={doc.qualityMessage} />}
           {doc.fields.length > 0 && (
             <div style={{ marginTop: 12 }}>
               <Typography.Text strong>Thông tin đọc từ giấy tờ</Typography.Text>
               <Table size="small" rowKey="id" pagination={false} dataSource={doc.fields} style={{ marginTop: 6 }}
                 columns={[
                   { title: 'Trường', dataIndex: 'label', width: '28%' },
-                  { title: 'Máy đọc', dataIndex: 'ocrValue', render: (v: string, f) => <span>{v || '—'} <Tag color={f.confidence >= 90 ? 'green' : f.confidence >= 85 ? 'gold' : 'orange'}>{f.confidence}%</Tag></span> },
+                  { title: 'Máy đọc', dataIndex: 'ocrValue', render: (v: string, f) => v ? <span>{v} <Tag color={f.confidence >= 90 ? 'green' : f.confidence >= 85 ? 'gold' : 'orange'}>{f.confidence}%</Tag></span> : '—' },
                   {
                     title: 'Giá trị xác nhận', key: 'c', width: '38%', render: (_, f) => editable && doc.status !== 'MISSING'
                       ? <Input.TextArea autoSize={{ minRows: 1, maxRows: 8 }} value={vals[f.id] ?? ''} onChange={e => setVals(v => ({ ...v, [f.id]: e.target.value }))} />

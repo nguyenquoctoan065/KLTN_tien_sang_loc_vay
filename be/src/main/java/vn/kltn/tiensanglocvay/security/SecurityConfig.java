@@ -59,9 +59,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/plans/*").permitAll()
                         // POST /applications: CustomerOnlyFilter trả 401 "Cần đăng nhập tài khoản khách hàng." như mock.
                         .requestMatchers(HttpMethod.POST, "/applications").permitAll()
-                        // URL ký có hạn của LocalStorageService (previewUrl trong thẻ img, không gửi được Bearer);
-                        // LocalFileController tự kiểm tra chữ ký, chỉ có khi app.storage.provider=local.
-                        .requestMatchers(HttpMethod.GET, "/files/local").permitAll()
+                        // URL ký có hạn của LocalStorageService / CloudinaryStorageService (previewUrl trong thẻ img, không gửi
+                        // được Bearer); LocalFileController / CloudFileController tự kiểm tra chữ ký, tùy app.storage.provider.
+                        .requestMatchers(HttpMethod.GET, "/files/local", "/files/cloud").permitAll()
                         .anyRequest().authenticated());
         return http.build();
     }

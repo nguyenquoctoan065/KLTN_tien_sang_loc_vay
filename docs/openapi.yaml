@@ -399,7 +399,12 @@ paths:
         - Định dạng không thuộc `allowedFormats` → status REJECTED_QUALITY, qualityStatus WRONG_FORMAT.
         - Lớn hơn 10 MB → REJECTED_QUALITY / TOO_LARGE.
         - Ảnh (không phải PDF) dưới 25 KB → REJECTED_QUALITY / BLURRY.
+        - Đạt thì lưu kho và gửi máy đọc (Gemini): báo không đọc được → REJECTED_QUALITY / BLURRY, `qualityMessage` là lời nhắc
+          của máy đọc; báo không đúng loại giấy tờ → REJECTED_QUALITY / WRONG_TYPE, “Tệp không phải <tên giấy tờ>.”.
         - Đạt → status UPLOADED, qualityStatus OK, sinh `fields` (OCR) chờ khách hàng xác nhận.
+        - Máy đọc lỗi (mạng, hết hạn mức, kết quả sai định dạng) → vẫn UPLOADED / OK, `qualityMessage`
+          “Chưa đọc được thông tin tự động, vui lòng nhập tay”, `fields` đủ các trường của loại giấy tờ với `ocrValue` rỗng,
+          `confidence` 0 để khách nhập rồi xác nhận.
         Xóa bản nháp giấy đề nghị và chạy lại đối chiếu.
       x-roles: [CUSTOMER]
       parameters: [{ $ref: '#/components/parameters/PublicId' }, { $ref: '#/components/parameters/DocId' }]
@@ -588,8 +593,8 @@ paths:
       operationId: getLocalFile
       summary: Tải tệp giấy tờ lưu cục bộ theo đường dẫn ký có hạn (chỉ khi backend dùng kho cục bộ)
       description: |
-        Chỉ có khi backend chạy `app.storage.provider=local` (phát triển, kiểm thử). Với kho Cloudinary, `previewUrl` trỏ thẳng
-        tới URL ký của Cloudinary và đường dẫn này không tồn tại. Frontend không tự gọi: chỉ dùng nguyên `previewUrl` trong thẻ img.
+        Chỉ có khi backend chạy `app.storage.provider=local` (phát triển, kiểm thử). Với kho Cloudinary dùng `/files/cloud`.
+        Frontend không tự gọi: chỉ dùng nguyên `previewUrl` trong thẻ img.
         Không cần Bearer (thẻ img không gửi được); quyền được kiểm tra khi cấp `previewUrl` (chỉ người xem được hồ sơ mới nhận),
         ở đây kiểm tra chữ ký HMAC trên `path` + `exp`. Chữ ký sai, hết hạn hoặc tệp không còn → 404.
       security: []
@@ -606,6 +611,39 @@ paths:
             image/png: { schema: { type: string, format: binary } }
             application/pdf: { schema: { type: string, format: binary } }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /files/cloud:
+    get:
+      tags: [Tệp giấy tờ]
+      operationId: getCloudPreview
+      summary: Ảnh xem trước tệp giấy tờ lưu trên Cloudinary theo đường dẫn ký có hạn (chỉ khi backend dùng Cloudinary)
+      description: |
+        Chỉ có khi backend chạy `app.storage.provider=cloudinary`. Tệp trên Cloudinary là `authenticated` và gói miễn phí không có
+        URL giao tệp tự hết hạn, nên backend làm trung gian: kiểm tra chữ ký HMAC trên mọi tham số + hạn `exp` (như `/files/local`),
+        rồi tải ảnh thu nhỏ (`w_480,c_limit,q_auto,f_auto`; PDF lấy trang đầu `pg_1`) bằng URL ký của Cloudinary và trả về.
+        Frontend không tự gọi: chỉ dùng nguyên `previewUrl` trong thẻ img. Chữ ký sai, hết hạn hoặc tệp không còn → 404;
+        Cloudinary lỗi → 502 “Không tải được tệp từ kho lưu trữ, vui lòng thử lại sau.”.
+      security: []
+      x-roles: []
+      parameters:
+        - { name: path, in: query, required: true, schema: { type: string }, description: public_id trên Cloudinary }
+        - { name: rt, in: query, required: true, schema: { type: string }, description: resource_type }
+        - { name: v, in: query, required: true, schema: { type: integer, format: int64 }, description: version }
+        - { name: fmt, in: query, required: true, schema: { type: string }, description: 'Định dạng tệp gốc (jpg, png, pdf)' }
+        - { name: exp, in: query, required: true, schema: { type: integer, format: int64 }, description: Hạn (epoch giây) }
+        - { name: sig, in: query, required: true, schema: { type: string }, description: Chữ ký HMAC-SHA256 (Base64URL) }
+      responses:
+        '200':
+          description: Ảnh xem trước (Cache-Control private, no-store)
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '502':
+          description: Không tải được tệp từ Cloudinary
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/ApiError' } }
 
   # ============================ Dữ liệu cá nhân ============================
   /me/data:
@@ -1564,10 +1602,10 @@ components:
         fileSize: { type: number, nullable: true, description: KB }
         versionNo: { type: integer, description: Tăng mỗi lần tải lên }
         issuedDate: { type: string, format: date, nullable: true }
-        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE], nullable: true }
+        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE, WRONG_TYPE], nullable: true, description: 'WRONG_TYPE: máy đọc báo tệp không đúng loại giấy tờ (chỉ backend thật)' }
         qualityMessage: { type: string, nullable: true }
         uploadedAt: { type: string, format: date-time, nullable: true }
-        previewUrl: { type: string, nullable: true, description: 'Đường dẫn xem trước ký có hạn (mặc định 10 phút, sinh mới mỗi lần trả hồ sơ); chỉ có với ảnh đã đạt chất lượng. Kho cục bộ: /api/files/local?…; Cloudinary: URL ký của Cloudinary' }
+        previewUrl: { type: string, nullable: true, description: 'Đường dẫn xem trước ký có hạn (mặc định 10 phút, sinh mới mỗi lần trả hồ sơ); chỉ có với tệp đã đạt chất lượng. Kho cục bộ: /api/files/local?… (chỉ ảnh); Cloudinary: /api/files/cloud?… (ảnh thu nhỏ rộng 480 px, PDF là ảnh trang đầu)' }
         fields: { type: array, items: { $ref: '#/components/schemas/ExtractedField' } }
         verifyResult: { type: string, enum: [MATCH, MISMATCH, MISSING], nullable: true, description: Kết quả đối chiếu gần nhất tại chi nhánh }
         verifyReason: { type: string, nullable: true }

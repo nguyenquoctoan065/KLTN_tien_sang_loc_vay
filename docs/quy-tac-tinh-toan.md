@@ -123,7 +123,7 @@ báo không đúng loại giấy tờ → `WRONG_TYPE`.
 Đạt thì giấy tờ sang `UPLOADED`, `version_no` tăng 1, chạy trích xuất (MB06) theo loại giấy tờ. Mỗi trường có `ocrValue` và `confidence`; khách hàng sửa thành `confirmedValue` rồi xác nhận, giấy tờ chuyển `CONFIRMED`. Tải lại tệp xóa kết quả đối chiếu cũ của giấy tờ đó.
 
 Trường trích xuất theo loại giấy tờ (mã `field_key`):
-CCCD `full_name, national_id, dob, gender, address`; xác nhận cư trú `residence_address`; HĐLĐ `employer, contract_salary`;
+CCCD `full_name, national_id, dob, gender, address`; xác nhận cư trú `address`; HĐLĐ `employer, salary`;
 sao kê `salary_bank, avg_income`; hóa đơn/hợp đồng mua bán `beneficiary, invoice_amount`.
 
 ## 10. Đối chiếu tự động MB06 ↔ MB01 (cảnh báo)

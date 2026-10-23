@@ -13,6 +13,7 @@ import type { Application, AppDocument } from '../../api/types';
 import StatusTag from '../../components/StatusTag';
 import StatusTimeline from '../../components/StatusTimeline';
 import WarningsPanel from '../../components/app/WarningsPanel';
+import RequestFormPrintButton from '../../components/app/RequestFormPrintButton';
 import { DOC_STATUS, VERIFY_TAG } from '../../components/app/DocumentCard';
 import { dt, money, moneyFormatter, moneyParser, pct } from '../../utils/format';
 
@@ -156,12 +157,15 @@ export default function StaffApplicationDetail() {
                 ),
               },
               {
-                key: 'form', label: 'Giấy đề nghị', children: a.requestForm?.content.length ? (
+                key: 'form', label: 'Giấy đề nghị', children: <>
+                  <div style={{ marginBottom: 12 }}><RequestFormPrintButton app={a} /></div>
+                  {a.requestForm?.content.length ? (
                   <Descriptions size="small" bordered column={1}>
                     {a.requestForm.content.map(c => <Descriptions.Item key={c.key} label={c.label}>{c.value || '—'}</Descriptions.Item>)}
                     <Descriptions.Item label="Xác nhận OTP">{dt(a.requestForm.otpConfirmedAt)}</Descriptions.Item>
                   </Descriptions>
-                ) : <Typography.Text type="secondary">Không có nội dung.</Typography.Text>,
+                ) : <Typography.Text type="secondary">Không có nội dung.</Typography.Text>}
+                </>,
               },
               { key: 'his', label: 'Lịch sử', children: <StatusTimeline history={a.history} /> },
               {

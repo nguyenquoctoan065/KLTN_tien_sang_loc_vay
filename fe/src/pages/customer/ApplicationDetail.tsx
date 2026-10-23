@@ -15,6 +15,7 @@ import WarningsPanel from '../../components/app/WarningsPanel';
 import PlanAdjust from '../../components/app/PlanAdjust';
 import RequestFormPanel from '../../components/app/RequestFormPanel';
 import SummarySlip from '../../components/app/SummarySlip';
+import RequestFormPrintButton from '../../components/app/RequestFormPrintButton';
 import { dt, money, pct } from '../../utils/format';
 
 /** Hồ sơ vay của khách hàng: 4.1, 4.2, 5.4, 6.2 */
@@ -76,6 +77,7 @@ export default function ApplicationDetail() {
               </Row>
               <WarningsPanel app={a} extra={editable && a.recalc && !a.recalc.ok ? <PlanAdjust app={a} /> : null} />
               <RequestFormPanel app={a} />
+              {a.lockedAt && !editable && <div style={{ marginBottom: 16 }}><RequestFormPrintButton app={a} /></div>}
             </div>
           ),
         },

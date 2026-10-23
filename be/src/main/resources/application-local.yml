@@ -1,0 +1,7 @@
+# Profile local (dùng kèm dev: -Dspring-boot.run.profiles=dev,local): chạy không cần mạng hay khóa.
+# Tệp lưu ở be/data/uploads (đã có trong .gitignore), máy đọc giả lập chép ocrFields của mock.
+app:
+  storage:
+    provider: local
+  ocr:
+    provider: fake

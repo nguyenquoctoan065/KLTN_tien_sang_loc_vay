@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.kltn.tiensanglocvay.audit.ActivityLogService;
 import vn.kltn.tiensanglocvay.catalog.DocumentType;
 import vn.kltn.tiensanglocvay.common.ApiException;
+import vn.kltn.tiensanglocvay.document.DocumentFields;
 import vn.kltn.tiensanglocvay.document.OcrContext;
 import vn.kltn.tiensanglocvay.document.OcrResult;
 import vn.kltn.tiensanglocvay.document.OcrService;
@@ -113,9 +114,11 @@ public class DocumentUploadService {
                 log.warn("Đọc giấy tờ #{} thất bại: {}", docId, e.toString());
             }
             if (r == null) {
+                // Dòng trống để khách nhập tay rồi xác nhận (FE chỉ hiện ô nhập khi có trường).
                 status = ApplicationDocument.UPLOADED;
                 qualityStatus = QualityChecker.OK;
                 message = MSG_OCR_FAILED;
+                extracted = DocumentFields.blank(p.type().getId());
             } else if (!r.readable()) {
                 qualityStatus = QualityChecker.BLURRY;
                 message = r.issue() != null ? r.issue() : "Ảnh có độ phân giải thấp hoặc bị mờ, vui lòng chụp lại rõ nét, đủ bốn góc.";

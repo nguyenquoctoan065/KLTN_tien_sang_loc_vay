@@ -62,7 +62,7 @@ be/
     │   ├── admin/         /admin/staff, /admin/branches, /admin/catalog…, /admin/jobs, ScheduledJobs
     │   └── report/        /admin/stats, /admin/model-accuracy, /admin/reports/mb14
     ├── main/resources/
-    │   ├── application.yml, application-dev.yml
+    │   ├── application.yml, application-dev.yml (Cloudinary + Gemini, import be/.env), application-local.yml (kho cục bộ + OCR giả)
     │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__app_support.sql (B1), V4__sua_dinh_dang_sao_ke.sql (B2), V5__public_id.sql (mã công khai UUID), V6__… (B4), V7__… (mỗi giai đoạn cần thêm bảng/cột một file mới); db/dev/V1000__dev_history.sql
     └── test/java/vn/kltn/tiensanglocvay/…  (+ test/resources/engine-fixtures/*.json)
 ```
@@ -113,13 +113,15 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   - Lưu vào DB: `public_id`, `resource_type`, `format`, `version`, `bytes`. Cột `storage_path` giữ `public_id`;
     các cột còn lại thêm bằng migration của giai đoạn B4 (V6 trở đi) (`storage_resource_type`, `storage_version`).
   - Không lưu `secure_url` công khai.
-- **Xem lại tệp**: `previewUrl` trong DTO là URL ký (signed) có hạn 10 phút. Tạo bằng
-  `cloudinary.url().type("authenticated").resourceType(rt).signed(true).version(v)…` cùng tham số hết hạn,
-  hoặc dùng `cloudinary.privateDownload(publicId, format, {type: authenticated, expires_at})`.
+- **Xem lại tệp**: `previewUrl` trong DTO là URL ký có hạn 10 phút, sinh mới mỗi lần trả hồ sơ; FE dùng thẳng trong thẻ `<img>`.
+  - **Đã chốt (23/10/2026) – backend làm trung gian**: gói Cloudinary miễn phí không có URL giao tệp tự hết hạn (token theo thời gian
+    chỉ từ gói Advanced; `expires_at` chỉ dùng được với `private_download_url`, trả tệp gốc). Vì vậy `previewUrl` là
+    `/api/files/cloud?path&rt&v&fmt&exp&sig` (HMAC-SHA256 trên mọi tham số + hạn, khóa `app.storage.url-secret`, cùng `UrlSigner` với
+    `/files/local`). `CloudFileController` kiểm tra chữ ký rồi tải ảnh bằng URL ký của Cloudinary
+    `cloudinary.url().type("authenticated").resourceType(rt).signed(true).version(v)…` và trả về; URL Cloudinary không lộ ra trình duyệt.
   - Ảnh xem trước dùng biến đổi `w_480,c_limit,q_auto,f_auto`.
-  - PDF: trang đầu dùng `pg_1` để làm ảnh xem trước; nút “Mở tệp” dẫn tới URL tải PDF đã ký.
-  - Mỗi lần trả hồ sơ thì sinh URL mới. FE dùng thẳng URL này trong thẻ `<img>`, nên không cần endpoint `/files` riêng.
-    (Riêng `LocalStorageService` có `GET /api/files/local?path&exp&sig` – URL ký HMAC mô phỏng URL ký Cloudinary, xem ghi chú B4 phần A.)
+  - PDF: trang đầu dùng `pg_1` (đuôi `.jpg`) để làm ảnh xem trước. Nút “Mở tệp” tải PDF gốc chưa làm (DTO chưa có trường).
+  - `LocalStorageService` có `GET /api/files/local?path&exp&sig` (chỉ ảnh, xem ghi chú B4 phần A).
 - **PDF**: tài khoản Cloudinary miễn phí mặc định chặn phát tệp PDF. Bật *Settings → Security → Allow delivery of PDF and ZIP files*.
 - **Xóa**: tác vụ `PURGE_RETENTION`, rút đồng ý phạm vi B và tải lại phiên bản mới (tùy chọn giữ bản cũ) đều gọi
   `uploader().destroy(publicId, {type: authenticated, resource_type: rt, invalidate: true})`.
@@ -138,14 +140,17 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   - `OcrResult` gồm `isReadable`, `documentMatchesType`, `issue` và danh sách `fields`.
   - `GeminiOcrService` (mặc định, `app.ocr.provider=gemini`).
   - `FakeOcrService` (`app.ocr.provider=fake`, cho test và khi hết hạn mức): chép đúng hàm `ocrFields` trong `fe/src/mocks/ctx.ts`.
-- **Khóa**: biến môi trường `GEMINI_API_KEY` (tạo ở Google AI Studio). Tạo một bean dùng chung:
-  `Client.builder().apiKey(env.getRequiredProperty("GEMINI_API_KEY")).build()`.
+- **Khóa**: `GEMINI_API_KEY` (tạo ở Google AI Studio), biến môi trường hoặc `be/.env` (profile dev import). Một bean dùng chung
+  `GeminiConfig`: `Client.builder().apiKey(…).httpOptions(timeout, retry SDK tắt)`.
 - **Model**: `app.ocr.model`, mặc định `gemini-3.5-flash-lite` (rẻ và nhanh). Nếu đọc sai nhiều thì đổi sang `gemini-3.8-flash`.
   Tên model đổi theo thời gian, nên chỉ để trong cấu hình, không viết cứng trong code.
 - **Gọi API**: một lần `client.models.generateContent(model, content, config)`.
   - `content` gồm `Part.fromBytes(data, mimeType)` (ảnh JPG/PNG hoặc PDF) và `Part.fromText(prompt)`.
   - `config` có `responseMimeType("application/json")`, `responseSchema(...)` và `temperature(0)`.
-  - `responseSchema` sinh theo loại giấy tờ, dùng các `field_key` ở mục 9 của quy tắc:
+  - `responseSchema` sinh theo loại giấy tờ, dùng các `field_key` ở mục 9 của quy tắc (danh mục trong `document/DocumentFields`):
+    CCCD `full_name, national_id, dob, gender, address`; cư trú `address`; HĐLĐ `employer, salary`; sao kê `salary_bank, avg_income`;
+    hóa đơn `beneficiary, invoice_amount`. **Đã chốt (23/10/2026)**: HĐLĐ dùng `salary`, cư trú dùng `address` như mock (trước ghi
+    `contract_salary`, `residence_address`).
     ```json
     { "isReadable": bool, "documentMatchesType": bool, "issue": string|null,
       "fields": [ { "key": "national_id", "value": string|null, "confidence": number /* 0–100 */ } ] }
@@ -174,7 +179,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
 - **Kiểm thử**:
   - Test đơn vị dùng `FakeOcrService` hoặc mock `Client`.
   - Có một test tích hợp `@EnabledIfEnvironmentVariable(named="GEMINI_API_KEY", matches=".+")` chạy với 5 tệp trong `tests/e2e/files`,
-    chỉ kiểm tra cấu trúc kết quả.
+    chỉ kiểm tra cấu trúc kết quả (`GeminiOcrLiveTest`; tương tự `CloudinaryLiveTest` với `CLOUDINARY_URL`).
 
 ### 5.5 Bộ máy tính (engine)
 - Chép `fe/src/mocks/engine.ts` sang `engine/` (Java thuần, có `record` input/output). Giữ nguyên thứ tự kiểm tra, câu chữ lý do và hướng cải thiện.
@@ -232,7 +237,7 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] `/personal`, upload `/documents/{docId}` (QualityChecker → StorageService → OcrService), `/fields`, `CrossCheckService` (mục 10),
   `/plan`, `/request-form`, `/submit` (OTP, khóa nội dung mục 11, QR, hạn), `/cancel`.
 - [x] `NotificationService` + `/notifications`, `/notifications/{id}/read`, `/notifications/read-all`; lịch sử trạng thái.
-- [ ] (B4b) `CloudinaryStorageService` + URL ký có hạn (5.3), `GeminiOcrService` (5.4); test chạy với `storage.provider=local`, `ocr.provider=fake`.
+- [x] (B4b) `CloudinaryStorageService` + URL ký có hạn (5.3), `GeminiOcrService` (5.4); test chạy với `storage.provider=local`, `ocr.provider=fake`.
 
 ### B5. Chi nhánh (QT04–QT05)
 - [ ] `/staff/applications` (lọc trạng thái nhiều giá trị, từ khóa, chi nhánh của nhân viên), `/staff/applications/by-qr/{token}`, `/staff/summary`.
@@ -272,14 +277,15 @@ app:
   otp: { fixed-code: ""}          # dev: 123456
   storage:
     provider: cloudinary          # cloudinary | local
-    folder: tien-sang-loc-vay/dev
+    folder: tien-sang-loc-vay/prod  # dev: tien-sang-loc-vay/dev, test: tien-sang-loc-vay/test
     signed-url-minutes: 10
+    url-secret: ""                # khóa HMAC của previewUrl; trống = sinh ngẫu nhiên mỗi lần khởi động
     local-dir: ./data/uploads
   ocr:
     provider: gemini              # gemini | fake
     model: gemini-3.5-flash-lite
     timeout-seconds: 30
-# Bí mật chỉ đặt qua biến môi trường (file be/.env đã thêm vào .gitignore, hoặc Run Configuration của IDE):
+# Bí mật chỉ đặt qua biến môi trường hoặc be/.env (đã có trong .gitignore; profile dev import bằng spring.config.import):
 #   CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
 #   GEMINI_API_KEY=<khóa từ Google AI Studio>
   jobs:
@@ -287,7 +293,9 @@ app:
     purge-retention: "0 0 2 1 * *"
     remind-drafts: "0 0 9 * * *"
 ```
-`application-dev.yml`: `app.otp.fixed-code: "123456"`. Profile `test`: `app.storage.provider: local`, `app.ocr.provider: fake`, `spring.flyway.locations: classpath:db/migration,classpath:db/dev`.
+`application-dev.yml`: `spring.config.import: optional:file:.env[.properties]`, `app.otp.fixed-code: "123456"`, `app.storage.folder: tien-sang-loc-vay/dev`.
+`application-local.yml` (chạy kèm dev khi không có mạng/khóa: `-Dspring-boot.run.profiles=dev,local`): `app.storage.provider: local`, `app.ocr.provider: fake`.
+Profile `test`: `app.storage.provider: local`, `app.ocr.provider: fake`, `app.storage.folder: tien-sang-loc-vay/test`, `spring.flyway.locations: classpath:db/migration,classpath:db/dev` (db/dev từ B8).
 
 ## 8. Gợi ý khi dùng Claude Code
 
@@ -406,7 +414,7 @@ app:
 - **Thiết kế cho B4b**:
   - `StorageService` đúng chữ ký 5.3. `OcrService.extract(type, data, mimeType, ctx)` có thêm `OcrContext` (thông tin đã khai) – chỉ `FakeOcrService` dùng để sinh giá trị như mock; `GeminiOcrService` bỏ qua. `OcrResult(readable, documentMatchesType, issue, fields[key,label,value,confidence])`; ánh xạ BLURRY / WRONG_TYPE (“Tệp không phải <tên giấy tờ>.”) đã viết sẵn trong `DocumentUploadService`. Khi bật Gemini cần thêm `WRONG_TYPE` vào enum `qualityStatus` của openapi + FE.
   - Upload chạy 3 bước: giao dịch chỉ đọc kiểm tra quyền/khóa/giấy tờ/tệp → **ngoài giao dịch** Quality → Storage → OCR (không giữ kết nối DB khi gọi dịch vụ ngoài) → giao dịch ghi (kiểm tra khóa lại). Lỗi DB thì xóa tệp vừa lưu; thành công thì xóa tệp phiên bản cũ sau commit. Tệp không đạt chất lượng **không** lưu kho (theo 5.3) nên không có `previewUrl` (mock vẫn hiện ảnh thu nhỏ của tệp bị từ chối). OCR lỗi → `UPLOADED`, `qualityMessage` “Chưa đọc được thông tin tự động, vui lòng nhập tay”, `fields` rỗng (theo 5.3).
-  - **Khóa trường HĐLĐ**: `FakeOcrService` chép mock dùng `salary`; quy-tac mục 9 ghi `contract_salary`. Cần thống nhất (hỏi người dùng) trước khi viết prompt Gemini.
+  - **Khóa trường HĐLĐ**: **đã chốt** `salary` theo mock (B4b sửa quy-tac mục 9; cùng lúc sửa cư trú `residence_address` → `address`).
 - **`previewUrl` cục bộ**: `GET /api/files/local?path&exp&sig` (đã thêm vào openapi, `security: []`, chỉ có khi `provider=local`). Thẻ `<img>` của FE không gửi được Bearer nên dùng URL ký HMAC-SHA256 (`app.storage.local-secret`, để trống thì sinh ngẫu nhiên mỗi lần khởi động) hạn `app.storage.signed-url-minutes`; quyền kiểm tra lúc cấp URL (chỉ chủ hồ sơ, nhân viên chi nhánh tiếp nhận, quản trị mới nhận). Chữ ký sai/hết hạn/đường dẫn ra ngoài thư mục/tệp không còn → 404 “Không tìm thấy.”. Chỉ ảnh có `previewUrl`, PDF `null` như mock.
 - **Khác mock có chủ đích**:
   - Nhật ký “Tạo hồ sơ vay” ghi tên chi nhánh (mock ghi “Chi nhánh ” + tên, thành “Chi nhánh Chi nhánh Hà Nội”); **đã sửa mock** cho khớp.
@@ -421,3 +429,24 @@ app:
   - `.\mvnw.cmd verify` → 131 test pass. Mới: 11 `ApplicationApiTest` (lỗi tạo hồ sơ đúng thứ tự mock, danh mục 2,3,4,5,6,1, lịch sử, consent B, quyền xem chủ/nhân viên cùng-khác chi nhánh/quản trị, personal, upload WRONG_FORMAT/TOO_LARGE/BLURRY/OK + giá trị OCR giả lập + previewUrl tải được + chữ ký sai/hết hạn/`..` 404 + xóa tệp cũ, cảnh báo CCCD BLOCKING chặn giấy đề nghị, thu nhập sao kê lệch 5% + recalc, `PUT /plan` 422/400/200, giấy đề nghị 19 ô, OTP sai/chưa gửi, nộp: QR `QR[A-Z0-9]{8}`, băm 64 hex, hạn +30 ngày, thông báo khách + chi nhánh, nộp lại NEED_MORE giữ QR, EXPIRED → NEED_MORE → WAITING_VERIFY và chặn giấy tờ quá 30 ngày, hủy + 409), 1 `NotificationApiTest`, 2 `DocumentUnitTest`, 2 `ApplicationUnitTest`; `TienSangLocVayApplicationTests` sửa Flyway V1–V6, 28 bảng. Redocly lint 0 lỗi (19 cảnh báo như trước).
   - Backend dev + FE `VITE_USE_MOCK=false` (biến môi trường, **chưa đổi** `fe/.env.development`), Playwright theo bước 53–105 của `tests/e2e/full_flow.py`: đăng nhập 0901234567 → sàng lọc → phương án → tạo hồ sơ CN Hà Nội → thông tin cá nhân → `mo.jpg` hiện “Ảnh có độ phân giải thấp hoặc bị mờ…” → cccd, cutru, hdld, saoke.pdf, hoadon (4 ảnh xem trước tải được qua `/api/files/local`) → xác nhận → lập giấy đề nghị → OTP 123456 → “Chờ đối chiếu tại Chi nhánh Hà Nội” → tab Phiếu tóm tắt có mã QR, mã băm, hạn 22/11/2026. Không lỗi API/console. DB: lịch sử 2 dòng, 2 thông báo, nhật ký đủ hành động, tệp trong `be/data/uploads`.
   - DB Docker dev còn hồ sơ HS2610-0501 (DRAFTING) của khách `0901234567` từ lần chạy thử đầu bị dừng giữa chừng (lỗi in tiếng Việt của script thử, không phải lỗi backend); hủy trên giao diện hoặc `docker compose down -v` nếu muốn sạch.
+
+### B4 phần B – xong 23/10/2026 (Cloudinary + Gemini)
+- **Đã chốt với người dùng**:
+  - Khóa trường HĐLĐ là `salary` (theo mock). Cùng lúc sửa giấy xác nhận cư trú `residence_address` → `address` (mock và `FakeOcrService` đều dùng `address`, cùng nguyên tắc “mock là đặc tả”). Đã sửa `quy-tac-tinh-toan.md` mục 9 và 5.4.
+  - `previewUrl` với Cloudinary đi qua backend (`/api/files/cloud`, xem 5.3) vì gói miễn phí không có URL giao tệp tự hết hạn.
+- **Thư viện**: không thêm thư viện mới. Dùng `com.cloudinary:cloudinary-http5:2.5.0` và `com.google.genai:google-genai:1.78.0` (đã có từ B0); proxy tải ảnh dùng `java.net.http.HttpClient` của JDK. **Model**: `gemini-3.5-flash-lite` (`app.ocr.model`, đổi sang `gemini-3.8-flash` nếu đọc sai nhiều). **Không cần V7**: V6 đã có `storage_resource_type`, `storage_version` và CHECK `quality_status` gồm `WRONG_TYPE`.
+- **Đã có** (`document/`):
+  - `DocumentFields`: khóa, nhãn, kiểu giá trị theo loại giấy tờ (2–6). Dùng chung cho `FakeOcrService` (nhãn), schema/prompt Gemini và dòng trống khi máy đọc lỗi.
+  - `UrlSigner` (tách từ `LocalStorageService`): HMAC-SHA256 + hạn, khóa `app.storage.url-secret` (tên cũ `local-secret` vẫn đọc được).
+  - `CloudinaryConfig`, `CloudinaryStorageService` (upload `authenticated` + `resource_type auto`, thư mục `app.storage.folder/app-<id>`, public_id `doc-<docId>-v<n>`, `destroy` với `invalidate`), `CloudFileController` (`GET /files/cloud`: chữ ký sai/hết hạn/tệp không còn → 404 “Không tìm thấy.”, Cloudinary lỗi → 502 “Không tải được tệp từ kho lưu trữ, vui lòng thử lại sau.”). Ảnh xem trước `c_limit,f_auto,q_auto,w_480`; PDF thêm `pg_1`, đuôi `.jpg`. Với Cloudinary, PDF cũng có `previewUrl` (resource_type `image`); kho cục bộ vẫn chỉ ảnh.
+  - `GeminiConfig` (timeout `app.ocr.timeout-seconds`, tắt retry của SDK), `GeminiOcrService`: một lần `generateContent` (tệp + prompt tiếng Việt), `responseMimeType application/json`, `responseSchema` theo loại (`key` là enum các khóa của loại), `temperature 0`. Thử lại 429/503 sau 1 s rồi 3 s; lỗi khác ném ra ngay. Log loại giấy tờ, model, thời gian, số token, mã lỗi; không log tệp hay giá trị.
+  - Chuẩn hóa kết quả: đủ trường theo thứ tự danh mục (thiếu → rỗng, độ tin cậy 0; khóa lạ bỏ); tiền → `18.800.000`; ngày → dd/MM/yyyy; giới tính Nam/Nữ; tên in hoa; số CCCD bỏ khoảng trắng; độ tin cậy kẹp 0–100 (thang 0–1 nhân 100). JSON hỏng hoặc thiếu `isReadable`/`documentMatchesType`/`fields` → lỗi OCR.
+- **Máy đọc lỗi** → `UPLOADED` / `OK`, “Chưa đọc được thông tin tự động, vui lòng nhập tay”, `fields` là **các dòng trống** của loại giấy tờ (không phải mảng rỗng) vì FE chỉ hiện ô nhập và nút xác nhận khi có trường. FE `DocumentCard` hiện lời nhắc này (Alert vàng + thông báo) và ẩn thẻ % khi máy đọc không có giá trị.
+- **Hợp đồng**: `qualityStatus` thêm `WRONG_TYPE` (openapi, `types.ts`; mock không sinh giá trị này), mô tả upload thêm nhánh máy đọc, `previewUrl` mô tả mới, thêm `GET /files/cloud`. Redocly 0 lỗi (19 cảnh báo như trước).
+- **Profile**: `dev` = Cloudinary + Gemini, nạp `be/.env` bằng `spring.config.import: optional:file:.env[.properties]` (đường dẫn tính từ thư mục chạy `be/`; biến môi trường thật được ưu tiên hơn). Thiếu khóa → không khởi động, thông báo chỉ tên biến. `local` (`-Dspring-boot.run.profiles=dev,local`) = kho `be/data/uploads` + OCR giả, chạy không cần mạng. `test` giữ local/fake, thư mục `tien-sang-loc-vay/test`. Không profile thì thư mục `tien-sang-loc-vay/prod`.
+- **Kiểm tra**:
+  - `.\mvnw.cmd verify` → 144 test, 0 lỗi, 2 bỏ qua (`GeminiOcrLiveTest`, `CloudinaryLiveTest` chỉ chạy khi shell có `GEMINI_API_KEY` / `CLOUDINARY_URL`; test không đọc `be/.env`). Mới: 8 `GeminiOcrServiceTest` (schema/prompt, chuẩn hóa, JSON hỏng, thử lại 429→503→OK, bỏ cuộc sau 2 lần, 400 không thử lại, loại không có trường không gọi API, dòng trống), 2 `CloudinaryStorageServiceTest` (URL Cloudinary ký + biến đổi, URL proxy ký/sửa tham số/hết hạn), `ApplicationApiTest.upload_ocrResultMapping` (máy đọc lỗi → dòng trống → nhập tay → CONFIRMED; WRONG_TYPE; BLURRY kèm lời nhắc của máy đọc).
+  - Chạy thật: `$env:GEMINI_API_KEY=…; $env:CLOUDINARY_URL=…; .\mvnw.cmd test "-Dtest=GeminiOcrLiveTest,CloudinaryLiveTest"`. Chưa chạy trong phiên này (khóa chỉ có trong `be/.env`, không đọc file đó).
+  - `npm run build`, `npx eslint src` (0 lỗi, 4 cảnh báo có sẵn).
+  - `.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"` khởi động được (khóa nạp từ `be/.env`), health UP. Người dùng tự thử tải 5 tệp mẫu trên FE với `VITE_USE_MOCK=false`.
+- **Còn tồn đọng**: nút “Mở tệp” tải PDF gốc (cần thêm trường DTO); `PURGE_RETENTION` (B7) và rút đồng ý phạm vi B (B6) phải gọi `StorageService.delete`.
