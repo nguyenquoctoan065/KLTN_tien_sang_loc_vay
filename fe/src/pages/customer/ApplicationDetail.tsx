@@ -20,7 +20,7 @@ import { dt, money, pct } from '../../utils/format';
 /** Hồ sơ vay của khách hàng: 4.1, 4.2, 5.4, 6.2 */
 export default function ApplicationDetail() {
   const { id } = useParams();
-  const aid = Number(id);
+  const aid = id ?? '';
   const nav = useNavigate();
   const [sp, setSp] = useSearchParams();
   const qc = useQueryClient();

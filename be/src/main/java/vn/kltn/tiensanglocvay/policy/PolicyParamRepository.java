@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PolicyParamRepository extends JpaRepository<PolicyParam, Long> {
 
-    List<PolicyParam> findByVersionId(Integer versionId);
+    List<PolicyParam> findByVersionIdOrderById(Integer versionId);
 }

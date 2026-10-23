@@ -27,7 +27,13 @@ Nếu hai nguồn lệch nhau: hỏi người dùng, không tự chọn.
 | Đọc thông tin giấy tờ | Gemini API – `com.google.genai:google-genai:1.78.0` (Google Gen AI Java SDK) |
 | Kiểm thử | JUnit 5, Spring Boot Test, MockMvc, **Testcontainers PostgreSQL**, AssertJ |
 
-Không thêm thư viện khác khi chưa hỏi.
+Bảng trên là bộ thư viện nền. Ngoài bảng, **được tự thêm dependency** nếu giúp code gọn hoặc an toàn hơn, với điều kiện:
+- ưu tiên starter chính thức của Spring Boot (version do `spring-boot-starter-parent` quản lý) và thư viện phổ biến, còn bảo trì, giấy phép mở (Apache/MIT);
+- ghi version cụ thể nếu Spring không quản lý; không dùng bản SNAPSHOT/beta;
+- mỗi dependency mới ghi 1 dòng lý do vào mục 9 của tài liệu này và comment trong `pom.xml`.
+
+**Vẫn phải hỏi trước** nếu: đổi framework/ORM; thêm dịch vụ trả phí hoặc gọi ra ngoài internet; hoặc thư viện chỉ có một người duy trì.
+Frontend giữ nguyên quy tắc cũ: hỏi trước khi thêm thư viện.
 
 ## 3. Cấu trúc thư mục
 
@@ -57,7 +63,7 @@ be/
     │   └── report/        /admin/stats, /admin/model-accuracy, /admin/reports/mb14
     ├── main/resources/
     │   ├── application.yml, application-dev.yml
-    │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__app_support.sql (B1), V4__sua_dinh_dang_sao_ke.sql (B2), V5__… (B4), V6__… (mỗi giai đoạn cần thêm bảng/cột một file mới); db/dev/V1000__dev_history.sql
+    │   └── db/migration/  V1__init.sql, V2__seed.sql (chép từ ../database), V3__app_support.sql (B1), V4__sua_dinh_dang_sao_ke.sql (B2), V5__public_id.sql (mã công khai UUID), V6__… (B4), V7__… (mỗi giai đoạn cần thêm bảng/cột một file mới); db/dev/V1000__dev_history.sql
     └── test/java/vn/kltn/tiensanglocvay/…  (+ test/resources/engine-fixtures/*.json)
 ```
 
@@ -105,7 +111,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   `uploader().upload(bytes, ObjectUtils.asMap("type", "authenticated", "resource_type", "auto",
   "folder", "tien-sang-loc-vay/<môi trường>/app-<applicationId>", "public_id", "doc-<documentId>-v<version>", "overwrite", true))`.
   - Lưu vào DB: `public_id`, `resource_type`, `format`, `version`, `bytes`. Cột `storage_path` giữ `public_id`;
-    các cột còn lại thêm bằng migration của giai đoạn B4 (V5 trở đi) (`storage_resource_type`, `storage_version`).
+    các cột còn lại thêm bằng migration của giai đoạn B4 (V6 trở đi) (`storage_resource_type`, `storage_version`).
   - Không lưu `secure_url` công khai.
 - **Xem lại tệp**: `previewUrl` trong DTO là URL ký (signed) có hạn 10 phút. Tạo bằng
   `cloudinary.url().type("authenticated").resourceType(rt).signed(true).version(v)…` cùng tham số hết hạn,
@@ -181,9 +187,9 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
 - Mỗi job là một bean `ScheduledJob { code(); run(): String }`; `/admin/jobs/{code}/run` gọi cùng bean. Bảng `scheduled_job` lưu
   `last_run_at`, `last_result`.
 
-### 5.7 Cơ sở dữ liệu bổ sung (V3, V5, V6…; V4 đã dùng ở B2)
+### 5.7 Cơ sở dữ liệu bổ sung (V3, V6, V7…; V4 đã dùng ở B2, V5 cho mã công khai UUID)
 Mỗi giai đoạn tự so DTO trong openapi.yaml với lược đồ hiện có và thêm phần thiếu vào **một file migration mới theo thứ tự**
-(`V5__…`, `V6__…`); không sửa file đã chạy. `V3__app_support.sql` (B1) đã có `auth_session`, `otp_code` và unique index `lower(email)`. Còn cần:
+(`V6__…`, `V7__…`); không sửa file đã chạy. `V3__app_support.sql` (B1) đã có `auth_session`, `otp_code` và unique index `lower(email)`. Còn cần:
 - `notification` (người nhận: customer/staff/branch, title, body, link, read_at),
   `application_status_history` (application_id, from_status, to_status, actor, note, created_at), `scheduled_job`.
 - `loan_application`: `cancel_reason`, các cột còn thiếu so với `Application` DTO (ví dụ thông tin cá nhân khai cho hồ sơ nếu không lưu ở `customer`).
@@ -216,12 +222,12 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] `/products`, `/products/{code}/checklist`, `/cross-sell-products`, `/branches`. `ActivePolicy` lấy phiên bản đang hiệu lực.
 
 ### B3. Sàng lọc, mô phỏng, phương án (QT01–QT02)
-- [ ] `engine/` + fixtures (5.5). `/screenings`, `/screenings/{id}`, `/screenings/{id}/save`, `/me/screenings` (consent A).
-- [ ] `/simulations`, `/plans`, `/plans/{id}`, `/plans/{id}/confirm`, `/me/plans`.
-- [ ] Bật FE với backend thật: chạy luồng sàng lọc → phương án.
+- [x] `engine/` + fixtures (5.5). `/screenings`, `/screenings/{id}`, `/screenings/{id}/save`, `/me/screenings` (consent A).
+- [x] `/simulations`, `/plans`, `/plans/{id}`, `/plans/{id}/confirm`, `/me/plans`.
+- [x] Bật FE với backend thật: chạy luồng sàng lọc → phương án.
 
 ### B4. Hồ sơ vay (QT03, 4.1–4.2)
-- [ ] Migration mới (`V5__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
+- [ ] Migration mới (`V6__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
 - [ ] `/personal`, upload `/documents/{docId}` (QualityChecker → StorageService → OcrService), `/fields`, `CrossCheckService` (mục 10),
   `/plan`, `/request-form`, `/submit` (OTP, khóa nội dung mục 11, QR, hạn), `/cancel`.
 - [ ] `NotificationService` + `/notifications`, `/notifications/{id}/read`, `/notifications/read-all`; lịch sử trạng thái.
@@ -333,6 +339,58 @@ app:
 - **`ActivePolicy`**: `current()` nạp phiên bản `ACTIVE` một lần và giữ bản chụp bất biến (`PolicySnapshot`: `common(key)`, `product(maGoi, key)`, `weight(maGoi, tieuChi)` trả `BigDecimal`, khóa tham số theo mục 1, tiêu chí theo mục 6 của quy-tac-tinh-toan). Thiếu tham số → `IllegalStateException` nêu tên tham số (lỗi cấu hình, thành 500); không có phiên bản ACTIVE cũng vậy. **B7 phải gọi `ActivePolicy.evict()` sau khi giao dịch kích hoạt đã commit**; sửa tham số bằng SQL tay cũng cần khởi động lại backend. `param_version.test_result` (jsonb) chưa ánh xạ, thêm ở B7.
 - **Dọn từ B1**: `AuthService` lấy tên chi nhánh qua entity `Branch`; đã xóa truy vấn native `StaffRepository.findBranchName`.
 - **Đã sửa test B0**: `endpointCongKhaiKhongBiChan` trước kỳ vọng `/products`… trả 404 (chưa có controller), nay kỳ vọng 200; `/screenings/*` và `POST /screenings`, `/simulations` vẫn 404 đến B3.
-- **Đã chốt (23/10/2026)**: `allowedFormats` của “Sao kê tài khoản nhận lương 03 tháng” theo mock là `PDF,JPG,PNG` (V2 ghi `PDF`). Thêm `V4__sua_dinh_dang_sao_ke.sql` cập nhật `document_type`, không sửa V2; migration của B4 là `V5__…`. Giá trị dùng khi kiểm tra tệp tải lên (B4) và ở `/admin/document-types` (B7).
+- **Đã chốt (23/10/2026)**: `allowedFormats` của “Sao kê tài khoản nhận lương 03 tháng” theo mock là `PDF,JPG,PNG` (V2 ghi `PDF`). Thêm `V4__sua_dinh_dang_sao_ke.sql` cập nhật `document_type`, không sửa V2; migration của B4 là `V5__…` (sau dời thành `V6__…`, xem ghi chú “Mã công khai UUID”). Giá trị dùng khi kiểm tra tệp tải lên (B4) và ở `/admin/document-types` (B7).
 - **Nhắc B7**: sau khi giao dịch kích hoạt phiên bản tham số commit, phải gọi `ActivePolicy.evict()`, nếu không backend vẫn dùng bản đã nạp.
 - **Kiểm tra**: `.\mvnw.cmd verify` → 53 test pass (13 test mới `CatalogApiTest`: 4 endpoint đối chiếu từng trường với dữ liệu mẫu/mock, ẩn bản ghi `INACTIVE` của gói/bán chéo/chi nhánh, checklist TD/TC/mã lạ, `ActivePolicy` nạp đúng phiên bản 2026.10, tổng trọng số mỗi gói = 100, thiếu tham số báo rõ, `evict()` nạp lại). Chạy `spring-boot:run -Dspring-boot.run.profiles=dev` trên PostgreSQL Docker và FE `VITE_USE_MOCK=false` (biến môi trường, **chưa đổi** `fe/.env.development`): bằng Playwright trang chủ `/` gọi `GET /api/products` (không qua service worker MSW) và hiện hai thẻ gói vay, không lỗi trang. Để chắc chắn dữ liệu từ DB, tạm đổi tên gói TD trong DB thành “Vay tiêu dùng (kiểm tra B2)”, trang chủ hiện đúng tên đó, rồi đã trả lại tên cũ. Mô tả điều kiện trong thẻ (tuổi, hạn mức, kỳ hạn) do FE tự soạn, chưa đọc từ tham số.
+
+### B3 – xong 23/10/2026
+- **Đã có**:
+  - `engine/` (Java thuần): `Engine` chép từng hàm của engine.ts, nhận `LocalDate today` tường minh; record đầu ra trùng tên trường với openapi và dùng thẳng làm DTO (`ScreeningResultItem`, `ScreeningNote`, `ScheduleRow`, `Suggestion`, `SimulationResponse`); `JsFormat` định dạng số như JS (`toLocaleString('vi-VN')`, `String(x)`).
+  - `policy/EngineParams` đọc `PolicySnapshot` thành `ParamSet`/`WeightSet` với giá trị mặc định như `toParamSet()`. `ActivePolicy` thêm `version(id)` (cache theo id, `evict()` xóa cả hai) và giữ thứ tự tham số/trọng số theo id.
+  - `screening/` (`ScreeningController`, `ScreeningService`, `SimulationService`, entity `Screening`, `OtherDebt`, `ScreeningResult`, `Consent`) và `plan/` (`PlanController`, `PlanService`, entity `LoanPlan`, `PlanCrossSell`).
+  - **Không có migration mới** (V1 đủ cột); B4 vẫn là `V5__…` (sau dời thành `V6__…`, xem ghi chú “Mã công khai UUID”).
+- **Fixtures**: `npx -y tsx@4.19.2 be/tools/gen-engine-fixtures.ts` (ở thư mục gốc) gọi thẳng `fe/src/mocks/engine.ts`, sinh 32 file `be/src/test/resources/engine-fixtures/NN-ten.json`. Mỗi file có tham số, trọng số, bán chéo, input, kết quả `screen()` và 4–11 lần `simulate()`; có đủ 4 `creditHistory`, tuổi biên, nghỉ hưu, 29/02, mọi lý do loại trừ, cả 4 loại đề xuất và 3 bộ tham số/trọng số khác.
+  - Script cố định `Date` ở 23/10/2026 10:00 và đặt `TZ=Asia/Ho_Chi_Minh` (engine.ts đọc `new Date('yyyy-mm-dd')` theo UTC rồi lấy ngày theo giờ máy, nên phải sinh ở múi giờ ≥ UTC; script tự kiểm tra). Script cũng kiểm tra Node có ICU tiếng Việt.
+  - `EngineFixtureTest` so cây JSON: chuỗi, mảng và tiền phải bằng tuyệt đối; `dti`, `currentDti`, `dtiAfter`, `dtiMax`, `score`, `rate`, `refRate` lệch ≤ 0,05. Hiện khớp tuyệt đối. Đã thử cố ý làm sai một câu chữ và cách làm tròn: test báo 24/32 ca sai.
+  - **Mỗi lần sửa engine.ts: sửa `Engine.java`, chạy lại script, commit fixtures.**
+  - Chỗ JS khó chép: `new Date(y, m, d)` cộng tràn ngày (sinh 29/02, nghỉ hưu năm không nhuận → 01/03, ca `13-sinh-ngay-29-02` có `maxTermAllowed` 41 thay vì 40); các phép chia giữ dạng `double` và đúng thứ tự như TS.
+- **`GET /screenings/{id}` tính lại, không lưu JSON**: chạy `screen()` với input đã lưu, tham số của `screening.version_id` và ngày `created_at` (giờ VN); kết quả giống hệt lúc POST (có test so nguyên JSON). Đúng vì phiên bản ACTIVE/EXPIRED không sửa được (mock chỉ sửa DRAFT); B7 phải giữ quy tắc này. `screening_result`, `screening.dti`, `disposable_income` vẫn được ghi cho báo cáo B8: `reason` nối các lý do bằng dấu cách, cắt 255 ký tự; `dti` lớn hơn 999.99 (cột `decimal(5,2)`) ghi 999.99, API vẫn trả số thật.
+- **`/simulations` và `POST /plans` dùng phiên bản đang áp dụng** (như mock), còn `GET /screenings/{id}` dùng phiên bản lúc sàng lọc.
+- **Quyền**: `POST /screenings/*/save`, `POST /plans`, `GET /plans/*`, `POST /plans/*/confirm` mở ở SecurityConfig để service trả đúng chữ của mock: 401 “Cần đăng nhập tài khoản khách hàng.”, 401 “Cần đăng nhập tài khoản khách hàng để lưu phương án.”, 404 “Không tìm thấy phương án.” (cả khi không có token). `/me/screenings`, `/me/plans` cần đăng nhập (401 “Chưa đăng nhập.”); tài khoản nội bộ nhận `[]`. `@RequireRole` vẫn chưa cần (B5 làm cùng các endpoint nhân viên).
+- **Thông báo lỗi chép từ mock**: “Cần đồng ý xử lý dữ liệu trước khi sàng lọc.”, “Thông tin thu nhập hoặc số tiền vay không hợp lệ.”, “Không tìm thấy lượt sàng lọc.”, “Hồ sơ không đạt điều kiện của gói vay này.” (422), “Phương án chưa đạt: ” + các vấn đề nối bằng dấu cách (422). Nhật ký: “Lưu kết quả sàng lọc” / “Lượt #id”, “Lưu phương án vay” / “Phương án #id”, “Xác nhận phương án vay” / “Phương án #id”.
+- **Khác mock có chủ đích** (đã duyệt trong kế hoạch):
+  - Lượt sàng lọc đã thuộc khách khác: `/save` và `POST /plans` trả 404 “Không tìm thấy lượt sàng lọc.” (mock cho gắn lại). `loan_plan` không có `customer_id`, chủ phương án là `screening.customer_id` nên phải cố định.
+  - `POST /plans` kiểm tra điều kiện loại trừ trước như `/simulations` (mock không kiểm tra; thu nhập 0 sẽ chia cho 0).
+  - `POST /plans` gắn cả đồng ý phần A vào khách hàng (mock chỉ gắn lượt sàng lọc); cần cho B6 (rút đồng ý theo khách).
+  - Thứ tự kiểm tra: đồng ý A → thu nhập/số tiền (đúng chữ mock) → các trường còn lại trả 400 “Dữ liệu không hợp lệ.” kèm `fields` (thiếu trường, vượt độ dài cột, `desiredTerm` ≥ 1, `dependents` ≥ 0, tiền ≤ 15 chữ số). `POST /plans` kiểm tra đăng nhập trước dữ liệu như mock.
+- **Rủi ro còn để nguyên**: `GET /screenings/{id}` công khai theo id tuần tự (đúng openapi và mock), ai đoán được id thì xem được thông tin khai báo không định danh (tuổi, thu nhập, nợ). Nếu muốn chặn thì cần đổi openapi (ví dụ id ngẫu nhiên hoặc chỉ chủ sở hữu xem lượt đã lưu). **Đã xử lý** bằng mã công khai UUID (xem ghi chú “Mã công khai UUID”).
+- **Kiểm tra**: `.\mvnw.cmd verify` → 111 test pass (mới: 33 `EngineFixtureTest`, 17 `ScreeningApiTest`, 7 `PlanApiTest`; sửa `TienSangLocVayApplicationTests` vì `/screenings`, `/simulations` nay có controller).
+  - Chạy backend dev + FE `VITE_USE_MOCK=false` (biến môi trường, **chưa đổi** `fe/.env.development`), dùng Playwright theo bước QT01–QT02 của `tests/e2e/full_flow.py`: đăng nhập → `/sang-loc` → kết quả → mô phỏng (“Phương án nằm trong ngưỡng an toàn”) → “Chọn phương án này” → “Xác nhận phương án” (trang `/phuong-an/1` hiện “Đã xác nhận”, danh mục giấy tờ). Lượt ẩn danh → “Lưu kết quả” → đăng nhập → tự lưu (“Đã lưu vào tài khoản”). Mọi lời gọi `/api/screenings*`, `/simulations`, `/plans*` thành công; không có lỗi trang. Lỗi console chỉ là 404 của `/notifications`, `/me/applications` (B4).
+  - Đối chiếu DB: `screening` + `consent` A gắn khách, `screening_result` khớp fixture cơ bản (TD 300.000.000 đ, điểm 86.5, hạng 1), `loan_plan` CONFIRMED, `activity_log` đủ 3 hành động.
+- **Lưu ý DB dev**: mật khẩu tài khoản thử `0901234567` trong DB Docker đã bị đổi lúc 08:39 ngày 23/10/2026 (nhật ký “Đổi mật khẩu”, từ lần thử trước), nên đăng nhập bằng `123456` không được. Tôi không đặt lại; luồng trên dùng khách mới `0977091445` / `123456` đăng ký qua OTP dev. Muốn trả về như seed thì `docker compose down -v` rồi chạy lại backend (Flyway tạo lại dữ liệu mẫu), hoặc đổi mật khẩu lại qua giao diện.
+
+### Mã công khai UUID – xong 23/10/2026
+- **Phạm vi**: lượt sàng lọc, phương án vay, hồ sơ vay dùng UUID (`public_id`) ở mọi chỗ API/FE: `id` trong response, tham số đường dẫn, `screeningId` / `planId` / `applicationId`, by-qr (`PublicIdResult`), đường dẫn trong thông báo. Id số không trả ra ngoài. Mã hồ sơ hiển thị (HS2610-0509) giữ nguyên. Các bảng khác (danh mục, chi nhánh, nhân viên, tham số, thông báo, nhật ký, giấy tờ trong hồ sơ `docId`, khách hàng `customerId`/`savedToCustomerId`) giữ id số.
+- **Hợp đồng**: `docs/openapi.yaml` thêm `parameters/PublicId` (string uuid) dùng cho 16 thao tác `/screenings/{id}…`, `/plans/{id}…`, `/applications/{id}…`, `/staff/applications/{id}/…` (`/notifications/{id}/read` và admin giữ `Id`); thêm `PublicIdResult`; đổi kiểu các trường trên; ghi quy ước ở `info.description`. `GET /screenings/{id}` đổi `security` thành `[{}, bearer]` để nhận ra chủ. Redocly: 0 lỗi, 19 cảnh báo (bằng số cảnh báo trước khi sửa).
+- **DB**: `V5__public_id.sql` thêm `public_id uuid NOT NULL DEFAULT gen_random_uuid()` + `UNIQUE` cho `screening`, `loan_plan`, `loan_application` (dòng cũ tự có mã). Khóa chính bigint giữ nguyên cho khóa ngoại. **Migration của B4 dời thành `V6__…`** (đã sửa mục 3, 5.3, 5.7, B4).
+- **Backend**:
+  - Entity `Screening`, `LoanPlan` có `publicId` (sinh `UUID.randomUUID()` trong constructor, `updatable = false`), repository `findByPublicId`. B4 làm entity `LoanApplication` thì theo cùng mẫu.
+  - Controller nhận `{id}` là `String`; `common/PublicIds.parse(raw, thôngBáo404)` chỉ nhận UUID dạng chuẩn 36 ký tự. Id số, chuỗi lạ, UUID rút gọn hay không gạch nối đều thành 404 với thông báo của tài nguyên (không phải 400).
+  - `screeningId` không phải UUID trong JSON là lỗi kiểu dữ liệu → 400 “Dữ liệu không hợp lệ.”. `POST /plans` và `POST /screenings/*/save` được `security/CustomerOnlyFilter` chặn trước khi đọc body (chưa đăng nhập hoặc không phải khách hàng → 401 đúng chữ của mock, kể cả body sai định dạng), nên thứ tự lỗi khớp mock. Các đường dẫn còn lại (`GET /plans/*`, `POST /plans/*/confirm`) không đọc body nên vẫn do `PlanService` trả 404 “Không tìm thấy phương án.”. `GET /screenings/{id}` 404 mà chưa đăng nhập: trang kết quả sàng lọc ở FE hiện thêm “Nếu bạn đã lưu kết quả này vào tài khoản, hãy đăng nhập để xem.” kèm nút Đăng nhập (`?next=` về đúng trang).
+  - `PublicIds.shortCode` (8 ký tự đầu) dùng cho nhật ký.
+- **Quyền xem lượt sàng lọc** (đã chốt): chưa thuộc ai → ai có UUID xem/mô phỏng được; đã lưu vào tài khoản → chỉ chủ tài khoản.
+  - `GET /screenings/{id}`: không tồn tại, sai định dạng, hoặc đã lưu mà người xem không phải chủ (kể cả ẩn danh, nhân viên, quản trị) đều 404 **“Không tìm thấy kết quả sàng lọc.”** (một câu để không lộ lượt có tồn tại hay không).
+  - `/save`, `/simulations` (mới áp dụng quy tắc này), `POST /plans`: 404 “Không tìm thấy lượt sàng lọc.”.
+  - Phương án giữ kiểm tra chủ như cũ (404 “Không tìm thấy phương án.”).
+  - Hệ quả: tạo lượt ẩn danh rồi lưu vào tài khoản thì chính trình duyệt ẩn danh đó không xem lại được nữa nếu không đăng nhập (FE đã tự đưa về trang đăng nhập khi bấm “Lưu kết quả”).
+- **Nhật ký**: “Lượt #<8 ký tự đầu>”, “Phương án #<8 ký tự đầu>” (mock và backend). FE hiện cùng mã ngắn (`utils/format.ts` `shortId`) ở tiêu đề kết quả sàng lọc, phương án và bảng ở trang “Của tôi”.
+- **Frontend**:
+  - `types.ts`, `endpoints.ts` đổi kiểu sang `string`. Các trang bỏ `Number(id)`: `ScreeningResult`, `Simulation`, `PlanDetail`, `ApplicationDetail`, `CreateApplication` (`?phuongAn=`), `ScreeningWizard` (`?tu=`), `StaffApplicationDetail`.
+  - Mock sinh mã bằng `crypto.randomUUID()` cho 3 loại (cả dữ liệu lịch sử), `DB_VERSION` 7 → 8. `tests/e2e/full_flow.py` không cần sửa (chỉ dùng URL dạng chuỗi).
+  - Mock `screening.ts` thêm luôn 3 điểm backend đã làm khác ở B3 để mock và backend lại khớp: lượt đã lưu của khách khác → 404, `POST /plans` kiểm tra điều kiện loại trừ trước (422), lưu phương án gắn đồng ý phần A vào khách. `/me/screenings`, `/me/plans` của tài khoản nội bộ trả `[]` như backend.
+- **Kiểm tra**:
+  - `.\mvnw.cmd verify` → 115 test pass (thêm: id số / UUID ngẫu nhiên / chuỗi lạ / UUID rút gọn → 404 ở `/screenings`, `/save`, `/plans`, `/confirm`; lượt đã lưu chỉ chủ xem và mô phỏng được; luồng ẩn danh → lưu → người khác 404; response chỉ có UUID; `applicationId` là `public_id` của hồ sơ chưa hủy; Flyway V1–V5, 3 bảng có `public_id`).
+  - `npm run build`, `npx eslint src` (0 lỗi, 4 cảnh báo fast-refresh có sẵn), redocly lint 0 lỗi.
+  - `python tests\e2e\full_flow.py` trên mock → `ERRORS []` (URL `/ho-so/<uuid>`).
+  - Backend thật (dev, Flyway áp V5) + FE `VITE_USE_MOCK=false`: sàng lọc → mô phỏng → lưu/xác nhận phương án (`/phuong-an/<uuid>`) và ẩn danh → “Lưu kết quả” → đăng nhập → tự lưu đều chạy; nhật ký ghi “Phương án #206d167f”, “Lượt #171ebf53”. Lỗi console chỉ là 404 của `/notifications`, `/me/applications` (B4).
+  - DB Docker dev lúc chạy được tạo lại từ đầu (Flyway áp cả V1–V5), nên tài khoản `0901234567` / `123456` dùng lại được; khách thử `0977091445` ghi ở B3 không còn.

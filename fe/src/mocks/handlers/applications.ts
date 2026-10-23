@@ -8,7 +8,7 @@ import {
 import { SYSTEM_DOC_TYPE, type AppRecord } from '../db';
 import { simulate } from '../engine';
 
-const findApp = (id: unknown) => db.applications.find(a => a.id === Number(id));
+const findApp = (id: unknown) => db.applications.find(a => a.id === String(id));
 
 function own(request: Request, id: unknown): { app: AppRecord; u: NonNullable<ReturnType<typeof currentUser>> } | Response {
   const u = currentUser(request);
@@ -79,7 +79,7 @@ export const applicationHandlers = [
   http.post(`${API}/applications`, async ({ request }) => {
     const u = currentUser(request);
     if (!u || u.role !== 'CUSTOMER') return err(401, 'Cần đăng nhập tài khoản khách hàng.');
-    const b = (await request.json()) as { planId: number; branchId: number; consentB: { agreed: boolean; docVersion: string } };
+    const b = (await request.json()) as { planId: string; branchId: number; consentB: { agreed: boolean; docVersion: string } };
     if (!b.consentB?.agreed) return err(400, 'Cần đồng ý lưu trữ giấy tờ và lập hồ sơ.');
     const plan = db.plans.find(p => p.id === b.planId && p.customerId === u.id);
     if (!plan) return err(404, 'Không tìm thấy phương án.');
@@ -96,7 +96,7 @@ export const applicationHandlers = [
         uploadedAt: null, previewUrl: null, fields: [], verifyResult: null, verifyReason: null };
     }).sort((a, b2) => (a.documentTypeId === SYSTEM_DOC_TYPE ? 1 : 0) - (b2.documentTypeId === SYSTEM_DOC_TYPE ? 1 : 0));
     const app: AppRecord = {
-      id: nextId(), code: newCode(), customerId: u.id, status: 'DRAFTING', branchId: branch.id, plan: { ...plan }, purpose: scr?.input.purpose ?? '',
+      id: crypto.randomUUID(), code: newCode(), customerId: u.id, status: 'DRAFTING', branchId: branch.id, plan: { ...plan }, purpose: scr?.input.purpose ?? '',
       personal, consentBAt: nowIso(), versionNo: activeVersion().versionNo, contentHash: null, lockedAt: null, qrToken: null, expiresAt: null,
       createdAt: nowIso(), updatedAt: nowIso(), documents: docs, warnings: [], recalc: null, requestForm: null, verifications: [], approval: null,
       history: [{ status: 'DRAFTING', at: nowIso(), actor: u.name, note: 'Tạo hồ sơ' }], predictedScore: plan.score, screeningId: plan.screeningId,

@@ -7,12 +7,12 @@ import { errorMessage } from '../../api/client';
 import Disclaimer from '../../components/Disclaimer';
 import Hint from '../../components/Hint';
 import { GLOSSARY } from '../../utils/glossary';
-import { dt, money, pct } from '../../utils/format';
+import { dt, money, pct, shortId } from '../../utils/format';
 
 /** MB07 – Phương án vay đề xuất, kèm danh mục giấy tờ cần chuẩn bị */
 export default function PlanDetail() {
   const { id } = useParams();
-  const pid = Number(id);
+  const pid = id ?? '';
   const nav = useNavigate();
   const qc = useQueryClient();
   const { message } = App.useApp();
@@ -31,7 +31,7 @@ export default function PlanDetail() {
       <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
         <div>
           <Typography.Title level={3} style={{ marginBottom: 0 }}>Phương án vay đề xuất</Typography.Title>
-          <Typography.Text type="secondary">Phương án #{p.id} · {dt(p.createdAt)}</Typography.Text>
+          <Typography.Text type="secondary">Phương án {shortId(p.id)} · {dt(p.createdAt)}</Typography.Text>
         </div>
         <Space>
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>In</Button>

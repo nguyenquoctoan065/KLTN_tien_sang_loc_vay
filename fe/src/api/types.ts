@@ -105,7 +105,7 @@ export interface ScreeningResultItem {
 
 /** MB03 – Bảng kết quả gợi ý gói vay */
 export interface ScreeningResponse {
-  id: number;
+  id: string;
   createdAt: string;
   versionNo: string;
   input: ScreeningRequest;
@@ -119,7 +119,7 @@ export interface ScreeningResponse {
 }
 
 export interface SimulationRequest {
-  screeningId: number;
+  screeningId: string;
   productCode: ProductCode;
   amount: number;
   termMonths: number;
@@ -174,8 +174,8 @@ export interface SimulationResponse {
 
 /** MB07 – Phương án vay đề xuất (loan_plan) */
 export interface LoanPlan {
-  id: number;
-  screeningId: number;
+  id: string;
+  screeningId: string;
   productCode: ProductCode;
   productName: string;
   amount: number;
@@ -191,7 +191,7 @@ export interface LoanPlan {
   /** Danh mục giấy tờ cần chuẩn bị (bản xem trước MB05) */
   checklist: { name: string; group: string; required: boolean }[];
   /** hồ sơ đã lập từ phương án (nếu có) */
-  applicationId?: number | null;
+  applicationId?: string | null;
 }
 
 export type ApplicationStatus =
@@ -206,7 +206,7 @@ export type ApplicationStatus =
   | 'EXPIRED';
 
 export interface ApplicationSummary {
-  id: number;
+  id: string;
   code: string;
   customerName: string;
   customerPhone: string;
@@ -428,7 +428,7 @@ export interface Recalculation {
 
 /** HỒ SƠ VAY (loan_application) – chi tiết */
 export interface Application {
-  id: number;
+  id: string;
   code: string;
   customerId: number;
   status: ApplicationStatus;

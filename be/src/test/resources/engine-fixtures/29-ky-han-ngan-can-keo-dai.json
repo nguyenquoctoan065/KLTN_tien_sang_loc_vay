@@ -1,0 +1,1669 @@
+{
+  "name": "ky-han-ngan-can-keo-dai",
+  "today": "2026-10-23",
+  "params": {
+    "dtiMax": 70,
+    "livingCostBase": 4000000,
+    "livingCostPerDependent": 2000000,
+    "retireAgeMale": 62,
+    "retireAgeFemale": 60,
+    "roomFactor": 100,
+    "maxRateDiscount": 2,
+    "products": {
+      "TD": {
+        "minAge": 22,
+        "incomeMultiplier": 15,
+        "maxAmount": 500000000,
+        "minAmount": 10000000,
+        "maxTerm": 60,
+        "minTerm": 6,
+        "refRate": 12.5
+      },
+      "TC": {
+        "minAge": 19,
+        "incomeMultiplier": null,
+        "maxAmount": 200000000,
+        "minAmount": 10000000,
+        "maxTerm": 12,
+        "minTerm": 12,
+        "refRate": 18
+      }
+    }
+  },
+  "weights": {
+    "TD": {
+      "DTI": 35,
+      "AMOUNT_RATIO": 25,
+      "SALARY_BANK": 15,
+      "STAFF": 10,
+      "TERM_TO_RETIRE": 15
+    },
+    "TC": {
+      "DTI": 30,
+      "AMOUNT_RATIO": 20,
+      "SALARY_BANK": 25,
+      "STAFF": 20,
+      "TERM_TO_RETIRE": 5
+    }
+  },
+  "crossSells": [
+    {
+      "id": 1,
+      "name": "Bảo hiểm nhân thọ",
+      "productType": "INSURANCE",
+      "estCost": 8000000,
+      "scoreBonus": 5,
+      "rateDiscount": 1,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 2,
+      "name": "Thẻ tín dụng",
+      "productType": "CARD",
+      "estCost": 0,
+      "scoreBonus": 3,
+      "rateDiscount": 0.5,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 3,
+      "name": "Chứng chỉ tiền gửi",
+      "productType": "DEPOSIT",
+      "estCost": 0,
+      "scoreBonus": 4,
+      "rateDiscount": 0.7,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 4,
+      "name": "Tài khoản số đẹp",
+      "productType": "ACCOUNT",
+      "estCost": 1000000,
+      "scoreBonus": 2,
+      "rateDiscount": 0.3,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 5,
+      "name": "Gói tạm ngưng",
+      "productType": "CARD",
+      "estCost": 500000,
+      "scoreBonus": 1,
+      "rateDiscount": 1.5,
+      "status": "INACTIVE"
+    }
+  ],
+  "input": {
+    "consentA": {
+      "agreed": true,
+      "docVersion": "DK-1.0"
+    },
+    "nationality": "Việt Nam",
+    "dob": "1992-05-15",
+    "gender": "MALE",
+    "maritalStatus": "MARRIED",
+    "dependents": 1,
+    "avgIncome": 15000000,
+    "salaryBank": "Vietcombank",
+    "isAbbankStaff": false,
+    "creditHistory": "ON_TIME",
+    "otherDebts": [],
+    "purpose": "Mua xe máy, ô tô",
+    "desiredAmount": 100000000,
+    "desiredTerm": 12
+  },
+  "screening": {
+    "notes": [],
+    "age": 34,
+    "livingCost": 6000000,
+    "disposableIncome": 9000000,
+    "currentDti": 0,
+    "results": [
+      {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "eligible": true,
+        "reasons": [],
+        "hints": [
+          "Số tiền mong muốn vượt hạn mức an toàn; nên vay tối đa 96.000.000 đ hoặc điều chỉnh ở bước mô phỏng."
+        ],
+        "dti": 62.5,
+        "maxSafeAmount": 96000000,
+        "refRate": 12.5,
+        "maxTerm": 60,
+        "score": 49.6,
+        "rankNo": 1
+      },
+      {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "eligible": true,
+        "reasons": [],
+        "hints": [
+          "Số tiền mong muốn vượt hạn mức an toàn; nên vay tối đa 91.000.000 đ hoặc điều chỉnh ở bước mô phỏng."
+        ],
+        "dti": 65.6,
+        "maxSafeAmount": 91000000,
+        "refRate": 18,
+        "maxTerm": 12,
+        "score": 40.8,
+        "rankNo": 2
+      }
+    ]
+  },
+  "simulations": [
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 100000000,
+        "termMonths": 12,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 100000000,
+        "termMonths": 12,
+        "rate": 12.5,
+        "monthlyObligation": 9375000,
+        "firstPayment": 9375000,
+        "totalInterest": 6770834,
+        "totalPayment": 106770834,
+        "dtiAfter": 62.5,
+        "dtiMax": 70,
+        "disposableAfter": -375000,
+        "maxSafeAmount": 96000000,
+        "maxTermAllowed": 60,
+        "score": 49.6,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (96.000.000 đ).",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 8333333,
+            "interest": 1041667,
+            "payment": 9375000,
+            "balance": 91666667
+          },
+          {
+            "period": 2,
+            "principal": 8333333,
+            "interest": 954861,
+            "payment": 9288194,
+            "balance": 83333334
+          },
+          {
+            "period": 3,
+            "principal": 8333333,
+            "interest": 868056,
+            "payment": 9201389,
+            "balance": 75000001
+          },
+          {
+            "period": 4,
+            "principal": 8333333,
+            "interest": 781250,
+            "payment": 9114583,
+            "balance": 66666668
+          },
+          {
+            "period": 5,
+            "principal": 8333333,
+            "interest": 694444,
+            "payment": 9027777,
+            "balance": 58333335
+          },
+          {
+            "period": 6,
+            "principal": 8333333,
+            "interest": 607639,
+            "payment": 8940972,
+            "balance": 50000002
+          },
+          {
+            "period": 7,
+            "principal": 8333333,
+            "interest": 520833,
+            "payment": 8854166,
+            "balance": 41666669
+          },
+          {
+            "period": 8,
+            "principal": 8333333,
+            "interest": 434028,
+            "payment": 8767361,
+            "balance": 33333336
+          },
+          {
+            "period": 9,
+            "principal": 8333333,
+            "interest": 347222,
+            "payment": 8680555,
+            "balance": 25000003
+          },
+          {
+            "period": 10,
+            "principal": 8333333,
+            "interest": 260417,
+            "payment": 8593750,
+            "balance": 16666670
+          },
+          {
+            "period": 11,
+            "principal": 8333333,
+            "interest": 173611,
+            "payment": 8506944,
+            "balance": 8333337
+          },
+          {
+            "period": 12,
+            "principal": 8333337,
+            "interest": 86806,
+            "payment": 8420143,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 53.2,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 13 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 100000000,
+            "termMonths": 13,
+            "crossSellIds": [],
+            "score": 55.8,
+            "extraCost": 0
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay thấu chi không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 91.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 100000000,
+        "termMonths": 12,
+        "crossSellIds": [
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 100000000,
+        "termMonths": 12,
+        "rate": 11.3,
+        "monthlyObligation": 9275000,
+        "firstPayment": 9275000,
+        "totalInterest": 6120833,
+        "totalPayment": 106120833,
+        "dtiAfter": 61.8,
+        "dtiMax": 70,
+        "disposableAfter": -275000,
+        "maxSafeAmount": 97000000,
+        "maxTermAllowed": 60,
+        "score": 57.6,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (97.000.000 đ).",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 8333333,
+            "interest": 941667,
+            "payment": 9275000,
+            "balance": 91666667
+          },
+          {
+            "period": 2,
+            "principal": 8333333,
+            "interest": 863194,
+            "payment": 9196527,
+            "balance": 83333334
+          },
+          {
+            "period": 3,
+            "principal": 8333333,
+            "interest": 784722,
+            "payment": 9118055,
+            "balance": 75000001
+          },
+          {
+            "period": 4,
+            "principal": 8333333,
+            "interest": 706250,
+            "payment": 9039583,
+            "balance": 66666668
+          },
+          {
+            "period": 5,
+            "principal": 8333333,
+            "interest": 627778,
+            "payment": 8961111,
+            "balance": 58333335
+          },
+          {
+            "period": 6,
+            "principal": 8333333,
+            "interest": 549306,
+            "payment": 8882639,
+            "balance": 50000002
+          },
+          {
+            "period": 7,
+            "principal": 8333333,
+            "interest": 470833,
+            "payment": 8804166,
+            "balance": 41666669
+          },
+          {
+            "period": 8,
+            "principal": 8333333,
+            "interest": 392361,
+            "payment": 8725694,
+            "balance": 33333336
+          },
+          {
+            "period": 9,
+            "principal": 8333333,
+            "interest": 313889,
+            "payment": 8647222,
+            "balance": 25000003
+          },
+          {
+            "period": 10,
+            "principal": 8333333,
+            "interest": 235417,
+            "payment": 8568750,
+            "balance": 16666670
+          },
+          {
+            "period": 11,
+            "principal": 8333333,
+            "interest": 156944,
+            "payment": 8490277,
+            "balance": 8333337
+          },
+          {
+            "period": 12,
+            "principal": 8333337,
+            "interest": 78472,
+            "payment": 8411809,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 97000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              2,
+              3
+            ],
+            "score": 60.2,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 13 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 100000000,
+            "termMonths": 13,
+            "crossSellIds": [
+              2,
+              3
+            ],
+            "score": 63.8,
+            "extraCost": 0
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay thấu chi không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 91.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 135000000,
+        "termMonths": 12,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 135000000,
+        "termMonths": 12,
+        "rate": 12.5,
+        "monthlyObligation": 12656250,
+        "firstPayment": 12656250,
+        "totalInterest": 9140628,
+        "totalPayment": 144140628,
+        "dtiAfter": 84.4,
+        "dtiMax": 70,
+        "disposableAfter": -3656250,
+        "maxSafeAmount": 96000000,
+        "maxTermAllowed": 60,
+        "score": 35.4,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (96.000.000 đ).",
+          "DTI sau vay 84.4% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 11250000,
+            "interest": 1406250,
+            "payment": 12656250,
+            "balance": 123750000
+          },
+          {
+            "period": 2,
+            "principal": 11250000,
+            "interest": 1289063,
+            "payment": 12539063,
+            "balance": 112500000
+          },
+          {
+            "period": 3,
+            "principal": 11250000,
+            "interest": 1171875,
+            "payment": 12421875,
+            "balance": 101250000
+          },
+          {
+            "period": 4,
+            "principal": 11250000,
+            "interest": 1054688,
+            "payment": 12304688,
+            "balance": 90000000
+          },
+          {
+            "period": 5,
+            "principal": 11250000,
+            "interest": 937500,
+            "payment": 12187500,
+            "balance": 78750000
+          },
+          {
+            "period": 6,
+            "principal": 11250000,
+            "interest": 820313,
+            "payment": 12070313,
+            "balance": 67500000
+          },
+          {
+            "period": 7,
+            "principal": 11250000,
+            "interest": 703125,
+            "payment": 11953125,
+            "balance": 56250000
+          },
+          {
+            "period": 8,
+            "principal": 11250000,
+            "interest": 585938,
+            "payment": 11835938,
+            "balance": 45000000
+          },
+          {
+            "period": 9,
+            "principal": 11250000,
+            "interest": 468750,
+            "payment": 11718750,
+            "balance": 33750000
+          },
+          {
+            "period": 10,
+            "principal": 11250000,
+            "interest": 351563,
+            "payment": 11601563,
+            "balance": 22500000
+          },
+          {
+            "period": 11,
+            "principal": 11250000,
+            "interest": 234375,
+            "payment": 11484375,
+            "balance": 11250000
+          },
+          {
+            "period": 12,
+            "principal": 11250000,
+            "interest": 117188,
+            "payment": 11367188,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 53.2,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 18 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 135000000,
+            "termMonths": 18,
+            "crossSellIds": [],
+            "score": 54,
+            "extraCost": 0
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay thấu chi không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 91.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 5000000,
+        "termMonths": 12,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 5000000,
+        "termMonths": 12,
+        "rate": 12.5,
+        "monthlyObligation": 468750,
+        "firstPayment": 468750,
+        "totalInterest": 338541,
+        "totalPayment": 5338541,
+        "dtiAfter": 3.1,
+        "dtiMax": 70,
+        "disposableAfter": 8531250,
+        "maxSafeAmount": 96000000,
+        "maxTermAllowed": 60,
+        "score": 86.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay tối thiểu là 10.000.000 đ."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 416667,
+            "interest": 52083,
+            "payment": 468750,
+            "balance": 4583333
+          },
+          {
+            "period": 2,
+            "principal": 416667,
+            "interest": 47743,
+            "payment": 464410,
+            "balance": 4166666
+          },
+          {
+            "period": 3,
+            "principal": 416667,
+            "interest": 43403,
+            "payment": 460070,
+            "balance": 3749999
+          },
+          {
+            "period": 4,
+            "principal": 416667,
+            "interest": 39062,
+            "payment": 455729,
+            "balance": 3333332
+          },
+          {
+            "period": 5,
+            "principal": 416667,
+            "interest": 34722,
+            "payment": 451389,
+            "balance": 2916665
+          },
+          {
+            "period": 6,
+            "principal": 416667,
+            "interest": 30382,
+            "payment": 447049,
+            "balance": 2499998
+          },
+          {
+            "period": 7,
+            "principal": 416667,
+            "interest": 26042,
+            "payment": 442709,
+            "balance": 2083331
+          },
+          {
+            "period": 8,
+            "principal": 416667,
+            "interest": 21701,
+            "payment": 438368,
+            "balance": 1666664
+          },
+          {
+            "period": 9,
+            "principal": 416667,
+            "interest": 17361,
+            "payment": 434028,
+            "balance": 1249997
+          },
+          {
+            "period": 10,
+            "principal": 416667,
+            "interest": 13021,
+            "payment": 429688,
+            "balance": 833330
+          },
+          {
+            "period": 11,
+            "principal": 416667,
+            "interest": 8681,
+            "payment": 425348,
+            "balance": 416663
+          },
+          {
+            "period": 12,
+            "principal": 416663,
+            "interest": 4340,
+            "payment": 421003,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 53.2,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 12 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 5000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 86.5,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 100000000,
+        "termMonths": 12,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 100000000,
+        "termMonths": 12,
+        "rate": 18,
+        "monthlyObligation": 9833333,
+        "firstPayment": 1500000,
+        "totalInterest": 18000000,
+        "totalPayment": 118000000,
+        "dtiAfter": 65.6,
+        "dtiMax": 70,
+        "disposableAfter": -833333,
+        "maxSafeAmount": 91000000,
+        "maxTermAllowed": 12,
+        "score": 40.8,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (91.000.000 đ).",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 1500000,
+            "payment": 1500000,
+            "balance": 100000000
+          },
+          {
+            "period": 12,
+            "principal": 100000000,
+            "interest": 1500000,
+            "payment": 101500000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 17%/năm, hạn mức an toàn tăng lên 92.000.000 đ.",
+            "productCode": "TC",
+            "amount": 92000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              1
+            ],
+            "score": 52.7,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay tiêu dùng không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 96.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 53.2,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 100000000,
+        "termMonths": 12,
+        "crossSellIds": [
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 100000000,
+        "termMonths": 12,
+        "rate": 16.8,
+        "monthlyObligation": 9733333,
+        "firstPayment": 1400000,
+        "totalInterest": 16800000,
+        "totalPayment": 116800000,
+        "dtiAfter": 64.9,
+        "dtiMax": 70,
+        "disposableAfter": -733333,
+        "maxSafeAmount": 92000000,
+        "maxTermAllowed": 12,
+        "score": 48.6,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (92.000.000 đ).",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 1400000,
+            "payment": 1400000,
+            "balance": 100000000
+          },
+          {
+            "period": 12,
+            "principal": 100000000,
+            "interest": 1400000,
+            "payment": 101400000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 92000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              2,
+              3
+            ],
+            "score": 54.8,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 16%/năm, hạn mức an toàn tăng lên 93.000.000 đ.",
+            "productCode": "TC",
+            "amount": 93000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              2,
+              3,
+              1
+            ],
+            "score": 59.6,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay tiêu dùng không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 96.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 53.2,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 128000000,
+        "termMonths": 12,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 128000000,
+        "termMonths": 12,
+        "rate": 18,
+        "monthlyObligation": 12586667,
+        "firstPayment": 1920000,
+        "totalInterest": 23040000,
+        "totalPayment": 151040000,
+        "dtiAfter": 83.9,
+        "dtiMax": 70,
+        "disposableAfter": -3586667,
+        "maxSafeAmount": 91000000,
+        "maxTermAllowed": 12,
+        "score": 32.6,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (91.000.000 đ).",
+          "DTI sau vay 83.9% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 1920000,
+            "payment": 1920000,
+            "balance": 128000000
+          },
+          {
+            "period": 12,
+            "principal": 128000000,
+            "interest": 1920000,
+            "payment": 129920000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 17%/năm, hạn mức an toàn tăng lên 92.000.000 đ.",
+            "productCode": "TC",
+            "amount": 92000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              1
+            ],
+            "score": 52.7,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay tiêu dùng không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 96.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 53.2,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 5000000,
+        "termMonths": 12,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 5000000,
+        "termMonths": 12,
+        "rate": 18,
+        "monthlyObligation": 491667,
+        "firstPayment": 75000,
+        "totalInterest": 900000,
+        "totalPayment": 5900000,
+        "dtiAfter": 3.3,
+        "dtiMax": 70,
+        "disposableAfter": 8508333,
+        "maxSafeAmount": 91000000,
+        "maxTermAllowed": 12,
+        "score": 75.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay tối thiểu là 10.000.000 đ."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 12,
+            "principal": 5000000,
+            "interest": 75000,
+            "payment": 5075000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 100000000,
+        "termMonths": 6,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 100000000,
+        "termMonths": 6,
+        "rate": 12.5,
+        "monthlyObligation": 17708333,
+        "firstPayment": 17708334,
+        "totalInterest": 3645833,
+        "totalPayment": 103645833,
+        "dtiAfter": 118.1,
+        "dtiMax": 70,
+        "disposableAfter": -8708333,
+        "maxSafeAmount": 50000000,
+        "maxTermAllowed": 60,
+        "score": 26.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (50.000.000 đ).",
+          "DTI sau vay 118.1% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 16666667,
+            "interest": 1041667,
+            "payment": 17708334,
+            "balance": 83333333
+          },
+          {
+            "period": 2,
+            "principal": 16666667,
+            "interest": 868056,
+            "payment": 17534723,
+            "balance": 66666666
+          },
+          {
+            "period": 3,
+            "principal": 16666667,
+            "interest": 694444,
+            "payment": 17361111,
+            "balance": 49999999
+          },
+          {
+            "period": 4,
+            "principal": 16666667,
+            "interest": 520833,
+            "payment": 17187500,
+            "balance": 33333332
+          },
+          {
+            "period": 5,
+            "principal": 16666667,
+            "interest": 347222,
+            "payment": 17013889,
+            "balance": 16666665
+          },
+          {
+            "period": 6,
+            "principal": 16666665,
+            "interest": 173611,
+            "payment": 16840276,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 6 tháng.",
+            "productCode": "TD",
+            "amount": 50000000,
+            "termMonths": 6,
+            "crossSellIds": [],
+            "score": 54.3,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 13 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 100000000,
+            "termMonths": 13,
+            "crossSellIds": [],
+            "score": 55.8,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 11.5%/năm, hạn mức an toàn tăng lên 51.000.000 đ.",
+            "productCode": "TD",
+            "amount": 51000000,
+            "termMonths": 6,
+            "crossSellIds": [
+              1
+            ],
+            "score": 58.3,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay thấu chi không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 91.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 250000000,
+        "termMonths": 12,
+        "crossSellIds": [
+          2
+        ]
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 250000000,
+        "termMonths": 12,
+        "rate": 12,
+        "monthlyObligation": 23333333,
+        "firstPayment": 23333333,
+        "totalInterest": 16250000,
+        "totalPayment": 266250000,
+        "dtiAfter": 155.6,
+        "dtiMax": 70,
+        "disposableAfter": -14333333,
+        "maxSafeAmount": 96000000,
+        "maxTermAllowed": 60,
+        "score": 29.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (96.000.000 đ).",
+          "DTI sau vay 155.6% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 20833333,
+            "interest": 2500000,
+            "payment": 23333333,
+            "balance": 229166667
+          },
+          {
+            "period": 2,
+            "principal": 20833333,
+            "interest": 2291667,
+            "payment": 23125000,
+            "balance": 208333334
+          },
+          {
+            "period": 3,
+            "principal": 20833333,
+            "interest": 2083333,
+            "payment": 22916666,
+            "balance": 187500001
+          },
+          {
+            "period": 4,
+            "principal": 20833333,
+            "interest": 1875000,
+            "payment": 22708333,
+            "balance": 166666668
+          },
+          {
+            "period": 5,
+            "principal": 20833333,
+            "interest": 1666667,
+            "payment": 22500000,
+            "balance": 145833335
+          },
+          {
+            "period": 6,
+            "principal": 20833333,
+            "interest": 1458333,
+            "payment": 22291666,
+            "balance": 125000002
+          },
+          {
+            "period": 7,
+            "principal": 20833333,
+            "interest": 1250000,
+            "payment": 22083333,
+            "balance": 104166669
+          },
+          {
+            "period": 8,
+            "principal": 20833333,
+            "interest": 1041667,
+            "payment": 21875000,
+            "balance": 83333336
+          },
+          {
+            "period": 9,
+            "principal": 20833333,
+            "interest": 833333,
+            "payment": 21666666,
+            "balance": 62500003
+          },
+          {
+            "period": 10,
+            "principal": 20833333,
+            "interest": 625000,
+            "payment": 21458333,
+            "balance": 41666670
+          },
+          {
+            "period": 11,
+            "principal": 20833333,
+            "interest": 416667,
+            "payment": 21250000,
+            "balance": 20833337
+          },
+          {
+            "period": 12,
+            "principal": 20833337,
+            "interest": 208333,
+            "payment": 21041670,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TD",
+            "amount": 96000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              2
+            ],
+            "score": 56.5,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn và giảm số tiền",
+            "detail": "Kỳ hạn 60 tháng cho hạn mức an toàn 225.000.000 đ.",
+            "productCode": "TD",
+            "amount": 225000000,
+            "termMonths": 60,
+            "crossSellIds": [
+              2
+            ],
+            "score": 79.5,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 11%/năm, hạn mức an toàn tăng lên 97.000.000 đ.",
+            "productCode": "TD",
+            "amount": 97000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              2,
+              1
+            ],
+            "score": 61.4,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay thấu chi không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 91.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 91000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 47.8,
+            "extraCost": 0
+          }
+        ]
+      }
+    }
+  ]
+}

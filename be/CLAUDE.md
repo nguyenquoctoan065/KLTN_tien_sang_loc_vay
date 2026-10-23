@@ -13,6 +13,9 @@ Spring Boot 3.3 · Java 21 · Maven · PostgreSQL 16 · Flyway. Package gốc `v
   Chi tiết: mục 5.3, 5.4 của hướng dẫn. Khóa chỉ qua biến môi trường `CLOUDINARY_URL`, `GEMINI_API_KEY` – không commit
   (thêm `.env` vào `be/.gitignore`). Test dùng `app.storage.provider=local`, `app.ocr.provider=fake`, không gọi dịch vụ ngoài.
 - Chỉ gửi ảnh giấy tờ mẫu/giả lên Gemini gói miễn phí (điều khoản cấm gửi dữ liệu cá nhân lên gói miễn phí).
+- Thư viện: được tự thêm dependency theo quy tắc ở `../docs/be-huong-dan.md` mục 2 (ưu tiên starter Spring Boot; ghi version nếu Spring
+  không quản lý; mỗi dependency mới có 1 dòng lý do ở mục 9 và comment trong `pom.xml`). Hỏi trước khi đổi framework/ORM,
+  thêm dịch vụ trả phí hoặc gọi ra ngoài internet, hoặc dùng thư viện chỉ có một người duy trì.
 - Trước khi báo xong: `./mvnw verify` (Testcontainers cần Docker đang chạy).
 
 ```bash

@@ -118,7 +118,7 @@ function DisburseForm({ app }: { app: Application }) {
 
 export default function StaffApplicationDetail() {
   const { id } = useParams();
-  const aid = Number(id);
+  const aid = id ?? '';
   const nav = useNavigate();
   const q = useQuery({ queryKey: ['application', aid], queryFn: () => appApi.get(aid) });
   if (q.isLoading) return <Skeleton active />;

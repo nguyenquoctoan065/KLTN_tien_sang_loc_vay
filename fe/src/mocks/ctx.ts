@@ -170,7 +170,7 @@ export function crossCheck(app: AppRecord): { warnings: CrossCheckWarning[]; rec
           message: `Thu nhập trên sao kê ${diff < 0 ? 'thấp' : 'cao'} hơn khai báo ${Math.abs(Math.round(diff * 100))}%; DTI và điểm được tính lại theo sao kê.`, severity: 'WARNING' });
       const v = activeVersion();
       const sim = simulate({ ...inp, avgIncome: verified }, paramsOf(v.id), weightsOf(v.id),
-        { screeningId: 0, productCode: app.plan.productCode, amount: app.plan.amount, termMonths: app.plan.termMonths, crossSellIds: app.plan.crossSells.map(c => c.id) },
+        { screeningId: '', productCode: app.plan.productCode, amount: app.plan.amount, termMonths: app.plan.termMonths, crossSellIds: app.plan.crossSells.map(c => c.id) },
         db.crossSells);
       recalc = { verifiedIncome: verified, dtiAfter: sim.dtiAfter, maxSafeAmount: sim.maxSafeAmount, score: sim.score, ok: sim.ok, issues: sim.issues };
       if (!sim.ok) w.push({ field: 'Phương án vay', declared: fmtMoney(app.plan.amount), verified: fmtMoney(sim.maxSafeAmount),

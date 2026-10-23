@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ScoringWeightRepository extends JpaRepository<ScoringWeight, Long> {
 
-    List<ScoringWeight> findByVersionId(Integer versionId);
+    List<ScoringWeight> findByVersionIdOrderById(Integer versionId);
 }

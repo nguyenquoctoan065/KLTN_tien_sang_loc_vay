@@ -7,7 +7,7 @@ import { APP_STATUS } from '../../utils/status';
 function staffApp(request: Request, id: unknown) {
   const u = currentUser(request);
   if (!u || u.role !== 'BRANCH_STAFF') return { e: err(403, 'Không có quyền.') } as const;
-  const app = db.applications.find(a => a.id === Number(id) && a.branchId === u.branchId);
+  const app = db.applications.find(a => a.id === String(id) && a.branchId === u.branchId);
   if (!app) return { e: err(404, 'Không tìm thấy hồ sơ của chi nhánh.') } as const;
   return { u, app } as const;
 }

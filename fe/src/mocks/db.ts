@@ -23,7 +23,7 @@ export interface Account {
 export type AppRecord = Omit<Application, 'can' | 'branchName' | 'branchAddress'> & {
   /** điểm hệ thống tại thời điểm nộp – dùng cho 8.2 */
   predictedScore: number;
-  screeningId: number | null;
+  screeningId: string | null;
 };
 
 export interface NotificationRecord extends AppNotification {
@@ -59,7 +59,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 7;
+export const DB_VERSION = 8;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',
@@ -188,7 +188,7 @@ function historical(rnd: () => number, accounts: Account[], branches: Branch[], 
     }
     const monthly = code === 'TD' ? Math.round(amount / term + amount * rate / 1200) : Math.round(amount * rate / 1200);
     const plan: LoanPlan = {
-      id: nextId(), screeningId: 0, productCode: code, productName: code === 'TD' ? 'Vay tiêu dùng không tài sản bảo đảm' : 'Vay thấu chi không tài sản bảo đảm',
+      id: crypto.randomUUID(), screeningId: '', productCode: code, productName: code === 'TD' ? 'Vay tiêu dùng không tài sản bảo đảm' : 'Vay thấu chi không tài sản bảo đảm',
       amount, termMonths: term, refRate: rate, monthlyPayment: monthly, totalInterest: Math.round(code === 'TD' ? amount * rate / 1200 * (term + 1) / 2 : amount * rate / 100),
       dtiAfter: Math.round(monthly / income * 1000) / 10, score, status: 'CONFIRMED', crossSells: [], createdAt: iso(created), checklist: [],
     };
@@ -256,7 +256,7 @@ function historical(rnd: () => number, accounts: Account[], branches: Branch[], 
     const year = String(created.getFullYear()).slice(2);
     const mon = String(created.getMonth() + 1).padStart(2, '0');
     apps.push({
-      id: nextId(), code: `HS${year}${mon}-${String(i + 1).padStart(4, '0')}`, customerId: cid, status, branchId: branch.id, plan, purpose, personal,
+      id: crypto.randomUUID(), code: `HS${year}${mon}-${String(i + 1).padStart(4, '0')}`, customerId: cid, status, branchId: branch.id, plan, purpose, personal,
       consentBAt: iso(created), versionNo: '2026.10', contentHash: submitted ? Array.from({ length: 64 }, () => '0123456789abcdef'[Math.floor(rnd() * 16)]).join('') : null,
       lockedAt: submitted ? history[1]?.at ?? null : null, qrToken: submitted ? `QR${Math.floor(rnd() * 1e10).toString(36).toUpperCase()}` : null,
       expiresAt: submitted ? iso(addDays(created, 31)) : null, createdAt: iso(created), updatedAt: last.at, documents: docs, warnings: [], recalc: null,

@@ -16,6 +16,9 @@ export const pct = (v: number | null | undefined, d = 1) =>
 
 export const dt = (s: string | null | undefined) => (s ? dayjs(s).format('DD/MM/YYYY HH:mm') : '—');
 
+/** Mã ngắn để hiển thị lượt sàng lọc, phương án (8 ký tự đầu của UUID, giống chi tiết nhật ký) */
+export const shortId = (id: string) => `#${id.slice(0, 8)}`;
+
 /** định dạng ô nhập tiền */
 export const moneyFormatter = (v: string | number | undefined) =>
   `${v ?? ''}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.');

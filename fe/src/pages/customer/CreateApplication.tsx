@@ -12,7 +12,7 @@ const CONSENT_B = 'DK-1.0';
 /** 4.1 Tạo hồ sơ vay: chọn chi nhánh, đồng ý phần (b) */
 export default function CreateApplication() {
   const [sp] = useSearchParams();
-  const planId = Number(sp.get('phuongAn'));
+  const planId = sp.get('phuongAn') ?? '';
   const nav = useNavigate();
   const { message } = App.useApp();
   const plan = useQuery({ queryKey: ['plan', planId], queryFn: () => planApi.get(planId), enabled: !!planId });

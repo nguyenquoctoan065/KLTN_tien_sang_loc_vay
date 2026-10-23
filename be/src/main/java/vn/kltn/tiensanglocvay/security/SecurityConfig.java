@@ -34,6 +34,7 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper json, SessionService sessions) throws Exception {
         http
                 .addFilterBefore(new TokenAuthFilter(sessions), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CustomerOnlyFilter(json), TokenAuthFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -51,6 +52,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/products", "/products/*/checklist", "/cross-sell-products", "/branches").permitAll()
                         .requestMatchers(HttpMethod.POST, "/screenings", "/simulations").permitAll()
                         .requestMatchers(HttpMethod.GET, "/screenings/*").permitAll()
+                        // Mock trả thông báo riêng (401 "Cần đăng nhập tài khoản khách hàng…", 404 "Không tìm thấy phương án.")
+                        // thay cho 401 chung: POST /plans và /save được CustomerOnlyFilter chặn trước khi đọc body;
+                        // các đường dẫn còn lại do PlanService tự kiểm tra vai trò khách hàng.
+                        .requestMatchers(HttpMethod.POST, "/screenings/*/save", "/plans", "/plans/*/confirm").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/plans/*").permitAll()
                         .anyRequest().authenticated());
         return http.build();
     }

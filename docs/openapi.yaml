@@ -16,6 +16,10 @@ info:
     - Lỗi trả về `{ "message": "..." }` bằng tiếng Việt, mã HTTP:
       400 dữ liệu không hợp lệ / OTP sai ("Mã OTP không đúng.") / OTP hết hạn hoặc nhập sai quá 5 lần ("Mã OTP đã hết hạn hoặc nhập sai quá nhiều lần, vui lòng gửi lại mã mới."; mã sống 5 phút, gửi mã mới thì mã cũ vô hiệu); 401 chưa đăng nhập hoặc sai vai trò khách hàng; 403 không có quyền (sai vai trò nội bộ, khác chi nhánh);
       404 không tìm thấy (kể cả khi tài nguyên tồn tại nhưng không thuộc người gọi); 409 xung đột trạng thái nghiệp vụ; 422 phương án vay không đạt ngưỡng.
+    - Mã công khai: lượt sàng lọc, phương án vay, hồ sơ vay dùng UUID (chuỗi, `format: uuid`) ở mọi chỗ – `id` trong dữ liệu trả về,
+      tham số đường dẫn, `screeningId` / `planId` / `applicationId`, đường dẫn trong thông báo. Id số nội bộ không bao giờ trả ra ngoài;
+      đường dẫn có id không đúng định dạng UUID (kể cả số) trả 404 như không tìm thấy. Các tài nguyên khác (danh mục, chi nhánh,
+      nhân viên, tham số, thông báo, giấy tờ trong hồ sơ, khách hàng) giữ id số. Mã hồ sơ hiển thị (`code`, ví dụ HS2610-0509) giữ nguyên.
     - Tiền tệ là số nguyên VNĐ; tỷ lệ (DTI, lãi suất) là số thập phân theo %.
     - Thời điểm theo ISO 8601 (date-time), ngày theo yyyy-MM-dd.
     - Môi trường thử: mã OTP cố định `123456`, mật khẩu tạm của nhân viên `123456`.
@@ -202,9 +206,13 @@ paths:
       tags: [Sàng lọc (QT01)]
       operationId: getScreening
       summary: Xem lại MB03 của một lượt sàng lọc
-      security: []
+      security: [{}, { bearer: [] }]
       x-roles: []
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      description: |
+        Lượt chưa lưu vào tài khoản nào: ai có mã (UUID) đều xem được. Lượt đã lưu: chỉ chủ tài khoản (gửi token) xem được.
+        Không tồn tại, mã sai định dạng, hoặc lượt đã lưu mà người gọi không phải chủ (kể cả chưa đăng nhập) đều trả
+        404 "Không tìm thấy kết quả sàng lọc." (không phân biệt để không lộ lượt có tồn tại hay không).
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ScreeningResponse' } } } }
         '404': { $ref: '#/components/responses/Error' }
@@ -215,7 +223,8 @@ paths:
       summary: 2.3 Lưu kết quả gợi ý vào tài khoản
       security: [{ bearer: [] }]
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      description: 404 "Không tìm thấy lượt sàng lọc." nếu không có hoặc lượt đã lưu vào tài khoản khác.
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ScreeningResponse' } } } }
         '401': { $ref: '#/components/responses/Error' }
@@ -241,7 +250,8 @@ paths:
       x-roles: []
       description: |
         Không lưu dữ liệu; frontend gọi lại mỗi khi người dùng đổi số tiền, kỳ hạn, bán chéo.
-        404 nếu không có lượt sàng lọc; 422 nếu hồ sơ không đạt điều kiện loại trừ của gói.
+        404 "Không tìm thấy lượt sàng lọc." nếu không có lượt sàng lọc hoặc lượt đã lưu vào tài khoản khác (lượt đã lưu chỉ chủ
+        tài khoản mô phỏng được, cần gửi token); 422 nếu hồ sơ không đạt điều kiện loại trừ của gói.
       requestBody:
         required: true
         content:
@@ -256,7 +266,9 @@ paths:
       tags: [Mô phỏng và phương án (QT02)]
       operationId: createPlan
       summary: 3.2 Lưu phương án vay (MB07, trạng thái DRAFT)
-      description: Backend tính lại bằng tham số đang áp dụng; từ chối (422) nếu phương án vượt ngưỡng.
+      description: |
+        Backend tính lại bằng tham số đang áp dụng; từ chối (422) nếu hồ sơ không đạt điều kiện của gói hoặc phương án vượt ngưỡng.
+        404 "Không tìm thấy lượt sàng lọc." nếu không có hoặc lượt đã lưu vào tài khoản khác. Lưu phương án gắn lượt sàng lọc vào tài khoản.
       security: [{ bearer: [] }]
       x-roles: [CUSTOMER]
       requestBody:
@@ -276,7 +288,7 @@ paths:
       summary: Xem phương án của chính khách hàng
       security: [{ bearer: [] }]
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoanPlan' } } } }
         '404': { $ref: '#/components/responses/Error' }
@@ -287,7 +299,7 @@ paths:
       summary: 3.2 Xác nhận phương án (DRAFT -> CONFIRMED)
       security: [{ bearer: [] }]
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoanPlan' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -345,7 +357,7 @@ paths:
         Người xem được: khách hàng chủ hồ sơ; nhân viên chi nhánh tiếp nhận hồ sơ; quản trị viên. Người khác nhận 404.
         Lượt xem của nhân viên/quản trị được ghi nhật ký "Xem hồ sơ".
       x-roles: [CUSTOMER, BRANCH_STAFF, ADMIN]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -360,7 +372,7 @@ paths:
         `phone` luôn lấy theo tài khoản (bỏ qua giá trị gửi lên). 400 nếu số CCCD không đủ 12 chữ số.
         Xóa bản nháp giấy đề nghị (nếu có) và chạy lại đối chiếu (warnings, recalc).
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -388,7 +400,7 @@ paths:
         - Đạt → status UPLOADED, qualityStatus OK, sinh `fields` (OCR) chờ khách hàng xác nhận.
         Xóa bản nháp giấy đề nghị và chạy lại đối chiếu.
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/DocId' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }, { $ref: '#/components/parameters/DocId' }]
       requestBody:
         required: true
         content:
@@ -415,7 +427,7 @@ paths:
         Với CCCD, điền sẵn họ tên, số CCCD, địa chỉ vào thông tin cá nhân nếu còn trống.
         409 nếu hồ sơ đã khóa hoặc giấy tờ chưa có thông tin trích xuất (MISSING / REJECTED_QUALITY).
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/DocId' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }, { $ref: '#/components/parameters/DocId' }]
       requestBody:
         required: true
         content:
@@ -435,7 +447,7 @@ paths:
         Tính lại theo tham số đang áp dụng, dùng thu nhập kiểm chứng (`recalc.verifiedIncome`) nếu có.
         409 nếu hồ sơ đã khóa hoặc không còn dữ liệu sàng lọc gốc; 422 nếu phương án mới vẫn không đạt ngưỡng.
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -456,7 +468,7 @@ paths:
         409 nếu hồ sơ đã khóa, hoặc chưa đủ điều kiện nộp (message liệt kê: thiếu thông tin cá nhân,
         giấy tờ bắt buộc chưa tải/chưa xác nhận, còn cảnh báo BLOCKING).
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Application' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -468,7 +480,7 @@ paths:
       summary: Sửa các ô được phép sửa (editable) của bản nháp giấy đề nghị
       description: Chỉ áp dụng cho các khóa có `editable=true`; khóa khác bị bỏ qua. 409 nếu chưa có bản nháp DRAFT.
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -500,7 +512,7 @@ paths:
         khóa nội dung (`contentHash` SHA-256, `lockedAt`), cấp `qrToken` (giữ mã cũ nếu đã có), `expiresAt` = now + DOC_VALIDITY_DAYS
         (mặc định 30 ngày), `versionNo` = phiên bản tham số đang áp dụng. Thông báo cho chi nhánh và khách hàng.
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -521,7 +533,7 @@ paths:
         Chỉ khi hồ sơ ở DRAFTING / WAITING_VERIFY / NEED_MORE / EXPIRED → CANCELLED. Trạng thái khác: 409
         ("không hủy trực tuyến được, liên hệ chi nhánh"). Thông báo cho chi nhánh. Thân yêu cầu có thể rỗng.
       x-roles: [CUSTOMER]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: false
         content:
@@ -630,7 +642,7 @@ paths:
       parameters:
         - { name: token, in: path, required: true, schema: { type: string, example: QR7K2M9XQA } }
       responses:
-        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/IdResult' } } } }
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PublicIdResult' } } } }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
   /staff/summary:
@@ -653,7 +665,7 @@ paths:
         Tất cả MATCH → VERIFIED; có giấy tờ không khớp/thiếu → NEED_MORE (khách hàng phải tải lại các giấy tờ đó).
         Ghi `verifyResult`/`verifyReason` vào từng giấy tờ, thêm bản ghi vào `verifications`, thông báo khách hàng.
       x-roles: [BRANCH_STAFF]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -677,7 +689,7 @@ paths:
         - MORE_INFO: bắt buộc reason → NEED_MORE.
         Thông báo khách hàng.
       x-roles: [BRANCH_STAFF]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -697,7 +709,7 @@ paths:
       description: |
         409 nếu hồ sơ chưa được phê duyệt. 400 nếu thiếu ngày/số tiền/bên thụ hưởng hoặc số tiền giải ngân vượt số tiền được duyệt.
       x-roles: [BRANCH_STAFF]
-      parameters: [{ $ref: '#/components/parameters/Id' }]
+      parameters: [{ $ref: '#/components/parameters/PublicId' }]
       requestBody:
         required: true
         content:
@@ -1176,6 +1188,7 @@ components:
         Token sai, hết hạn hoặc đã thu hồi bị coi như chưa đăng nhập (401).
   parameters:
     Id: { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+    PublicId: { name: id, in: path, required: true, description: Mã công khai (UUID) của lượt sàng lọc / phương án / hồ sơ; sai định dạng trả 404, schema: { type: string, format: uuid } }
     DocId: { name: docId, in: path, required: true, description: 'id của tài liệu trong hồ sơ (AppDocument.id), không phải documentTypeId', schema: { type: integer, format: int64 } }
     JobCode: { name: code, in: path, required: true, schema: { type: string, enum: [EXPIRE_DOCUMENTS, PURGE_RETENTION, REMIND_DRAFTS] } }
   responses:
@@ -1216,6 +1229,10 @@ components:
       type: object
       required: [id]
       properties: { id: { type: integer, format: int64 } }
+    PublicIdResult:
+      type: object
+      required: [id]
+      properties: { id: { type: string, format: uuid, description: Mã công khai của hồ sơ } }
     OtpSent:
       type: object
       properties: { sent: { type: boolean }, devOtp: { type: string, nullable: true, description: Chỉ có ở môi trường thử } }
@@ -1359,7 +1376,7 @@ components:
       description: MB03
       type: object
       properties:
-        id: { type: integer, format: int64 }
+        id: { type: string, format: uuid, description: Mã công khai của lượt sàng lọc }
         createdAt: { type: string, format: date-time }
         versionNo: { type: string }
         input: { $ref: '#/components/schemas/ScreeningRequest' }
@@ -1374,7 +1391,7 @@ components:
       type: object
       required: [screeningId, productCode, amount, termMonths, crossSellIds]
       properties:
-        screeningId: { type: integer, format: int64 }
+        screeningId: { type: string, format: uuid, description: Mã công khai của lượt sàng lọc }
         productCode: { $ref: '#/components/schemas/ProductCode' }
         amount: { type: number }
         termMonths: { type: integer }
@@ -1427,8 +1444,8 @@ components:
       description: MB07 – Phương án vay đề xuất (loan_plan)
       type: object
       properties:
-        id: { type: integer, format: int64 }
-        screeningId: { type: integer, format: int64 }
+        id: { type: string, format: uuid, description: Mã công khai của phương án }
+        screeningId: { type: string, format: uuid, description: Mã công khai của lượt sàng lọc }
         productCode: { $ref: '#/components/schemas/ProductCode' }
         productName: { type: string }
         amount: { type: number }
@@ -1444,7 +1461,7 @@ components:
           items: { type: object, properties: { id: { type: integer }, name: { type: string }, extraCost: { type: number }, benefit: { type: string } } }
         createdAt: { type: string, format: date-time }
         checklist: { type: array, items: { $ref: '#/components/schemas/ChecklistItem' }, description: Danh mục giấy tờ cần chuẩn bị (bản xem trước MB05) }
-        applicationId: { type: integer, format: int64, nullable: true, description: Hồ sơ đã lập từ phương án (nếu có) }
+        applicationId: { type: string, format: uuid, nullable: true, description: Mã công khai của hồ sơ đã lập từ phương án (nếu có) }
     ApplicationStatus:
       type: string
       description: |
@@ -1455,7 +1472,7 @@ components:
     ApplicationSummary:
       type: object
       properties:
-        id: { type: integer, format: int64 }
+        id: { type: string, format: uuid, description: Mã công khai của hồ sơ }
         code: { type: string, example: HS2610-0501 }
         customerName: { type: string, description: '"Chưa khai" nếu khách hàng chưa khai họ tên' }
         customerPhone: { type: string }
@@ -1474,7 +1491,7 @@ components:
       type: object
       required: [planId, branchId, consentB]
       properties:
-        planId: { type: integer, format: int64, description: Phương án đã CONFIRMED của khách hàng }
+        planId: { type: string, format: uuid, description: Mã công khai của phương án đã CONFIRMED của khách hàng }
         branchId: { type: integer, format: int64, description: Chi nhánh ACTIVE }
         consentB: { $ref: '#/components/schemas/ConsentInput' }
     PersonalInfo:
@@ -1690,7 +1707,7 @@ components:
         Ngừng hoạt động chi nhánh chuyển hồ sơ sang chi nhánh khác mà không đổi trạng thái.
       type: object
       properties:
-        id: { type: integer, format: int64 }
+        id: { type: string, format: uuid, description: Mã công khai của hồ sơ }
         code: { type: string, example: HS2610-0501 }
         customerId: { type: integer, format: int64 }
         status: { $ref: '#/components/schemas/ApplicationStatus' }
@@ -1722,7 +1739,7 @@ components:
         id: { type: integer, format: int64 }
         title: { type: string }
         body: { type: string }
-        link: { type: string, nullable: true, description: Đường dẫn trong frontend }
+        link: { type: string, nullable: true, description: 'Đường dẫn trong frontend, dùng mã công khai (UUID) của hồ sơ, ví dụ /ho-so/<uuid>' }
         createdAt: { type: string, format: date-time }
         read: { type: boolean }
     ActivityLog:

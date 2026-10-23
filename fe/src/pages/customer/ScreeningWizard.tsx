@@ -105,13 +105,13 @@ export default function ScreeningWizard() {
   const [step, setStep] = useState(0);
   const [restored, setRestored] = useState(false);
   const [params] = useSearchParams();
-  const fromId = Number(params.get('tu')) || 0;
+  const fromId = params.get('tu') ?? '';
   const nav = useNavigate();
   const { message } = App.useApp();
-  const prev = useQuery({ queryKey: ['screening', fromId], queryFn: () => screeningApi.get(fromId), enabled: fromId > 0 });
+  const prev = useQuery({ queryKey: ['screening', fromId], queryFn: () => screeningApi.get(fromId), enabled: !!fromId });
 
   useEffect(() => {
-    if (fromId > 0) {
+    if (fromId) {
       if (!prev.data) return;
       const vals = fromRequest(prev.data.input);
       form.setFieldsValue(vals);
@@ -149,12 +149,12 @@ export default function ScreeningWizard() {
     <div>
       <Typography.Title level={3}>Kiểm tra khả năng vay</Typography.Title>
       <Typography.Paragraph type="secondary">Không cần đăng nhập, không khai họ tên, số CCCD, số điện thoại.</Typography.Paragraph>
-      {restored && fromId === 0 && (
+      {restored && !fromId && (
         <Alert style={{ marginBottom: 16 }} type="info" showIcon message="Đã khôi phục thông tin bạn nhập trước đó"
           action={<Button size="small" onClick={resetDraft}>Nhập mới</Button>} />
       )}
-      {fromId > 0 && prev.isError && <Alert style={{ marginBottom: 16 }} type="warning" showIcon message={errorMessage(prev.error)} />}
-      <Card loading={fromId > 0 && prev.isLoading}>
+      {!!fromId && prev.isError && <Alert style={{ marginBottom: 16 }} type="warning" showIcon message={errorMessage(prev.error)} />}
+      <Card loading={!!fromId && prev.isLoading}>
         <Steps current={step} size="small" style={{ marginBottom: 24 }} responsive
           items={[{ title: 'Đồng ý xử lý dữ liệu' }, { title: 'Thông tin cá nhân' }, { title: 'Thu nhập, nghĩa vụ nợ' }, { title: 'Nhu cầu vay' }, { title: 'Xem lại' }]} />
         <Form form={form} layout="vertical" requiredMark="optional" scrollToFirstError

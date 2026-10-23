@@ -60,9 +60,13 @@ class TienSangLocVayApplicationTests {
                 Integer.class);
         Integer products = jdbc.queryForObject("SELECT count(*) FROM loan_product", Integer.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4");
+        List<String> publicIdTables = jdbc.queryForList("SELECT table_name FROM information_schema.columns WHERE table_schema = 'public' "
+                + "AND column_name = 'public_id' AND data_type = 'uuid' AND is_nullable = 'NO' ORDER BY table_name", String.class);
+
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5");
         assertThat(tables).isEqualTo(26); // 24 bảng V1 + auth_session, otp_code (V3)
         assertThat(products).isPositive();
+        assertThat(publicIdTables).containsExactly("loan_application", "loan_plan", "screening"); // V5
     }
 
     @Test
@@ -87,13 +91,13 @@ class TienSangLocVayApplicationTests {
         mvc.perform(get("/products/TD/checklist")).andExpect(status().isOk());
         mvc.perform(get("/cross-sell-products")).andExpect(status().isOk());
         mvc.perform(get("/branches")).andExpect(status().isOk());
-        // Chưa có controller (B3) nên 404 (không phải 401): bộ lọc bảo mật đã cho đi qua.
-        mvc.perform(get("/screenings/1")).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Không tìm thấy."));
-        // /auth/** đã có (B1): bộ lọc cho qua, controller trả 400 vì thiếu dữ liệu.
+        // Sàng lọc (B3): bộ lọc cho qua, controller trả lỗi nghiệp vụ (không phải 401).
+        mvc.perform(get("/screenings/999999")).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Không tìm thấy kết quả sàng lọc."));
+        // /auth/**, /screenings, /simulations: bộ lọc cho qua, controller trả 400 vì thiếu dữ liệu.
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isBadRequest());
-        mvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isNotFound());
-        mvc.perform(post("/simulations").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isNotFound());
+        mvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isBadRequest());
+        mvc.perform(post("/simulations").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isBadRequest());
     }
 
     @Test

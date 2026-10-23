@@ -8,7 +8,7 @@ import { useAuth } from '../../auth/AuthContext';
 import StatusTag from '../../components/StatusTag';
 import ChangePasswordModal from '../../components/ChangePasswordModal';
 import MyData from './MyData';
-import { dt, money } from '../../utils/format';
+import { dt, money, shortId } from '../../utils/format';
 
 export default function MyPage() {
   const nav = useNavigate();
@@ -44,7 +44,7 @@ export default function MyPage() {
               <Table loading={plans.isLoading} rowKey="id" dataSource={plans.data} locale={{ emptyText: <Empty description="Chưa có phương án nào" /> }}
                 onRow={r => ({ onClick: () => nav(`/phuong-an/${r.id}`), style: { cursor: 'pointer' } })}
                 columns={[
-                  { title: 'Mã', dataIndex: 'id', render: v => `#${v}` },
+                  { title: 'Mã', dataIndex: 'id', render: shortId },
                   { title: 'Gói vay', dataIndex: 'productName' },
                   { title: 'Số tiền', dataIndex: 'amount', align: 'right', render: money },
                   { title: 'Kỳ hạn', dataIndex: 'termMonths', render: v => `${v} tháng` },
@@ -57,7 +57,7 @@ export default function MyPage() {
             key: 'sang-loc', label: 'Kết quả sàng lọc', children: (
               <Table loading={scr.isLoading} rowKey="id" dataSource={scr.data} locale={{ emptyText: <Empty description="Chưa lưu kết quả nào" /> }}
                 columns={[
-                  { title: 'Lượt', dataIndex: 'id', render: v => `#${v}` },
+                  { title: 'Lượt', dataIndex: 'id', render: shortId },
                   { title: 'Thời điểm', dataIndex: 'createdAt', render: dt },
                   { title: 'Nhu cầu', render: (_, r) => `${money(r.input.desiredAmount)} · ${r.input.desiredTerm} tháng` },
                   { title: 'Gói gợi ý', render: (_, r) => r.results.filter(x => x.eligible).map(x => <Tag key={x.productCode}>{x.productCode === 'TD' ? 'Tiêu dùng' : 'Thấu chi'} · {x.score}</Tag>) },

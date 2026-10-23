@@ -4,6 +4,7 @@ import {
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone, SaveOutlined, BulbOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { screeningApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
@@ -11,7 +12,7 @@ import { useAuth } from '../../auth/AuthContext';
 import Disclaimer from '../../components/Disclaimer';
 import Hint from '../../components/Hint';
 import { GLOSSARY } from '../../utils/glossary';
-import { dt, money, pct } from '../../utils/format';
+import { dt, money, pct, shortId } from '../../utils/format';
 import { scoreLevel } from '../../utils/status';
 import type { ScreeningResultItem } from '../../api/types';
 
@@ -62,7 +63,7 @@ function ProductCard({ r, onSim }: { r: ScreeningResultItem; onSim: () => void }
 
 export default function ScreeningResult() {
   const { id } = useParams();
-  const sid = Number(id);
+  const sid = id ?? '';
   const nav = useNavigate();
   const [sp, setSp] = useSearchParams();
   const { user } = useAuth();
@@ -84,7 +85,18 @@ export default function ScreeningResult() {
   }, [sp, user, q.data, save, setSp]);
 
   if (q.isLoading) return <Skeleton active />;
-  if (q.isError || !q.data) return <Result status="404" title="Không tìm thấy kết quả sàng lọc" extra={<Button onClick={() => nav('/sang-loc')}>Sàng lọc lại</Button>} />;
+  if (q.isError || !q.data) {
+    // Kết quả đã lưu vào tài khoản chỉ chủ tài khoản xem được: người chưa đăng nhập nhận 404 nên gợi ý đăng nhập
+    const notFound = isAxiosError(q.error) && q.error.response?.status === 404;
+    return (
+      <Result status="404" title="Không tìm thấy kết quả sàng lọc"
+        subTitle={notFound && !user ? 'Nếu bạn đã lưu kết quả này vào tài khoản, hãy đăng nhập để xem.' : undefined}
+        extra={[
+          notFound && !user && <Button key="login" type="primary" onClick={() => nav(`/dang-nhap?next=${encodeURIComponent(`/sang-loc/${sid}`)}`)}>Đăng nhập</Button>,
+          <Button key="again" onClick={() => nav('/sang-loc')}>Sàng lọc lại</Button>,
+        ]} />
+    );
+  }
   const s = q.data;
   const debt = s.input.otherDebts.reduce((a, d) => a + d.monthlyPayment, 0);
   const anyEligible = s.results.some(r => r.eligible);
@@ -98,7 +110,7 @@ export default function ScreeningResult() {
       <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
         <div>
           <Typography.Title level={3} style={{ marginBottom: 0 }}>Kết quả gợi ý gói vay</Typography.Title>
-          <Typography.Text type="secondary">Lượt sàng lọc #{s.id} · {dt(s.createdAt)} · Phiên bản tham số {s.versionNo}</Typography.Text>
+          <Typography.Text type="secondary">Lượt sàng lọc {shortId(s.id)} · {dt(s.createdAt)} · Phiên bản tham số {s.versionNo}</Typography.Text>
         </div>
         <Space>
           <Button onClick={() => nav(`/sang-loc?tu=${sid}`)}>Sàng lọc lại</Button>

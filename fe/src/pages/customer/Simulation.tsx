@@ -29,7 +29,7 @@ function useDebounced<T>(v: T, ms = 300) {
 
 export default function Simulation() {
   const { id } = useParams();
-  const sid = Number(id);
+  const sid = id ?? '';
   const [sp, setSp] = useSearchParams();
   const nav = useNavigate();
   const { user } = useAuth();

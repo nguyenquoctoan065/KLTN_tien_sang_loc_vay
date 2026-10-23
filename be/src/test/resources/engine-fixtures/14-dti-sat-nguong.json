@@ -1,0 +1,1965 @@
+{
+  "name": "dti-sat-nguong",
+  "today": "2026-10-23",
+  "params": {
+    "dtiMax": 70,
+    "livingCostBase": 4000000,
+    "livingCostPerDependent": 2000000,
+    "retireAgeMale": 62,
+    "retireAgeFemale": 60,
+    "roomFactor": 100,
+    "maxRateDiscount": 2,
+    "products": {
+      "TD": {
+        "minAge": 22,
+        "incomeMultiplier": 15,
+        "maxAmount": 500000000,
+        "minAmount": 10000000,
+        "maxTerm": 60,
+        "minTerm": 6,
+        "refRate": 12.5
+      },
+      "TC": {
+        "minAge": 19,
+        "incomeMultiplier": null,
+        "maxAmount": 200000000,
+        "minAmount": 10000000,
+        "maxTerm": 12,
+        "minTerm": 12,
+        "refRate": 18
+      }
+    }
+  },
+  "weights": {
+    "TD": {
+      "DTI": 35,
+      "AMOUNT_RATIO": 25,
+      "SALARY_BANK": 15,
+      "STAFF": 10,
+      "TERM_TO_RETIRE": 15
+    },
+    "TC": {
+      "DTI": 30,
+      "AMOUNT_RATIO": 20,
+      "SALARY_BANK": 25,
+      "STAFF": 20,
+      "TERM_TO_RETIRE": 5
+    }
+  },
+  "crossSells": [
+    {
+      "id": 1,
+      "name": "Bảo hiểm nhân thọ",
+      "productType": "INSURANCE",
+      "estCost": 8000000,
+      "scoreBonus": 5,
+      "rateDiscount": 1,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 2,
+      "name": "Thẻ tín dụng",
+      "productType": "CARD",
+      "estCost": 0,
+      "scoreBonus": 3,
+      "rateDiscount": 0.5,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 3,
+      "name": "Chứng chỉ tiền gửi",
+      "productType": "DEPOSIT",
+      "estCost": 0,
+      "scoreBonus": 4,
+      "rateDiscount": 0.7,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 4,
+      "name": "Tài khoản số đẹp",
+      "productType": "ACCOUNT",
+      "estCost": 1000000,
+      "scoreBonus": 2,
+      "rateDiscount": 0.3,
+      "status": "ACTIVE"
+    },
+    {
+      "id": 5,
+      "name": "Gói tạm ngưng",
+      "productType": "CARD",
+      "estCost": 500000,
+      "scoreBonus": 1,
+      "rateDiscount": 1.5,
+      "status": "INACTIVE"
+    }
+  ],
+  "input": {
+    "consentA": {
+      "agreed": true,
+      "docVersion": "DK-1.0"
+    },
+    "nationality": "Việt Nam",
+    "dob": "1992-05-15",
+    "gender": "MALE",
+    "maritalStatus": "MARRIED",
+    "dependents": 1,
+    "avgIncome": 20000000,
+    "salaryBank": "Vietcombank",
+    "isAbbankStaff": false,
+    "creditHistory": "ON_TIME",
+    "otherDebts": [
+      {
+        "lender": "Ngân hàng A",
+        "monthlyPayment": 9000000
+      }
+    ],
+    "purpose": "Mua xe máy, ô tô",
+    "desiredAmount": 120000000,
+    "desiredTerm": 36
+  },
+  "screening": {
+    "notes": [],
+    "age": 34,
+    "livingCost": 6000000,
+    "disposableIncome": 5000000,
+    "currentDti": 45,
+    "results": [
+      {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "eligible": true,
+        "reasons": [],
+        "hints": [],
+        "dti": 67.9,
+        "maxSafeAmount": 130000000,
+        "refRate": 12.5,
+        "maxTerm": 60,
+        "score": 45.5,
+        "rankNo": 1
+      },
+      {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "eligible": true,
+        "reasons": [],
+        "hints": [
+          "Số tiền mong muốn vượt hạn mức an toàn; nên vay tối đa 50.000.000 đ hoặc điều chỉnh ở bước mô phỏng."
+        ],
+        "dti": 104,
+        "maxSafeAmount": 50000000,
+        "refRate": 18,
+        "maxTerm": 12,
+        "score": 25.5,
+        "rankNo": 2
+      }
+    ]
+  },
+  "simulations": [
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 120000000,
+        "termMonths": 36,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 120000000,
+        "termMonths": 36,
+        "rate": 12.5,
+        "monthlyObligation": 4583333,
+        "firstPayment": 4583333,
+        "totalInterest": 23125003,
+        "totalPayment": 143125003,
+        "dtiAfter": 67.9,
+        "dtiMax": 70,
+        "disposableAfter": 416667,
+        "maxSafeAmount": 130000000,
+        "maxTermAllowed": 60,
+        "score": 45.5,
+        "ok": true,
+        "issues": [],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 3333333,
+            "interest": 1250000,
+            "payment": 4583333,
+            "balance": 116666667
+          },
+          {
+            "period": 2,
+            "principal": 3333333,
+            "interest": 1215278,
+            "payment": 4548611,
+            "balance": 113333334
+          },
+          {
+            "period": 3,
+            "principal": 3333333,
+            "interest": 1180556,
+            "payment": 4513889,
+            "balance": 110000001
+          },
+          {
+            "period": 4,
+            "principal": 3333333,
+            "interest": 1145833,
+            "payment": 4479166,
+            "balance": 106666668
+          },
+          {
+            "period": 5,
+            "principal": 3333333,
+            "interest": 1111111,
+            "payment": 4444444,
+            "balance": 103333335
+          },
+          {
+            "period": 6,
+            "principal": 3333333,
+            "interest": 1076389,
+            "payment": 4409722,
+            "balance": 100000002
+          },
+          {
+            "period": 7,
+            "principal": 3333333,
+            "interest": 1041667,
+            "payment": 4375000,
+            "balance": 96666669
+          },
+          {
+            "period": 8,
+            "principal": 3333333,
+            "interest": 1006944,
+            "payment": 4340277,
+            "balance": 93333336
+          },
+          {
+            "period": 9,
+            "principal": 3333333,
+            "interest": 972222,
+            "payment": 4305555,
+            "balance": 90000003
+          },
+          {
+            "period": 10,
+            "principal": 3333333,
+            "interest": 937500,
+            "payment": 4270833,
+            "balance": 86666670
+          },
+          {
+            "period": 11,
+            "principal": 3333333,
+            "interest": 902778,
+            "payment": 4236111,
+            "balance": 83333337
+          },
+          {
+            "period": 12,
+            "principal": 3333333,
+            "interest": 868056,
+            "payment": 4201389,
+            "balance": 80000004
+          },
+          {
+            "period": 13,
+            "principal": 3333333,
+            "interest": 833333,
+            "payment": 4166666,
+            "balance": 76666671
+          },
+          {
+            "period": 14,
+            "principal": 3333333,
+            "interest": 798611,
+            "payment": 4131944,
+            "balance": 73333338
+          },
+          {
+            "period": 15,
+            "principal": 3333333,
+            "interest": 763889,
+            "payment": 4097222,
+            "balance": 70000005
+          },
+          {
+            "period": 16,
+            "principal": 3333333,
+            "interest": 729167,
+            "payment": 4062500,
+            "balance": 66666672
+          },
+          {
+            "period": 17,
+            "principal": 3333333,
+            "interest": 694445,
+            "payment": 4027778,
+            "balance": 63333339
+          },
+          {
+            "period": 18,
+            "principal": 3333333,
+            "interest": 659722,
+            "payment": 3993055,
+            "balance": 60000006
+          },
+          {
+            "period": 19,
+            "principal": 3333333,
+            "interest": 625000,
+            "payment": 3958333,
+            "balance": 56666673
+          },
+          {
+            "period": 20,
+            "principal": 3333333,
+            "interest": 590278,
+            "payment": 3923611,
+            "balance": 53333340
+          },
+          {
+            "period": 21,
+            "principal": 3333333,
+            "interest": 555556,
+            "payment": 3888889,
+            "balance": 50000007
+          },
+          {
+            "period": 22,
+            "principal": 3333333,
+            "interest": 520833,
+            "payment": 3854166,
+            "balance": 46666674
+          },
+          {
+            "period": 23,
+            "principal": 3333333,
+            "interest": 486111,
+            "payment": 3819444,
+            "balance": 43333341
+          },
+          {
+            "period": 24,
+            "principal": 3333333,
+            "interest": 451389,
+            "payment": 3784722,
+            "balance": 40000008
+          },
+          {
+            "period": 25,
+            "principal": 3333333,
+            "interest": 416667,
+            "payment": 3750000,
+            "balance": 36666675
+          },
+          {
+            "period": 26,
+            "principal": 3333333,
+            "interest": 381945,
+            "payment": 3715278,
+            "balance": 33333342
+          },
+          {
+            "period": 27,
+            "principal": 3333333,
+            "interest": 347222,
+            "payment": 3680555,
+            "balance": 30000009
+          },
+          {
+            "period": 28,
+            "principal": 3333333,
+            "interest": 312500,
+            "payment": 3645833,
+            "balance": 26666676
+          },
+          {
+            "period": 29,
+            "principal": 3333333,
+            "interest": 277778,
+            "payment": 3611111,
+            "balance": 23333343
+          },
+          {
+            "period": 30,
+            "principal": 3333333,
+            "interest": 243056,
+            "payment": 3576389,
+            "balance": 20000010
+          },
+          {
+            "period": 31,
+            "principal": 3333333,
+            "interest": 208333,
+            "payment": 3541666,
+            "balance": 16666677
+          },
+          {
+            "period": 32,
+            "principal": 3333333,
+            "interest": 173611,
+            "payment": 3506944,
+            "balance": 13333344
+          },
+          {
+            "period": 33,
+            "principal": 3333333,
+            "interest": 138889,
+            "payment": 3472222,
+            "balance": 10000011
+          },
+          {
+            "period": 34,
+            "principal": 3333333,
+            "interest": 104167,
+            "payment": 3437500,
+            "balance": 6666678
+          },
+          {
+            "period": 35,
+            "principal": 3333333,
+            "interest": 69445,
+            "payment": 3402778,
+            "balance": 3333345
+          },
+          {
+            "period": 36,
+            "principal": 3333345,
+            "interest": 34722,
+            "payment": 3368067,
+            "balance": 0
+          }
+        ],
+        "suggestions": []
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 120000000,
+        "termMonths": 36,
+        "crossSellIds": [
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 120000000,
+        "termMonths": 36,
+        "rate": 11.3,
+        "monthlyObligation": 4463333,
+        "firstPayment": 4463333,
+        "totalInterest": 20905002,
+        "totalPayment": 140905002,
+        "dtiAfter": 67.3,
+        "dtiMax": 70,
+        "disposableAfter": 536667,
+        "maxSafeAmount": 134000000,
+        "maxTermAllowed": 60,
+        "score": 53.7,
+        "ok": true,
+        "issues": [],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 3333333,
+            "interest": 1130000,
+            "payment": 4463333,
+            "balance": 116666667
+          },
+          {
+            "period": 2,
+            "principal": 3333333,
+            "interest": 1098611,
+            "payment": 4431944,
+            "balance": 113333334
+          },
+          {
+            "period": 3,
+            "principal": 3333333,
+            "interest": 1067222,
+            "payment": 4400555,
+            "balance": 110000001
+          },
+          {
+            "period": 4,
+            "principal": 3333333,
+            "interest": 1035833,
+            "payment": 4369166,
+            "balance": 106666668
+          },
+          {
+            "period": 5,
+            "principal": 3333333,
+            "interest": 1004444,
+            "payment": 4337777,
+            "balance": 103333335
+          },
+          {
+            "period": 6,
+            "principal": 3333333,
+            "interest": 973056,
+            "payment": 4306389,
+            "balance": 100000002
+          },
+          {
+            "period": 7,
+            "principal": 3333333,
+            "interest": 941667,
+            "payment": 4275000,
+            "balance": 96666669
+          },
+          {
+            "period": 8,
+            "principal": 3333333,
+            "interest": 910278,
+            "payment": 4243611,
+            "balance": 93333336
+          },
+          {
+            "period": 9,
+            "principal": 3333333,
+            "interest": 878889,
+            "payment": 4212222,
+            "balance": 90000003
+          },
+          {
+            "period": 10,
+            "principal": 3333333,
+            "interest": 847500,
+            "payment": 4180833,
+            "balance": 86666670
+          },
+          {
+            "period": 11,
+            "principal": 3333333,
+            "interest": 816111,
+            "payment": 4149444,
+            "balance": 83333337
+          },
+          {
+            "period": 12,
+            "principal": 3333333,
+            "interest": 784722,
+            "payment": 4118055,
+            "balance": 80000004
+          },
+          {
+            "period": 13,
+            "principal": 3333333,
+            "interest": 753333,
+            "payment": 4086666,
+            "balance": 76666671
+          },
+          {
+            "period": 14,
+            "principal": 3333333,
+            "interest": 721944,
+            "payment": 4055277,
+            "balance": 73333338
+          },
+          {
+            "period": 15,
+            "principal": 3333333,
+            "interest": 690556,
+            "payment": 4023889,
+            "balance": 70000005
+          },
+          {
+            "period": 16,
+            "principal": 3333333,
+            "interest": 659167,
+            "payment": 3992500,
+            "balance": 66666672
+          },
+          {
+            "period": 17,
+            "principal": 3333333,
+            "interest": 627778,
+            "payment": 3961111,
+            "balance": 63333339
+          },
+          {
+            "period": 18,
+            "principal": 3333333,
+            "interest": 596389,
+            "payment": 3929722,
+            "balance": 60000006
+          },
+          {
+            "period": 19,
+            "principal": 3333333,
+            "interest": 565000,
+            "payment": 3898333,
+            "balance": 56666673
+          },
+          {
+            "period": 20,
+            "principal": 3333333,
+            "interest": 533611,
+            "payment": 3866944,
+            "balance": 53333340
+          },
+          {
+            "period": 21,
+            "principal": 3333333,
+            "interest": 502222,
+            "payment": 3835555,
+            "balance": 50000007
+          },
+          {
+            "period": 22,
+            "principal": 3333333,
+            "interest": 470833,
+            "payment": 3804166,
+            "balance": 46666674
+          },
+          {
+            "period": 23,
+            "principal": 3333333,
+            "interest": 439445,
+            "payment": 3772778,
+            "balance": 43333341
+          },
+          {
+            "period": 24,
+            "principal": 3333333,
+            "interest": 408056,
+            "payment": 3741389,
+            "balance": 40000008
+          },
+          {
+            "period": 25,
+            "principal": 3333333,
+            "interest": 376667,
+            "payment": 3710000,
+            "balance": 36666675
+          },
+          {
+            "period": 26,
+            "principal": 3333333,
+            "interest": 345278,
+            "payment": 3678611,
+            "balance": 33333342
+          },
+          {
+            "period": 27,
+            "principal": 3333333,
+            "interest": 313889,
+            "payment": 3647222,
+            "balance": 30000009
+          },
+          {
+            "period": 28,
+            "principal": 3333333,
+            "interest": 282500,
+            "payment": 3615833,
+            "balance": 26666676
+          },
+          {
+            "period": 29,
+            "principal": 3333333,
+            "interest": 251111,
+            "payment": 3584444,
+            "balance": 23333343
+          },
+          {
+            "period": 30,
+            "principal": 3333333,
+            "interest": 219722,
+            "payment": 3553055,
+            "balance": 20000010
+          },
+          {
+            "period": 31,
+            "principal": 3333333,
+            "interest": 188333,
+            "payment": 3521666,
+            "balance": 16666677
+          },
+          {
+            "period": 32,
+            "principal": 3333333,
+            "interest": 156945,
+            "payment": 3490278,
+            "balance": 13333344
+          },
+          {
+            "period": 33,
+            "principal": 3333333,
+            "interest": 125556,
+            "payment": 3458889,
+            "balance": 10000011
+          },
+          {
+            "period": 34,
+            "principal": 3333333,
+            "interest": 94167,
+            "payment": 3427500,
+            "balance": 6666678
+          },
+          {
+            "period": 35,
+            "principal": 3333333,
+            "interest": 62778,
+            "payment": 3396111,
+            "balance": 3333345
+          },
+          {
+            "period": 36,
+            "principal": 3333345,
+            "interest": 31389,
+            "payment": 3364734,
+            "balance": 0
+          }
+        ],
+        "suggestions": []
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 183000000,
+        "termMonths": 36,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 183000000,
+        "termMonths": 36,
+        "rate": 12.5,
+        "monthlyObligation": 6989583,
+        "firstPayment": 6989583,
+        "totalInterest": 35265628,
+        "totalPayment": 218265628,
+        "dtiAfter": 79.9,
+        "dtiMax": 70,
+        "disposableAfter": -1989583,
+        "maxSafeAmount": 130000000,
+        "maxTermAllowed": 60,
+        "score": 35.4,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (130.000.000 đ).",
+          "DTI sau vay 79.9% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 5083333,
+            "interest": 1906250,
+            "payment": 6989583,
+            "balance": 177916667
+          },
+          {
+            "period": 2,
+            "principal": 5083333,
+            "interest": 1853299,
+            "payment": 6936632,
+            "balance": 172833334
+          },
+          {
+            "period": 3,
+            "principal": 5083333,
+            "interest": 1800347,
+            "payment": 6883680,
+            "balance": 167750001
+          },
+          {
+            "period": 4,
+            "principal": 5083333,
+            "interest": 1747396,
+            "payment": 6830729,
+            "balance": 162666668
+          },
+          {
+            "period": 5,
+            "principal": 5083333,
+            "interest": 1694444,
+            "payment": 6777777,
+            "balance": 157583335
+          },
+          {
+            "period": 6,
+            "principal": 5083333,
+            "interest": 1641493,
+            "payment": 6724826,
+            "balance": 152500002
+          },
+          {
+            "period": 7,
+            "principal": 5083333,
+            "interest": 1588542,
+            "payment": 6671875,
+            "balance": 147416669
+          },
+          {
+            "period": 8,
+            "principal": 5083333,
+            "interest": 1535590,
+            "payment": 6618923,
+            "balance": 142333336
+          },
+          {
+            "period": 9,
+            "principal": 5083333,
+            "interest": 1482639,
+            "payment": 6565972,
+            "balance": 137250003
+          },
+          {
+            "period": 10,
+            "principal": 5083333,
+            "interest": 1429688,
+            "payment": 6513021,
+            "balance": 132166670
+          },
+          {
+            "period": 11,
+            "principal": 5083333,
+            "interest": 1376736,
+            "payment": 6460069,
+            "balance": 127083337
+          },
+          {
+            "period": 12,
+            "principal": 5083333,
+            "interest": 1323785,
+            "payment": 6407118,
+            "balance": 122000004
+          },
+          {
+            "period": 13,
+            "principal": 5083333,
+            "interest": 1270833,
+            "payment": 6354166,
+            "balance": 116916671
+          },
+          {
+            "period": 14,
+            "principal": 5083333,
+            "interest": 1217882,
+            "payment": 6301215,
+            "balance": 111833338
+          },
+          {
+            "period": 15,
+            "principal": 5083333,
+            "interest": 1164931,
+            "payment": 6248264,
+            "balance": 106750005
+          },
+          {
+            "period": 16,
+            "principal": 5083333,
+            "interest": 1111979,
+            "payment": 6195312,
+            "balance": 101666672
+          },
+          {
+            "period": 17,
+            "principal": 5083333,
+            "interest": 1059028,
+            "payment": 6142361,
+            "balance": 96583339
+          },
+          {
+            "period": 18,
+            "principal": 5083333,
+            "interest": 1006076,
+            "payment": 6089409,
+            "balance": 91500006
+          },
+          {
+            "period": 19,
+            "principal": 5083333,
+            "interest": 953125,
+            "payment": 6036458,
+            "balance": 86416673
+          },
+          {
+            "period": 20,
+            "principal": 5083333,
+            "interest": 900174,
+            "payment": 5983507,
+            "balance": 81333340
+          },
+          {
+            "period": 21,
+            "principal": 5083333,
+            "interest": 847222,
+            "payment": 5930555,
+            "balance": 76250007
+          },
+          {
+            "period": 22,
+            "principal": 5083333,
+            "interest": 794271,
+            "payment": 5877604,
+            "balance": 71166674
+          },
+          {
+            "period": 23,
+            "principal": 5083333,
+            "interest": 741320,
+            "payment": 5824653,
+            "balance": 66083341
+          },
+          {
+            "period": 24,
+            "principal": 5083333,
+            "interest": 688368,
+            "payment": 5771701,
+            "balance": 61000008
+          },
+          {
+            "period": 25,
+            "principal": 5083333,
+            "interest": 635417,
+            "payment": 5718750,
+            "balance": 55916675
+          },
+          {
+            "period": 26,
+            "principal": 5083333,
+            "interest": 582465,
+            "payment": 5665798,
+            "balance": 50833342
+          },
+          {
+            "period": 27,
+            "principal": 5083333,
+            "interest": 529514,
+            "payment": 5612847,
+            "balance": 45750009
+          },
+          {
+            "period": 28,
+            "principal": 5083333,
+            "interest": 476563,
+            "payment": 5559896,
+            "balance": 40666676
+          },
+          {
+            "period": 29,
+            "principal": 5083333,
+            "interest": 423611,
+            "payment": 5506944,
+            "balance": 35583343
+          },
+          {
+            "period": 30,
+            "principal": 5083333,
+            "interest": 370660,
+            "payment": 5453993,
+            "balance": 30500010
+          },
+          {
+            "period": 31,
+            "principal": 5083333,
+            "interest": 317708,
+            "payment": 5401041,
+            "balance": 25416677
+          },
+          {
+            "period": 32,
+            "principal": 5083333,
+            "interest": 264757,
+            "payment": 5348090,
+            "balance": 20333344
+          },
+          {
+            "period": 33,
+            "principal": 5083333,
+            "interest": 211806,
+            "payment": 5295139,
+            "balance": 15250011
+          },
+          {
+            "period": 34,
+            "principal": 5083333,
+            "interest": 158854,
+            "payment": 5242187,
+            "balance": 10166678
+          },
+          {
+            "period": 35,
+            "principal": 5083333,
+            "interest": 105903,
+            "payment": 5189236,
+            "balance": 5083345
+          },
+          {
+            "period": 36,
+            "principal": 5083345,
+            "interest": 52952,
+            "payment": 5136297,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 36 tháng.",
+            "productCode": "TD",
+            "amount": 130000000,
+            "termMonths": 36,
+            "crossSellIds": [],
+            "score": 41.7,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 60 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 183000000,
+            "termMonths": 60,
+            "crossSellIds": [],
+            "score": 41.9,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 11.5%/năm, hạn mức an toàn tăng lên 133.000.000 đ.",
+            "productCode": "TD",
+            "amount": 133000000,
+            "termMonths": 36,
+            "crossSellIds": [
+              1
+            ],
+            "score": 46.7,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay thấu chi không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 50.000.000 đ, kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 50000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 37.9,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TD",
+        "amount": 5000000,
+        "termMonths": 36,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TD",
+        "productName": "Vay tiêu dùng không tài sản bảo đảm",
+        "amount": 5000000,
+        "termMonths": 36,
+        "rate": 12.5,
+        "monthlyObligation": 190972,
+        "firstPayment": 190972,
+        "totalInterest": 963541,
+        "totalPayment": 5963541,
+        "dtiAfter": 46,
+        "dtiMax": 70,
+        "disposableAfter": 4809028,
+        "maxSafeAmount": 130000000,
+        "maxTermAllowed": 60,
+        "score": 79.6,
+        "ok": false,
+        "issues": [
+          "Số tiền vay tối thiểu là 10.000.000 đ."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 138889,
+            "interest": 52083,
+            "payment": 190972,
+            "balance": 4861111
+          },
+          {
+            "period": 2,
+            "principal": 138889,
+            "interest": 50637,
+            "payment": 189526,
+            "balance": 4722222
+          },
+          {
+            "period": 3,
+            "principal": 138889,
+            "interest": 49190,
+            "payment": 188079,
+            "balance": 4583333
+          },
+          {
+            "period": 4,
+            "principal": 138889,
+            "interest": 47743,
+            "payment": 186632,
+            "balance": 4444444
+          },
+          {
+            "period": 5,
+            "principal": 138889,
+            "interest": 46296,
+            "payment": 185185,
+            "balance": 4305555
+          },
+          {
+            "period": 6,
+            "principal": 138889,
+            "interest": 44850,
+            "payment": 183739,
+            "balance": 4166666
+          },
+          {
+            "period": 7,
+            "principal": 138889,
+            "interest": 43403,
+            "payment": 182292,
+            "balance": 4027777
+          },
+          {
+            "period": 8,
+            "principal": 138889,
+            "interest": 41956,
+            "payment": 180845,
+            "balance": 3888888
+          },
+          {
+            "period": 9,
+            "principal": 138889,
+            "interest": 40509,
+            "payment": 179398,
+            "balance": 3749999
+          },
+          {
+            "period": 10,
+            "principal": 138889,
+            "interest": 39062,
+            "payment": 177951,
+            "balance": 3611110
+          },
+          {
+            "period": 11,
+            "principal": 138889,
+            "interest": 37616,
+            "payment": 176505,
+            "balance": 3472221
+          },
+          {
+            "period": 12,
+            "principal": 138889,
+            "interest": 36169,
+            "payment": 175058,
+            "balance": 3333332
+          },
+          {
+            "period": 13,
+            "principal": 138889,
+            "interest": 34722,
+            "payment": 173611,
+            "balance": 3194443
+          },
+          {
+            "period": 14,
+            "principal": 138889,
+            "interest": 33275,
+            "payment": 172164,
+            "balance": 3055554
+          },
+          {
+            "period": 15,
+            "principal": 138889,
+            "interest": 31829,
+            "payment": 170718,
+            "balance": 2916665
+          },
+          {
+            "period": 16,
+            "principal": 138889,
+            "interest": 30382,
+            "payment": 169271,
+            "balance": 2777776
+          },
+          {
+            "period": 17,
+            "principal": 138889,
+            "interest": 28935,
+            "payment": 167824,
+            "balance": 2638887
+          },
+          {
+            "period": 18,
+            "principal": 138889,
+            "interest": 27488,
+            "payment": 166377,
+            "balance": 2499998
+          },
+          {
+            "period": 19,
+            "principal": 138889,
+            "interest": 26042,
+            "payment": 164931,
+            "balance": 2361109
+          },
+          {
+            "period": 20,
+            "principal": 138889,
+            "interest": 24595,
+            "payment": 163484,
+            "balance": 2222220
+          },
+          {
+            "period": 21,
+            "principal": 138889,
+            "interest": 23148,
+            "payment": 162037,
+            "balance": 2083331
+          },
+          {
+            "period": 22,
+            "principal": 138889,
+            "interest": 21701,
+            "payment": 160590,
+            "balance": 1944442
+          },
+          {
+            "period": 23,
+            "principal": 138889,
+            "interest": 20255,
+            "payment": 159144,
+            "balance": 1805553
+          },
+          {
+            "period": 24,
+            "principal": 138889,
+            "interest": 18808,
+            "payment": 157697,
+            "balance": 1666664
+          },
+          {
+            "period": 25,
+            "principal": 138889,
+            "interest": 17361,
+            "payment": 156250,
+            "balance": 1527775
+          },
+          {
+            "period": 26,
+            "principal": 138889,
+            "interest": 15914,
+            "payment": 154803,
+            "balance": 1388886
+          },
+          {
+            "period": 27,
+            "principal": 138889,
+            "interest": 14468,
+            "payment": 153357,
+            "balance": 1249997
+          },
+          {
+            "period": 28,
+            "principal": 138889,
+            "interest": 13021,
+            "payment": 151910,
+            "balance": 1111108
+          },
+          {
+            "period": 29,
+            "principal": 138889,
+            "interest": 11574,
+            "payment": 150463,
+            "balance": 972219
+          },
+          {
+            "period": 30,
+            "principal": 138889,
+            "interest": 10127,
+            "payment": 149016,
+            "balance": 833330
+          },
+          {
+            "period": 31,
+            "principal": 138889,
+            "interest": 8681,
+            "payment": 147570,
+            "balance": 694441
+          },
+          {
+            "period": 32,
+            "principal": 138889,
+            "interest": 7234,
+            "payment": 146123,
+            "balance": 555552
+          },
+          {
+            "period": 33,
+            "principal": 138889,
+            "interest": 5787,
+            "payment": 144676,
+            "balance": 416663
+          },
+          {
+            "period": 34,
+            "principal": 138889,
+            "interest": 4340,
+            "payment": 143229,
+            "balance": 277774
+          },
+          {
+            "period": 35,
+            "principal": 138889,
+            "interest": 2893,
+            "payment": 141782,
+            "balance": 138885
+          },
+          {
+            "period": 36,
+            "principal": 138885,
+            "interest": 1447,
+            "payment": 140332,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 36 tháng.",
+            "productCode": "TD",
+            "amount": 130000000,
+            "termMonths": 36,
+            "crossSellIds": [],
+            "score": 41.7,
+            "extraCost": 0
+          },
+          {
+            "type": "EXTEND_TERM",
+            "title": "Kéo dài kỳ hạn",
+            "detail": "Giữ số tiền, kéo dài kỳ hạn lên 36 tháng (tối đa cho phép 60 tháng).",
+            "productCode": "TD",
+            "amount": 5000000,
+            "termMonths": 36,
+            "crossSellIds": [],
+            "score": 79.6,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 120000000,
+        "termMonths": 36,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 120000000,
+        "termMonths": 12,
+        "rate": 18,
+        "monthlyObligation": 11800000,
+        "firstPayment": 1800000,
+        "totalInterest": 21600000,
+        "totalPayment": 141600000,
+        "dtiAfter": 104,
+        "dtiMax": 70,
+        "disposableAfter": -6800000,
+        "maxSafeAmount": 50000000,
+        "maxTermAllowed": 12,
+        "score": 25.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (50.000.000 đ).",
+          "DTI sau vay 104% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 1800000,
+            "payment": 1800000,
+            "balance": 120000000
+          },
+          {
+            "period": 12,
+            "principal": 120000000,
+            "interest": 1800000,
+            "payment": 121800000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 50000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 37.9,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 17%/năm, hạn mức an toàn tăng lên 51.000.000 đ.",
+            "productCode": "TC",
+            "amount": 51000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              1
+            ],
+            "score": 42.6,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay tiêu dùng không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 130.000.000 đ, kỳ hạn 36 tháng.",
+            "productCode": "TD",
+            "amount": 120000000,
+            "termMonths": 36,
+            "crossSellIds": [],
+            "score": 45.5,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 120000000,
+        "termMonths": 36,
+        "crossSellIds": [
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 120000000,
+        "termMonths": 12,
+        "rate": 16.8,
+        "monthlyObligation": 11680000,
+        "firstPayment": 1680000,
+        "totalInterest": 20160000,
+        "totalPayment": 140160000,
+        "dtiAfter": 103.4,
+        "dtiMax": 70,
+        "disposableAfter": -6680000,
+        "maxSafeAmount": 51000000,
+        "maxTermAllowed": 12,
+        "score": 32.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (51.000.000 đ).",
+          "DTI sau vay 103.4% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 1680000,
+            "payment": 1680000,
+            "balance": 120000000
+          },
+          {
+            "period": 12,
+            "principal": 120000000,
+            "interest": 1680000,
+            "payment": 121680000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 51000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              2,
+              3
+            ],
+            "score": 44.7,
+            "extraCost": 0
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay tiêu dùng không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 130.000.000 đ, kỳ hạn 36 tháng.",
+            "productCode": "TD",
+            "amount": 120000000,
+            "termMonths": 36,
+            "crossSellIds": [],
+            "score": 45.5,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 71000000,
+        "termMonths": 36,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 71000000,
+        "termMonths": 12,
+        "rate": 18,
+        "monthlyObligation": 6981667,
+        "firstPayment": 1065000,
+        "totalInterest": 12780000,
+        "totalPayment": 83780000,
+        "dtiAfter": 79.9,
+        "dtiMax": 70,
+        "disposableAfter": -1981667,
+        "maxSafeAmount": 50000000,
+        "maxTermAllowed": 12,
+        "score": 32.5,
+        "ok": false,
+        "issues": [
+          "Số tiền vay vượt hạn mức tối đa an toàn (50.000.000 đ).",
+          "DTI sau vay 79.9% vượt ngưỡng tối đa 70%.",
+          "Số tiền trả hằng tháng vượt thu nhập khả dụng."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 1065000,
+            "payment": 1065000,
+            "balance": 71000000
+          },
+          {
+            "period": 12,
+            "principal": 71000000,
+            "interest": 1065000,
+            "payment": 72065000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 50000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 37.9,
+            "extraCost": 0
+          },
+          {
+            "type": "CROSS_SELL",
+            "title": "Tham gia Bảo hiểm nhân thọ",
+            "detail": "Lãi suất tham chiếu còn 17%/năm, hạn mức an toàn tăng lên 51.000.000 đ.",
+            "productCode": "TC",
+            "amount": 51000000,
+            "termMonths": 12,
+            "crossSellIds": [
+              1
+            ],
+            "score": 42.6,
+            "extraCost": 8000000
+          },
+          {
+            "type": "SWITCH_PRODUCT",
+            "title": "Chuyển sang vay tiêu dùng không tài sản bảo đảm",
+            "detail": "Hạn mức an toàn của gói 130.000.000 đ, kỳ hạn 36 tháng.",
+            "productCode": "TD",
+            "amount": 71000000,
+            "termMonths": 36,
+            "crossSellIds": [],
+            "score": 63.9,
+            "extraCost": 0
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "screeningId": 1,
+        "productCode": "TC",
+        "amount": 5000000,
+        "termMonths": 36,
+        "crossSellIds": []
+      },
+      "expected": {
+        "productCode": "TC",
+        "productName": "Vay thấu chi không tài sản bảo đảm",
+        "amount": 5000000,
+        "termMonths": 12,
+        "rate": 18,
+        "monthlyObligation": 491667,
+        "firstPayment": 75000,
+        "totalInterest": 900000,
+        "totalPayment": 5900000,
+        "dtiAfter": 47.5,
+        "dtiMax": 70,
+        "disposableAfter": 4508333,
+        "maxSafeAmount": 50000000,
+        "maxTermAllowed": 12,
+        "score": 68,
+        "ok": false,
+        "issues": [
+          "Số tiền vay tối thiểu là 10.000.000 đ."
+        ],
+        "extraCost": 0,
+        "schedule": [
+          {
+            "period": 1,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 2,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 3,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 4,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 5,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 6,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 7,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 8,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 9,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 10,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 11,
+            "principal": 0,
+            "interest": 75000,
+            "payment": 75000,
+            "balance": 5000000
+          },
+          {
+            "period": 12,
+            "principal": 5000000,
+            "interest": 75000,
+            "payment": 5075000,
+            "balance": 0
+          }
+        ],
+        "suggestions": [
+          {
+            "type": "REDUCE_AMOUNT",
+            "title": "Giảm số tiền vay",
+            "detail": "Giảm về mức tối đa an toàn với kỳ hạn 12 tháng.",
+            "productCode": "TC",
+            "amount": 50000000,
+            "termMonths": 12,
+            "crossSellIds": [],
+            "score": 37.9,
+            "extraCost": 0
+          }
+        ]
+      }
+    }
+  ]
+}

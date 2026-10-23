@@ -61,5 +61,7 @@ Frontend gọi backend thật khi `fe/.env.development` có `VITE_USE_MOCK=false
 
 - Làm theo từng mục trong `docs/fe-sua-doi.md` hoặc từng giai đoạn trong `docs/be-huong-dan.md`; xong mục nào đánh dấu `[x]` mục đó.
 - Mỗi mục xong phải: build/lint/test pass, và kiểm tra lại đúng “Tiêu chí hoàn thành” của mục.
-- Không tự thêm thư viện lớn ngoài danh sách trong tài liệu khi chưa hỏi.
+- Frontend: không tự thêm thư viện lớn ngoài danh sách trong tài liệu khi chưa hỏi.
+- Backend: được tự thêm dependency nếu giúp code gọn hoặc an toàn hơn, theo điều kiện ở `docs/be-huong-dan.md` mục 2
+  (mỗi dependency mới ghi lý do ở mục 9 và comment trong `pom.xml`; vẫn phải hỏi trước với các trường hợp nêu ở đó).
 - Không tự chạy `git commit`/`git push`; người dùng tự commit sau khi kiểm tra.

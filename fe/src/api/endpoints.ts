@@ -28,24 +28,24 @@ export const catalogApi = {
 
 export const appApi = {
   mine: () => api.get<ApplicationSummary[]>('/me/applications').then(r => r.data),
-  create: (b: { planId: number; branchId: number; consentB: { agreed: boolean; docVersion: string } }) =>
+  create: (b: { planId: string; branchId: number; consentB: { agreed: boolean; docVersion: string } }) =>
     api.post<Application>('/applications', b).then(r => r.data),
-  get: (id: number) => api.get<Application>(`/applications/${id}`).then(r => r.data),
-  personal: (id: number, b: PersonalInfo) => api.put<Application>(`/applications/${id}/personal`, b).then(r => r.data),
-  upload: (id: number, docId: number, file: File, issuedDate?: string) => {
+  get: (id: string) => api.get<Application>(`/applications/${id}`).then(r => r.data),
+  personal: (id: string, b: PersonalInfo) => api.put<Application>(`/applications/${id}/personal`, b).then(r => r.data),
+  upload: (id: string, docId: number, file: File, issuedDate?: string) => {
     const fd = new FormData();
     fd.append('file', file);
     if (issuedDate) fd.append('issuedDate', issuedDate);
     return api.post<Application>(`/applications/${id}/documents/${docId}`, fd).then(r => r.data);
   },
-  confirmFields: (id: number, docId: number, fields: { id: number; confirmedValue: string }[]) =>
+  confirmFields: (id: string, docId: number, fields: { id: number; confirmedValue: string }[]) =>
     api.put<Application>(`/applications/${id}/documents/${docId}/fields`, { fields }).then(r => r.data),
-  updatePlan: (id: number, b: { amount: number; termMonths: number; crossSellIds: number[] }) =>
+  updatePlan: (id: string, b: { amount: number; termMonths: number; crossSellIds: number[] }) =>
     api.put<Application>(`/applications/${id}/plan`, b).then(r => r.data),
-  createForm: (id: number) => api.post<Application>(`/applications/${id}/request-form`).then(r => r.data),
-  updateForm: (id: number, values: Record<string, string>) => api.put<Application>(`/applications/${id}/request-form`, { values }).then(r => r.data),
-  submit: (id: number, otp: string) => api.post<Application>(`/applications/${id}/submit`, { otp }).then(r => r.data),
-  cancel: (id: number, reason?: string) => api.post<Application>(`/applications/${id}/cancel`, { reason }).then(r => r.data),
+  createForm: (id: string) => api.post<Application>(`/applications/${id}/request-form`).then(r => r.data),
+  updateForm: (id: string, values: Record<string, string>) => api.put<Application>(`/applications/${id}/request-form`, { values }).then(r => r.data),
+  submit: (id: string, otp: string) => api.post<Application>(`/applications/${id}/submit`, { otp }).then(r => r.data),
+  cancel: (id: string, reason?: string) => api.post<Application>(`/applications/${id}/cancel`, { reason }).then(r => r.data),
 };
 
 export const noticeApi = {
@@ -61,29 +61,29 @@ export const myDataApi = {
 
 export const screeningApi = {
   create: (b: ScreeningRequest) => api.post<ScreeningResponse>('/screenings', b).then(r => r.data),
-  get: (id: number) => api.get<ScreeningResponse>(`/screenings/${id}`).then(r => r.data),
-  save: (id: number) => api.post<ScreeningResponse>(`/screenings/${id}/save`).then(r => r.data),
+  get: (id: string) => api.get<ScreeningResponse>(`/screenings/${id}`).then(r => r.data),
+  save: (id: string) => api.post<ScreeningResponse>(`/screenings/${id}/save`).then(r => r.data),
   mine: () => api.get<ScreeningResponse[]>('/me/screenings').then(r => r.data),
 };
 
 export const planApi = {
   simulate: (b: SimulationRequest) => api.post<SimulationResponse>('/simulations', b).then(r => r.data),
   create: (b: SimulationRequest) => api.post<LoanPlan>('/plans', b).then(r => r.data),
-  get: (id: number) => api.get<LoanPlan>(`/plans/${id}`).then(r => r.data),
-  confirm: (id: number) => api.post<LoanPlan>(`/plans/${id}/confirm`).then(r => r.data),
+  get: (id: string) => api.get<LoanPlan>(`/plans/${id}`).then(r => r.data),
+  confirm: (id: string) => api.post<LoanPlan>(`/plans/${id}/confirm`).then(r => r.data),
   mine: () => api.get<LoanPlan[]>('/me/plans').then(r => r.data),
 };
 
 export const staffApi = {
   applications: (q: { status?: string; keyword?: string }) =>
     api.get<ApplicationSummary[]>('/staff/applications', { params: q }).then(r => r.data),
-  byQr: (token: string) => api.get<{ id: number }>(`/staff/applications/by-qr/${encodeURIComponent(token)}`).then(r => r.data),
+  byQr: (token: string) => api.get<{ id: string }>(`/staff/applications/by-qr/${encodeURIComponent(token)}`).then(r => r.data),
   summary: () => api.get<{ waitingVerify: number; needMore: number; verified: number; approved: number }>('/staff/summary').then(r => r.data),
-  verify: (id: number, b: { details: { documentId: number; result: 'MATCH' | 'MISMATCH' | 'MISSING'; reason: string }[]; note: string }) =>
+  verify: (id: string, b: { details: { documentId: number; result: 'MATCH' | 'MISMATCH' | 'MISSING'; reason: string }[]; note: string }) =>
     api.post<Application>(`/staff/applications/${id}/verification`, b).then(r => r.data),
-  decide: (id: number, b: { resultType: 'APPROVED' | 'REJECTED' | 'MORE_INFO'; approvedAmount?: number; approvedTerm?: number; approvedRate?: number; reason?: string }) =>
+  decide: (id: string, b: { resultType: 'APPROVED' | 'REJECTED' | 'MORE_INFO'; approvedAmount?: number; approvedTerm?: number; approvedRate?: number; reason?: string }) =>
     api.post<Application>(`/staff/applications/${id}/decision`, b).then(r => r.data),
-  disburse: (id: number, b: { disbursedAt: string; disbursedAmount: number; beneficiary: string }) =>
+  disburse: (id: string, b: { disbursedAt: string; disbursedAmount: number; beneficiary: string }) =>
     api.post<Application>(`/staff/applications/${id}/disbursement`, b).then(r => r.data),
 };
 
