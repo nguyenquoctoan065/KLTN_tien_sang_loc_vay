@@ -36,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -45,6 +46,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.kltn.tiensanglocvay.document.CorruptedFileException;
 import vn.kltn.tiensanglocvay.document.LocalStorageService;
+import vn.kltn.tiensanglocvay.document.OcrPolicy;
 import vn.kltn.tiensanglocvay.document.OcrResult;
 import vn.kltn.tiensanglocvay.document.OcrService;
 import vn.kltn.tiensanglocvay.document.StoredFile;
@@ -83,6 +85,10 @@ class ApplicationApiTest {
     /** FakeOcrService thật, chỉ giả lập kết quả trong vài test (Mockito tự đặt lại sau mỗi test). */
     @SpyBean
     OcrService ocr;
+
+    /** Bean thật; test đổi tạm cờ allowSpecimen (app.ocr.allow-specimen) rồi trả về false. */
+    @Autowired
+    OcrPolicy policy;
 
     // ---------------------------------------------------------------- tiện ích
 
@@ -524,6 +530,51 @@ class ApplicationApiTest {
                 .andExpect(jsonPath(path + ".status").value("REJECTED_QUALITY"))
                 .andExpect(jsonPath(path + ".qualityStatus").value("BLURRY"))
                 .andExpect(jsonPath(path + ".qualityMessage").value("Ảnh bị lóa ở phần mức lương, vui lòng chụp lại."));
+    }
+
+    private static final String SPECIMEN_LOG = "Chấp nhận giấy tờ mẫu (môi trường thử nghiệm)";
+
+    @Test
+    void upload_specimen_rejectedByDefault() throws Exception {
+        String token = newCustomer();
+        String appId = newApp(token);
+        long cccd = docId(appId, token, 2);
+        String path = "$.documents[?(@.id == " + cccd + ")]";
+        // Mặc định app.ocr.allow-specimen=false: ảnh rõ nhưng là giấy tờ mẫu → SPECIMEN, không lưu tệp, không có trường, không ghi nhật ký nhận
+        doReturn(new OcrResult(true, true, true, null, List.of(new OcrResult.Field("full_name", "Họ và tên", "NGUYỄN VĂN MINH", 97))))
+                .when(ocr).extract(any(), any(), any(), any());
+        upload(appId, cccd, token, "cccd.jpg", "image/jpeg", 60).andExpect(status().isOk())
+                .andExpect(jsonPath(path + ".status").value("REJECTED_QUALITY"))
+                .andExpect(jsonPath(path + ".qualityStatus").value("SPECIMEN"))
+                .andExpect(jsonPath(path + ".qualityMessage").value("Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật."))
+                .andExpect(jsonPath(path + ".previewUrl").value(org.hamcrest.Matchers.contains((Object) null)))
+                .andExpect(jsonPath(path + ".fields.length()").value(0));
+        assertThat(jdbc.queryForObject("select storage_path from application_document where id = ?", String.class, cccd)).isNull();
+        assertThat(jdbc.queryForObject("select quality_status from application_document where id = ?", String.class, cccd)).isEqualTo("SPECIMEN");
+        assertThat(jdbc.queryForObject("select count(*) from activity_log l join loan_application a on a.id = l.application_id "
+                + "where a.public_id = ?::uuid and l.action = ?", Integer.class, appId, SPECIMEN_LOG)).isZero();
+    }
+
+    @Test
+    void upload_specimen_acceptedWhenAllowed() throws Exception {
+        String token = newCustomer();
+        String appId = newApp(token);
+        long cccd = docId(appId, token, 2);
+        String path = "$.documents[?(@.id == " + cccd + ")]";
+        doReturn(new OcrResult(true, true, true, null, List.of(new OcrResult.Field("full_name", "Họ và tên", "NGUYỄN VĂN MINH", 97))))
+                .when(ocr).extract(any(), any(), any(), any());
+        ReflectionTestUtils.setField(policy, "allowSpecimen", true);
+        try {
+            upload(appId, cccd, token, "cccd.jpg", "image/jpeg", 60).andExpect(status().isOk())
+                    .andExpect(jsonPath(path + ".status").value("UPLOADED"))
+                    .andExpect(jsonPath(path + ".qualityStatus").value("OK"))
+                    .andExpect(jsonPath(path + ".qualityMessage").value((Object) null))
+                    .andExpect(jsonPath(path + ".fields[0].ocrValue").value("NGUYỄN VĂN MINH"));
+        } finally {
+            ReflectionTestUtils.setField(policy, "allowSpecimen", false);
+        }
+        assertThat(jdbc.queryForObject("select count(*) from activity_log l join loan_application a on a.id = l.application_id "
+                + "where a.public_id = ?::uuid and l.action = ?", Integer.class, appId, SPECIMEN_LOG)).isEqualTo(1);
     }
 
     @Test

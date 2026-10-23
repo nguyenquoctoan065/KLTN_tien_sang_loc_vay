@@ -131,7 +131,11 @@ public class GeminiOcrService implements OcrService {
                 .append("1. isReadable: false nếu ảnh mờ, lóa, bị che hoặc bị cắt mất phần chính nên không đọc được; khi đó ghi issue là ")
                 .append("một câu nhắc ngắn bằng tiếng Việt để khách chụp lại (ví dụ: \"Ảnh bị lóa ở phần số CCCD, vui lòng chụp lại.\").\n")
                 .append("2. documentMatchesType: false nếu tệp rõ ràng không phải «").append(typeName).append("».\n")
-                .append("3. fields: mỗi trường dưới đây đúng một phần tử, giữ nguyên key:\n");
+                .append("3. isSpecimen: true nếu ảnh rõ nhưng là giấy tờ mẫu (specimen, có dấu hoặc chữ \"MẪU\", \"MẪU KIỂM THỬ\", ")
+                .append("\"SPECIMEN\", \"KHÔNG CÓ GIÁ TRỊ\", \"dữ liệu giả\"). Giấy tờ mẫu mà đọc rõ thì đặt isReadable = true ")
+                .append("(không dùng isReadable = false cho trường hợp này), isSpecimen = true, và vẫn đọc các trường như bình thường; ")
+                .append("giấy tờ thật thì isSpecimen = false.\n")
+                .append("4. fields: mỗi trường dưới đây đúng một phần tử, giữ nguyên key:\n");
         for (DocumentFields.Def d : defs) {
             b.append("- ").append(d.key()).append(" (").append(d.label()).append("): ").append(format(d.kind()));
             String hint = HINTS.get(d.key());
@@ -171,10 +175,11 @@ public class GeminiOcrService implements OcrService {
                 .properties(Map.of(
                         "isReadable", Schema.builder().type(Type.Known.BOOLEAN).build(),
                         "documentMatchesType", Schema.builder().type(Type.Known.BOOLEAN).build(),
+                        "isSpecimen", Schema.builder().type(Type.Known.BOOLEAN).build(),
                         "issue", Schema.builder().type(Type.Known.STRING).nullable(true).build(),
                         "fields", Schema.builder().type(Type.Known.ARRAY).items(field).build()))
-                .required("isReadable", "documentMatchesType", "issue", "fields")
-                .propertyOrdering("isReadable", "documentMatchesType", "issue", "fields")
+                .required("isReadable", "documentMatchesType", "isSpecimen", "issue", "fields")
+                .propertyOrdering("isReadable", "documentMatchesType", "isSpecimen", "issue", "fields")
                 .build();
     }
 
@@ -183,7 +188,8 @@ public class GeminiOcrService implements OcrService {
     /**
      * JSON của Gemini → {@link OcrResult}: đủ các trường của loại giấy tờ theo đúng thứ tự danh mục (thiếu thì rỗng, độ tin cậy 0;
      * khóa lạ bỏ qua), giá trị chuẩn hóa như mock (tiền {@code 18.800.000}, ngày dd/MM/yyyy, giới tính Nam/Nữ).
-     * JSON hỏng hoặc thiếu {@code isReadable}/{@code documentMatchesType}/{@code fields} → {@link IllegalStateException}.
+     * JSON hỏng hoặc thiếu {@code isReadable}/{@code documentMatchesType}/{@code fields} → {@link IllegalStateException}
+     * ({@code isSpecimen} thiếu thì coi là false).
      */
     static OcrResult parse(String text, int typeId) {
         JsonNode root;
@@ -217,7 +223,9 @@ public class GeminiOcrService implements OcrService {
         if (issue != null && issue.length() > MAX_ISSUE) {
             issue = issue.substring(0, MAX_ISSUE);
         }
-        return new OcrResult(root.get("isReadable").asBoolean(), root.get("documentMatchesType").asBoolean(), issue, fields);
+        // isSpecimen thiếu (model bỏ sót) coi như giấy tờ thật: không từ chối nhầm.
+        return new OcrResult(root.get("isReadable").asBoolean(), root.get("documentMatchesType").asBoolean(),
+                root.path("isSpecimen").asBoolean(false), issue, fields);
     }
 
     private static double confidence(double c) {

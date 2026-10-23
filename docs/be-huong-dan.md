@@ -152,7 +152,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
     hóa đơn `beneficiary, invoice_amount`. **Đã chốt (23/10/2026)**: HĐLĐ dùng `salary`, cư trú dùng `address` như mock (trước ghi
     `contract_salary`, `residence_address`).
     ```json
-    { "isReadable": bool, "documentMatchesType": bool, "issue": string|null,
+    { "isReadable": bool, "documentMatchesType": bool, "isSpecimen": bool, "issue": string|null,
       "fields": [ { "key": "national_id", "value": string|null, "confidence": number /* 0–100 */ } ] }
     ```
   - Prompt tiếng Việt, liệt kê từng `field_key` và định dạng mong muốn:
@@ -165,6 +165,12 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   - `isReadable=false` → `REJECTED_QUALITY` / `BLURRY`, kèm `issue` làm lời nhắc.
   - `documentMatchesType=false` → `REJECTED_QUALITY` / `WRONG_TYPE`, lời nhắc “Tệp không phải <tên giấy tờ>”.
     Bổ sung `WRONG_TYPE` vào enum `qualityStatus` trong openapi và FE.
+  - `isSpecimen=true` (ảnh rõ nhưng là giấy tờ mẫu/specimen, có dấu “MẪU”, “không có giá trị”) → `REJECTED_QUALITY` / `SPECIMEN`, lời nhắc
+    “Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.” Prompt yêu cầu Gemini báo `isSpecimen=true` (không dùng `isReadable=false`)
+    và vẫn đọc các trường. `isSpecimen` thiếu trong JSON coi là false. Thứ tự xét: `isReadable`, `documentMatchesType`, rồi `isSpecimen`
+    (`OcrPolicy.judge`). Cấu hình `app.ocr.allow-specimen` (mặc định `false`; `application-dev.yml` đặt `true`): khi `true` giấy tờ mẫu vẫn được
+    nhận như thường và ghi nhật ký “Chấp nhận giấy tờ mẫu (môi trường thử nghiệm)”. Không bật ở môi trường thật. Migration `V11` thêm `SPECIMEN`
+    vào CHECK `quality_status`.
   - Còn lại → `fields`, lưu `ocr_value` và `confidence`. Chuẩn hóa số tiền về dạng `18.800.000` như mock để `CrossCheckService` dùng chung.
 - **Độ bền**:
   - Timeout 30 giây.
@@ -258,9 +264,9 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] `db/dev/V1000__dev_history.sql` (5.8).
 
 ### B9. Ghép nối và kiểm thử toàn luồng
-- [ ] `fe/.env.development`: `VITE_USE_MOCK=false`. Chạy `python tests/e2e/full_flow.py` → `ERRORS []`.
-- [ ] So từng endpoint với openapi: tải `/api/v3/api-docs` của springdoc, viết script so danh sách path+method với `docs/openapi.yaml` (không thiếu, không thừa).
-- [ ] Cập nhật `README.md`: cách chạy backend, biến môi trường, tài khoản.
+- [x] `fe/.env.development`: `VITE_USE_MOCK=false`. Chạy `python tests/e2e/full_flow.py` → `ERRORS []`.
+- [x] So từng endpoint với openapi: tải `/api/v3/api-docs` của springdoc, viết script so danh sách path+method với `docs/openapi.yaml` (không thiếu, không thừa).
+- [x] Cập nhật `README.md`: cách chạy backend, biến môi trường, tài khoản.
 
 ## 7. Cấu hình mẫu (`application.yml`)
 
@@ -576,3 +582,30 @@ Profile `test`: `app.storage.provider: local`, `app.ocr.provider: fake`, `app.st
 - **Fixtures**: `gen-report-fixtures.ts` dựng lại bộ 69 hồ sơ để có ca biên và **dừng nếu không đúng**: tháng 8 lũy kế **9** hồ sơ bị từ chối với 3 hồ sơ (33% ≥ 30%) vì thu nhập → không có `living-up`; tháng 9 lũy kế **10** hồ sơ bị từ chối với 4 hồ sơ vì thu nhập → có `living-up`; tháng 10 vẫn `keep` (4 hồ sơ bị từ chối thêm vì lý do khác kéo tỷ lệ thu nhập xuống 4/14). `ReportApiTest` khớp mock cả 17 ca.
 - **Giao diện** (`Reports.tsx`, `Indicator`): ba ô chỉ số cùng cao bằng nhau (ô kéo giãn theo hàng), tiêu đề có thể xuống dòng nhưng giá trị luôn nằm dưới đáy ô, cùng một hàng cao 40px; “Chưa đủ dữ liệu” không xuống dòng (`nowrap`).
 
+
+### B9 – xong 23/10/2026
+- **E2E với backend thật** (`dev,local`, DB vừa `docker compose down -v; up -d`, fe `VITE_USE_MOCK=false`): `python tests\e2e\full_flow.py --mode real` → `ERRORS []` ngay lần đầu, không cần sửa backend cho luồng chính. Đã xem ảnh chụp: tải lên, đọc giấy tờ, đối chiếu, bổ sung, duyệt, giải ngân, khóa Chi nhánh Đà Nẵng (chuyển 4 hồ sơ + 1 nhân viên), tác vụ định kỳ đều đúng. Ảnh thu nhỏ giấy tờ trông trống vì chính các ảnh mẫu trong `tests/e2e/files` gần như trắng, không phải lỗi `previewUrl`. Chế độ mock (`$env:VITE_USE_MOCK="true"`) cũng `ERRORS []`.
+- **`tests/e2e/full_flow.py`** thêm tham số (kèm biến môi trường): `--mode mock|real` (`E2E_MODE`, mặc định `mock`), `--base-url` (`BASE_URL`), `--headed` (`E2E_HEADED=1`), `--ocr-timeout` (`E2E_OCR_TIMEOUT`, mặc định mock 5 s, real 60 s). `real` kiểm tra trước `/api/actuator/health` qua proxy Vite; cả hai chế độ dừng nếu frontend chạy khác chế độ đã chọn (có service worker MSW hay không). Tải giấy tờ nay chờ nút “Xác nhận thông tin đúng”/nhãn “Không đạt chất lượng” thay vì chờ cố định 1,3 s; nếu máy đọc từ chối ảnh (Gemini thật) thì dừng với lý do. Thoát mã 1 khi `ERRORS` khác rỗng.
+- **So endpoint**: `tests/contract/compare_endpoints.py` (Python + PyYAML) so path+method của `/api/v3/api-docs` với `docs/openapi.yaml`, chuẩn hóa tên biến đường dẫn, bỏ qua actuator/api-docs/swagger; `/files/local` và `/files/cloud` chỉ có một cái tùy `app.storage.provider` nên thiếu cái kia không tính lỗi. Khác biệt tìm được và đã sửa: backend gộp `POST /admin/staff/{id}/{action}` trong khi openapi có 3 path `lock`, `unlock`, `reset-password` → `AdminStaffController` tách 3 mapping; mapping chung `{action}` giữ lại với `@Hidden` để action lạ vẫn trả 404 “Thao tác không hợp lệ.” như mock (`AdminStaffBranchApiTest` kiểm tra). Kết quả: 74 endpoint trong openapi, khớp ở cả `dev,local` và `dev`. openapi không đổi; redocly lint 0 lỗi.
+- **`fe/.env.development`** đã là `VITE_USE_MOCK=false`; thêm comment cách bật mock (`$env:VITE_USE_MOCK="true"` – Vite ưu tiên biến môi trường có sẵn – hoặc `fe/.env.development.local`). `fe/.env.production` vẫn `true`. `fe/README.md` ghi rõ mặc định của từng lệnh.
+- **README.md** viết lại: yêu cầu cài đặt, chạy DB/backend/frontend bằng PowerShell, `be/.env`, bảng profile `dev` / `dev,local` / `test`, tài khoản thử, test, e2e 2 chế độ, script so endpoint, cấu trúc thư mục.
+- **Chạy luồng chính với `dev` (Cloudinary + Gemini thật)**, chỉ tệp trong `tests/e2e/files`: lần đầu (ảnh mẫu chỉ có khung) Gemini từ chối 4 ảnh JPG vì trống; lần hai (ảnh mẫu có nội dung, ghi “MẪU KIỂM THỬ”) Gemini từ chối `cccd.jpg` bằng `isReadable=false` vì là ảnh mẫu → xử lý ở mục “B9 – giấy tờ mẫu” bên dưới.
+- **Còn tồn đọng**: không còn (e2e với Gemini thật đã chạy hết, xem mục “B9 – giấy tờ mẫu”). Không thêm dependency backend; script dùng `pyyaml` (Python, chỉ cho kiểm thử).
+- Kiểm tra: `.\mvnw.cmd verify` → 181 test, 0 lỗi (2 bỏ qua: `CloudinaryLiveTest`, `GeminiOcrLiveTest` chỉ chạy khi có biến môi trường khóa); `npm run build` pass; `npx eslint src` 0 lỗi (4 cảnh báo `react-refresh` có từ trước).
+
+### B9 – giấy tờ mẫu (`SPECIMEN`) và e2e với Gemini thật (23/10/2026)
+- **Nguyên nhân**: ảnh mẫu mới trong `tests/e2e/files` ghi “MẪU KIỂM THỬ – KHÔNG CÓ GIÁ TRỊ”; Gemini trả `isReadable=false` kèm lý do “Ảnh là mẫu kiểm thử không có giá trị thực tế…” nên hệ thống ghi `BLURRY` (sai bản chất: ảnh rõ, chỉ là giấy tờ mẫu). **Đã chốt với người dùng**: không sửa ảnh, không nới prompt cho môi trường thật.
+- **Cách làm**:
+  - `responseSchema` thêm `isSpecimen` (bắt buộc trong schema; thiếu trong JSON thì `parse` coi false). Prompt yêu cầu báo `isSpecimen=true`, `isReadable=true` và vẫn đọc các trường khi ảnh rõ nhưng là giấy tờ mẫu (specimen, có chữ “MẪU”, “không có giá trị”, “dữ liệu giả”). `OcrResult` thêm `specimen` (constructor 4 tham số cũ giữ lại, `specimen=false`).
+  - `OcrPolicy` (`document/`) quyết định nhận/từ chối: `isReadable=false` → `BLURRY`; sai loại → `WRONG_TYPE`; `isSpecimen` và `allow-specimen=false` → `REJECTED_QUALITY` / `SPECIMEN`, “Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.”; còn lại nhận. `DocumentUploadService` gọi `OcrPolicy.judge`, thay khối `if` cũ.
+  - `app.ocr.allow-specimen` (mặc định `false` ở `application.yml`; `application-dev.yml` đặt `true`). Khi `true` và Gemini báo giấy tờ mẫu: giấy tờ vẫn `UPLOADED` / `OK` có `fields`, ghi nhật ký (`activity_log.action`) “Chấp nhận giấy tờ mẫu (môi trường thử nghiệm)” cùng tên giấy tờ và phiên bản. Profile `test` và `local` không đặt nên `false`.
+  - `V11__giay_to_mau.sql`: thêm `SPECIMEN` vào CHECK `ck_application_document_quality`. `TienSangLocVayApplicationTests` cập nhật danh sách phiên bản Flyway thêm `11`.
+  - Hợp đồng: `openapi.yaml` (enum `qualityStatus`, mô tả upload), `fe/src/api/types.ts`. Mock (`handlers/applications.ts`, `isSpecimenName`) trả `SPECIMEN` khi tên tệp (không phân biệt hoa thường) chứa “specimen” hoặc kết thúc bằng `-mau.<đuôi>` / `_mau.<đuôi>`; không khớp “mau” ở chỗ khác (`mau.jpg`, `cccd-mau-1.jpg`, `mauxanh.jpg` không bị nhận nhầm). Mock không có chế độ cho phép và không đọc nội dung ảnh; cách thử ghi ở `fe/README.md`. `DocumentCard` không cần sửa: đã hiện `qualityMessage` trong `Alert` cho mọi `REJECTED_QUALITY`.
+  - `quy-tac-tinh-toan.md` mục 9 và 5.4 ở tài liệu này đã cập nhật.
+- **Test**: `DocumentUnitTest.ocrPolicy_specimenDependsOnConfig` (cả `false` và `true`, kèm thứ tự với `BLURRY`/`WRONG_TYPE`); `GeminiOcrServiceTest` (schema/prompt/`parse` có `isSpecimen`, thiếu thì false); `ApplicationApiTest.upload_specimen_rejectedByDefault` (OCR giả trả `specimen=true` → `SPECIMEN`, không lưu tệp, không ghi nhật ký) và `upload_specimen_acceptedWhenAllowed` (đổi tạm cờ `allowSpecimen` của bean `OcrPolicy` bằng `ReflectionTestUtils` → `UPLOADED`, ghi đúng 1 dòng nhật ký). `OcrPolicyConfigTest` (xem “Ba việc nhỏ” bên dưới).
+- **Kết quả e2e `dev` (Gemini thật), DB mới**: `python tests\e2e\full_flow.py --mode real` → `ERRORS []`, 90 s, hồ sơ HS2610-0511 đến `DISBURSED`. Gemini đọc: CCCD họ tên NGUYỄN VĂN MINH, số 001092012345, ngày sinh 15/05/1992, giới tính Nam, nơi thường trú 12 Láng Hạ, Đống Đa, Hà Nội (độ chắc chắn 100); cư trú địa chỉ như trên (99); HĐLĐ đơn vị “Công ty CP Công nghệ Sao Mai (giả lập)”, lương 21.000.000; sao kê ngân hàng “NGÂN HÀNG MẪU”, lương bình quân 18.800.000; hóa đơn bên thụ hưởng “Công ty TNHH Thương mại Hòa Bình (giả lập)”, 162.000.000. Cả 5 giấy tờ đều bị Gemini báo là mẫu và đều được nhận, có 6 dòng nhật ký “Chấp nhận giấy tờ mẫu (môi trường thử nghiệm)” (CCCD v2, cư trú, HĐLĐ, sao kê v1 và v2, hóa đơn). Đối chiếu giấy tờ: tất cả `MATCH`. Cảnh báo: (INFO) ngân hàng trên sao kê “NGÂN HÀNG MẪU” khác “Vietcombank” đã khai; (WARNING) thu nhập sao kê 18.800.000 thấp hơn khai báo 20.000.000 (6%), tính lại DTI sau vay 30,5%, hạn mức an toàn 282.000.000, điểm 85,9, vẫn đạt.
+- **Ba việc nhỏ trước khi commit (23/10/2026)**:
+  - Mock `isSpecimenName` thu hẹp: chỉ khớp tên chứa `specimen` hoặc kết thúc bằng `-mau.<đuôi>` / `_mau.<đuôi>` (đã thử 9 tên mẫu, `mau.jpg`, `cccd-mau-1.jpg`, `mauxanh.jpg` đều không khớp). Cách thử ghi ở `fe/README.md` (mục “Thử giấy tờ mẫu”), mô tả trong `openapi.yaml` và `quy-tac-tinh-toan.md` mục 9 sửa theo.
+  - `OcrPolicyConfigTest`: hai lớp `@Nested` `@SpringBootTest(classes = OcrPolicy.class)` (không cần cơ sở dữ liệu) – một lớp đặt `@TestPropertySource(properties = "app.ocr.allow-specimen=true")` khẳng định bean `OcrPolicy` nhận giấy tờ mẫu và đánh dấu để ghi nhật ký; lớp kia không đặt gì khẳng định mặc định `false` thì từ chối `SPECIMEN`. Không dùng `ReflectionTestUtils`. (`ApplicationApiTest.upload_specimen_acceptedWhenAllowed` vẫn đổi cờ bằng `ReflectionTestUtils` để kiểm tra cả đường lưu DB và nhật ký.)
+  - E2E sau thay đổi, DB mới: `--mode real` với `dev,local` → `ERRORS []`; `--mode mock` → `ERRORS []`. Trước đó `dev` (Gemini thật) cũng `ERRORS []` (xem trên).
+  - Kiểm tra: `.\mvnw.cmd verify` → 187 test, 0 lỗi, 2 bỏ qua (live Cloudinary/Gemini); `npm run build` đạt; `npx eslint src` 0 lỗi (4 cảnh báo `react-refresh` có sẵn); redocly lint 0 lỗi.

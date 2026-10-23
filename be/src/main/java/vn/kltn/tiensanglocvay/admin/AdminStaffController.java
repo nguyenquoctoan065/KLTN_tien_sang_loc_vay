@@ -1,5 +1,6 @@
 package vn.kltn.tiensanglocvay.admin;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,9 +45,29 @@ public class AdminStaffController {
         return service.update(id, b, user);
     }
 
-    /** lock, unlock, reset-password (mock dùng chung một handler {@code /admin/staff/:id/:action}). */
+    /*
+     * lock, unlock, reset-password: mock dùng chung một handler /admin/staff/:id/:action, ở đây tách 3 mapping để springdoc
+     * liệt kê đúng 3 path như openapi.yaml (tests/contract/compare_endpoints.py). Action khác rơi vào mapping ẩn bên dưới
+     * để trả đúng 404 “Thao tác không hợp lệ.” như mock.
+     */
+    @PostMapping("/admin/staff/{id}/lock")
+    StaffAccount lock(@PathVariable int id, @AuthenticationPrincipal CurrentUser user) {
+        return service.act(id, "lock", user);
+    }
+
+    @PostMapping("/admin/staff/{id}/unlock")
+    StaffAccount unlock(@PathVariable int id, @AuthenticationPrincipal CurrentUser user) {
+        return service.act(id, "unlock", user);
+    }
+
+    @PostMapping("/admin/staff/{id}/reset-password")
+    StaffAccount resetPassword(@PathVariable int id, @AuthenticationPrincipal CurrentUser user) {
+        return service.act(id, "reset-password", user);
+    }
+
+    @Hidden
     @PostMapping("/admin/staff/{id}/{action}")
-    StaffAccount act(@PathVariable int id, @PathVariable String action, @AuthenticationPrincipal CurrentUser user) {
+    StaffAccount unknownAction(@PathVariable int id, @PathVariable String action, @AuthenticationPrincipal CurrentUser user) {
         return service.act(id, action, user);
     }
 }

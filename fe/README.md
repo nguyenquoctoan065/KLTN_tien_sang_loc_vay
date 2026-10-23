@@ -29,11 +29,20 @@ src/
 
 | Biến | Ý nghĩa |
 |---|---|
-| `VITE_USE_MOCK` | `true`: dùng API giả lập; `false`: gọi backend |
+| `VITE_USE_MOCK` | `true`: dùng API giả lập; `false`: gọi backend. `npm run dev` mặc định `false` (`.env.development`), `npm run build` mặc định `true` (`.env.production`) |
 | `VITE_API_BASE_URL` | Mặc định `/api` (dev server proxy tới cổng 8080) |
 
-Dữ liệu giả lập lưu trong localStorage (khóa `tsl-mock-db`). Muốn về dữ liệu ban đầu: xóa khóa này rồi tải lại trang.
+Chạy với API giả lập khi phát triển: `$env:VITE_USE_MOCK="true"; npm run dev` (PowerShell) hoặc tạo `.env.development.local`
+chứa `VITE_USE_MOCK=true`. Dữ liệu giả lập lưu trong localStorage (khóa `tsl-mock-db`). Muốn về dữ liệu ban đầu: xóa khóa này rồi tải lại trang.
 OTP giả lập luôn là `123456`.
+
+### Thử giấy tờ mẫu (`SPECIMEN`) trên API giả lập
+
+Mock không đọc nội dung ảnh nên nhận biết giấy tờ mẫu qua **tên tệp**: chứa đúng chữ `specimen` (ví dụ `specimen-cccd.jpg`) hoặc
+kết thúc bằng `-mau.<đuôi>` / `_mau.<đuôi>` (ví dụ `cccd-mau.jpg`, `cccd_mau.png`), không phân biệt hoa thường. Tải tệp như vậy
+(ảnh JPG/PNG hợp lệ, từ 25 KB) lên một thẻ giấy tờ sẽ thấy cảnh báo đỏ “Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.”
+Các tên như `mau.jpg`, `cccd-mau-1.jpg`, `mauxanh.jpg` không bị coi là mẫu. Mock không có chế độ cho phép giấy tờ mẫu (chỉ backend thật
+có `app.ocr.allow-specimen`).
 
 ## Phạm vi – đủ 29 chức năng
 

@@ -1,13 +1,51 @@
-"""Chạy: pip install playwright && python tests/e2e/full_flow.py  (BASE_URL mặc định http://localhost:5173)
-Kiểm thử toàn luồng: sàng lọc -> phương án -> hồ sơ -> nộp -> đối chiếu -> bổ sung -> duyệt -> giải ngân; quản trị."""
-import asyncio, re, sys
-from playwright.async_api import async_playwright
-import os
+"""Kiểm thử toàn luồng: sàng lọc -> phương án -> hồ sơ -> nộp -> đối chiếu -> bổ sung -> duyệt -> giải ngân; quản trị.
+
+Cài đặt: pip install playwright ; python -m playwright install chromium
+Chạy (frontend phải đang chạy ở --base-url):
+  python tests\\e2e\\full_flow.py --mode real   # fe VITE_USE_MOCK=false + backend thật, DB mới (docker compose down -v; up -d)
+  python tests\\e2e\\full_flow.py --mode mock   # fe chạy với $env:VITE_USE_MOCK="true"
+Tham số cũng đặt được qua biến môi trường: E2E_MODE, BASE_URL, E2E_HEADED=1, E2E_OCR_TIMEOUT (giây chờ đọc giấy tờ).
+In "ERRORS [...]"; thoát mã 1 nếu có lỗi."""
+import argparse, asyncio, os, sys, urllib.request
+from playwright.async_api import async_playwright, TimeoutError as PwTimeout
+
+ap = argparse.ArgumentParser(description='Kiểm thử Playwright toàn luồng')
+ap.add_argument('--mode', choices=['mock', 'real'], default=os.environ.get('E2E_MODE', 'mock'),
+                help='mock: API giả lập (MSW); real: backend Spring Boot thật')
+ap.add_argument('--base-url', default=os.environ.get('BASE_URL', 'http://localhost:5173'))
+ap.add_argument('--headed', action='store_true', default=os.environ.get('E2E_HEADED') == '1', help='mở cửa sổ trình duyệt')
+ap.add_argument('--ocr-timeout', type=int, default=int(os.environ.get('E2E_OCR_TIMEOUT', '0')) or None,
+                help='giây chờ tải lên + đọc giấy tờ (mặc định mock 5, real 60 – Gemini thật chậm hơn)')
+ARGS = ap.parse_args()
+REAL = ARGS.mode == 'real'
+OCR_MS = (ARGS.ocr_timeout or (60 if REAL else 5)) * 1000
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-B = os.environ.get('BASE_URL', 'http://localhost:5173')
+B = ARGS.base_url.rstrip('/')
 S = os.path.join(HERE, 'shots') + '/'
 T = os.path.join(HERE, 'files') + '/'
 os.makedirs(S, exist_ok=True)
+
+def preflight():
+    """Chế độ real: backend phải trả lời qua proxy /api của Vite."""
+    if not REAL:
+        return
+    try:
+        with urllib.request.urlopen(B + '/api/actuator/health', timeout=5) as r:
+            body = r.read().decode()
+    except Exception as e:
+        sys.exit(f'Không gọi được backend qua {B}/api/actuator/health ({e}). Chạy backend ở cổng 8080 và fe với VITE_USE_MOCK=false.')
+    if '"UP"' not in body:
+        sys.exit(f'Backend chưa sẵn sàng: {body}')
+    print('Chế độ real: cần DB mới (docker compose down -v; docker compose up -d) vì luồng tạo hồ sơ, khóa chi nhánh Đà Nẵng.')
+
+async def check_mode(pg):
+    """MSW chạy bằng service worker: có controller = fe đang dùng API giả lập."""
+    mocked = await pg.evaluate('!!(navigator.serviceWorker && navigator.serviceWorker.controller)')
+    if mocked and REAL:
+        sys.exit('Frontend đang chạy API giả lập (MSW) nhưng --mode real. Đặt VITE_USE_MOCK=false rồi chạy lại npm run dev.')
+    if not mocked and not REAL:
+        sys.exit('Frontend không chạy API giả lập nhưng --mode mock. Chạy fe với $env:VITE_USE_MOCK="true" hoặc dùng --mode real.')
 
 async def shot(pg, name):
     await pg.wait_for_timeout(500)
@@ -35,23 +73,32 @@ async def doc_card(pg, title):
 async def upload(pg, title, file, confirm=True):
     card = await doc_card(pg, title)
     await card.locator('input[type=file]').set_input_files(T + file)
-    await pg.wait_for_timeout(1300)
-    if confirm:
-        btn = card.locator('button:has-text("Xác nhận thông tin đúng")')
-        if await btn.count():
-            await btn.click(); await pg.wait_for_timeout(700)
+    # Chờ kết quả tải lên + đọc giấy tờ thay vì chờ cố định (backend thật, nhất là Gemini, lâu hơn mock)
+    target = card.locator('button:has-text("Xác nhận thông tin đúng")') if confirm \
+        else card.locator('text=Không đạt chất lượng')
+    try:
+        await target.first.wait_for(state='visible', timeout=OCR_MS)
+    except PwTimeout:
+        if confirm and await card.locator('text=Không đạt chất lượng').count():
+            # Gặp khi chạy Gemini thật (profile dev): máy đọc từ chối ảnh, luồng không đi tiếp được
+            reason = (await card.locator('.ant-alert').first.inner_text()).strip() if await card.locator('.ant-alert').count() else ''
+            await shot(pg, '22_docs')
+            sys.exit(f'DỪNG: {title}/{file} bị đánh giá không đạt chất lượng: {reason}')
+        print(f'  ! {title}/{file}: không thấy kết quả sau {OCR_MS // 1000}s')
+    if confirm and await target.count():
+        await target.click(); await pg.wait_for_timeout(700)
 
 async def main():
     errs = []
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(headless=not ARGS.headed)
         ctx = await b.new_context(viewport={'width': 1366, 'height': 900})
         pg = await ctx.new_page()
         pg.on('pageerror', lambda e: errs.append(str(e)))
         pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
         # ---------- QT01, QT02 ----------
         await login(pg, '0901234567')
-        await pg.goto(B + '/sang-loc')
+        await pg.goto(B + '/sang-loc'); await check_mode(pg)
         await pg.click('text=Tôi đã đọc và đồng ý'); await pg.click('button:has-text("Tiếp tục")')
         await pg.fill('input[placeholder="dd/mm/yyyy"]', '15/05/1992'); await pg.keyboard.press('Enter')
         await pg.click('text=Đã kết hôn'); await pg.fill('#dependents', '1')
@@ -169,7 +216,10 @@ async def main():
         await pg.goto(B + '/noi-bo/nhat-ky'); await pg.wait_for_timeout(800); await shot(pg, '47_logs')
         m = await b.new_page(viewport={'width': 390, 'height': 844})
         await m.goto(B + '/'); await m.evaluate("1")
-        print('ERRORS', [e for e in errs if 'favicon' not in e][:10])
+        errs = [e for e in errs if 'favicon' not in e]
+        print('ERRORS', errs[:10])
         await b.close()
+        return 1 if errs else 0
 
-asyncio.run(main())
+preflight()
+sys.exit(asyncio.run(main()))

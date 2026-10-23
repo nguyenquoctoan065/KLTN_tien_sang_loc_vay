@@ -26,6 +26,7 @@ import vn.kltn.tiensanglocvay.common.ApiException;
 import vn.kltn.tiensanglocvay.document.DocumentFields;
 import vn.kltn.tiensanglocvay.document.CorruptedFileException;
 import vn.kltn.tiensanglocvay.document.OcrContext;
+import vn.kltn.tiensanglocvay.document.OcrPolicy;
 import vn.kltn.tiensanglocvay.document.OcrResult;
 import vn.kltn.tiensanglocvay.document.OcrService;
 import vn.kltn.tiensanglocvay.document.QualityChecker;
@@ -52,6 +53,7 @@ public class DocumentUploadService {
     private final QualityChecker quality;
     private final StorageService storage;
     private final OcrService ocr;
+    private final OcrPolicy policy;
     private final ActivityLogService activity;
     private final TransactionTemplate tx;
     private final TransactionTemplate readTx;
@@ -60,7 +62,7 @@ public class DocumentUploadService {
 
     public DocumentUploadService(ApplicationService applications, ApplicationSupport support, ApplicationDocumentRepository docs,
                                  ExtractedFieldRepository fields, QualityChecker quality, StorageService storage, OcrService ocr,
-                                 ActivityLogService activity, PlatformTransactionManager txManager,
+                                 OcrPolicy policy, ActivityLogService activity, PlatformTransactionManager txManager,
                                  @Value("${app.storage.folder:tien-sang-loc-vay/dev}") String folder, Clock clock) {
         this.applications = applications;
         this.support = support;
@@ -69,6 +71,7 @@ public class DocumentUploadService {
         this.quality = quality;
         this.storage = storage;
         this.ocr = ocr;
+        this.policy = policy;
         this.activity = activity;
         this.tx = new TransactionTemplate(txManager);
         this.readTx = new TransactionTemplate(txManager);
@@ -105,6 +108,7 @@ public class DocumentUploadService {
         String qualityStatus = q.qualityStatus();
         String message = q.message();
         List<OcrResult.Field> extracted = List.of();
+        boolean specimenAccepted = false;
         if (q.ok()) {
             byte[] data = bytes(file);
             try {
@@ -129,17 +133,15 @@ public class DocumentUploadService {
                     qualityStatus = QualityChecker.OK;
                     message = MSG_OCR_FAILED;
                     extracted = DocumentFields.blank(p.type().getId());
-                } else if (!r.readable()) {
-                    qualityStatus = QualityChecker.BLURRY;
-                    message = r.issue() != null ? r.issue() : "Ảnh có độ phân giải thấp hoặc bị mờ, vui lòng chụp lại rõ nét, đủ bốn góc.";
-                } else if (!r.documentMatchesType()) {
-                    qualityStatus = "WRONG_TYPE";
-                    message = "Tệp không phải " + p.type().getName() + ".";
                 } else {
-                    status = ApplicationDocument.UPLOADED;
-                    qualityStatus = QualityChecker.OK;
-                    message = null;
-                    extracted = r.fields();
+                    OcrPolicy.Verdict v = policy.judge(r, p.type().getName());
+                    qualityStatus = v.qualityStatus();
+                    message = v.message();
+                    if (v.accepted()) {
+                        status = ApplicationDocument.UPLOADED;
+                        extracted = r.fields();
+                        specimenAccepted = v.specimenAccepted();
+                    }
                 }
                 if (ApplicationDocument.REJECTED_QUALITY.equals(status)) {
                     storage.delete(stored);
@@ -154,6 +156,7 @@ public class DocumentUploadService {
         String finalQuality = qualityStatus;
         String finalMessage = message;
         List<OcrResult.Field> finalFields = extracted;
+        boolean finalSpecimen = specimenAccepted;
         try {
             return tx.execute(s -> {
                 LoanApplication app = applications.editableOwned(id, u, "Hồ sơ đã khóa, không tải thêm được.");
@@ -169,6 +172,9 @@ public class DocumentUploadService {
                 support.dropForm(b);
                 applications.changed(b);
                 activity.log(u, "Tải giấy tờ", p.type().getName() + " (phiên bản " + d.getVersionNo() + ")", app.getId());
+                if (finalSpecimen) {
+                    activity.log(u, OcrPolicy.LOG_SPECIMEN_ACCEPTED, p.type().getName() + " (phiên bản " + d.getVersionNo() + ")", app.getId());
+                }
                 if (old != null) {
                     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                         @Override

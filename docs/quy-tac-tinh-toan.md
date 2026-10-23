@@ -121,7 +121,11 @@ Sau 3 bước trên tệp được lưu kho; kho từ chối vì tệp hỏng / 
 lời nhắc “Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.”, không gửi Gemini. Lỗi khác của kho vẫn là lỗi hệ thống. Mock kiểm tra chữ ký đầu tệp (`%PDF-`, `FF D8 FF`, `89 50 4E 47`) hoặc tệp rỗng.
 
 Ở backend thật, sau đó tệp được gửi Gemini đọc thông tin (xem `docs/be-huong-dan.md` 5.4): Gemini báo ảnh không đọc được → `BLURRY`;
-báo không đúng loại giấy tờ → `WRONG_TYPE`.
+báo không đúng loại giấy tờ → `WRONG_TYPE`; báo ảnh rõ nhưng là giấy tờ mẫu (specimen, có dấu/chữ “MẪU”, “không có giá trị”; `isSpecimen=true`) →
+`SPECIMEN`, lời nhắc “Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.” (xét sau `BLURRY` và `WRONG_TYPE`).
+Cấu hình `app.ocr.allow-specimen` (mặc định `false`; chỉ `application-dev.yml` đặt `true` cho môi trường thử nghiệm): khi `true`, giấy tờ mẫu vẫn được
+đọc và nhận như thường (`UPLOADED` / `OK`, có `fields`) và ghi nhật ký “Chấp nhận giấy tờ mẫu (môi trường thử nghiệm)”. Mock nhận biết `SPECIMEN`
+chỉ qua tên tệp chứa “specimen” hoặc kết thúc bằng `-mau.<đuôi>` / `_mau.<đuôi>` (để thử giao diện), không có chế độ cho phép.
 
 Đạt thì giấy tờ sang `UPLOADED`, `version_no` tăng 1, chạy trích xuất (MB06) theo loại giấy tờ. Mỗi trường có `ocrValue` và `confidence`; khách hàng sửa thành `confirmedValue` rồi xác nhận, giấy tờ chuyển `CONFIRMED`. Tải lại tệp xóa kết quả đối chiếu cũ của giấy tờ đó.
 

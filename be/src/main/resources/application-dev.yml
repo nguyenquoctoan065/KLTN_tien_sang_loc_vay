@@ -15,3 +15,5 @@ app:
     fixed-code: "123456"
   storage:
     folder: tien-sang-loc-vay/dev
+  ocr:
+    allow-specimen: true      # môi trường thử nghiệm dùng giấy tờ mẫu (tests/e2e/files); mặc định false

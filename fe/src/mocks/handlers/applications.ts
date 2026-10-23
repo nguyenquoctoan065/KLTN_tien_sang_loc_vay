@@ -21,6 +21,12 @@ async function isCorrupted(file: File, ext: string) {
   return false;
 }
 
+/** Tên tệp chứa “specimen” hoặc kết thúc bằng “-mau.<đuôi>” / “_mau.<đuôi>” (không phân biệt hoa thường), ví dụ cccd-mau.jpg. */
+function isSpecimenName(name: string) {
+  const n = name.toLowerCase();
+  return n.includes('specimen') || /[-_]mau\.[a-z0-9]+$/.test(n);
+}
+
 function own(request: Request, id: unknown): { app: AppRecord; u: NonNullable<ReturnType<typeof currentUser>> } | Response {
   const u = currentUser(request);
   if (!u) return err(401, 'Chưa đăng nhập.');
@@ -167,6 +173,9 @@ export const applicationHandlers = [
       d.status = 'REJECTED_QUALITY'; d.qualityStatus = 'BLURRY'; d.qualityMessage = 'Ảnh có độ phân giải thấp hoặc bị mờ, vui lòng chụp lại rõ nét, đủ bốn góc.'; d.fields = [];
     } else if (await isCorrupted(file, ext)) {
       d.status = 'REJECTED_QUALITY'; d.qualityStatus = 'CORRUPTED'; d.qualityMessage = 'Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.'; d.fields = [];
+    } else if (isSpecimenName(file.name)) {
+      // Backend thật nhận biết giấy tờ mẫu qua nội dung ảnh (Gemini); mock chỉ dựa vào tên tệp để thử giao diện
+      d.status = 'REJECTED_QUALITY'; d.qualityStatus = 'SPECIMEN'; d.qualityMessage = 'Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.'; d.fields = [];
     } else {
       d.status = 'UPLOADED'; d.qualityStatus = 'OK'; d.qualityMessage = null;
       d.fields = ocrFields(d.documentTypeId, app, screeningOf(app)?.input ?? null, kb);

@@ -50,6 +50,7 @@ app:
     provider: gemini        # gemini | fake
     model: gemini-3.5-flash-lite
     timeout-seconds: 30
+    allow-specimen: false     # true (chỉ môi trường thử nghiệm, profile dev): vẫn nhận giấy tờ mẫu/specimen, ghi nhật ký
   # Bí mật chỉ đặt qua biến môi trường hoặc be/.env (profile dev import; đã nằm trong .gitignore):
   #   CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
   #   GEMINI_API_KEY=<khóa từ Google AI Studio>

@@ -353,7 +353,7 @@ export interface AppDocument {
   fileSize: number | null; // KB
   versionNo: number;
   issuedDate: string | null;
-  qualityStatus: 'OK' | 'BLURRY' | 'WRONG_FORMAT' | 'TOO_LARGE' | 'WRONG_TYPE' | 'CORRUPTED' | null;
+  qualityStatus: 'OK' | 'BLURRY' | 'WRONG_FORMAT' | 'TOO_LARGE' | 'WRONG_TYPE' | 'CORRUPTED' | 'SPECIMEN' | null;
   qualityMessage: string | null;
   uploadedAt: string | null;
   previewUrl: string | null;

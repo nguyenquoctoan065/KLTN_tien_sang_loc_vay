@@ -29,6 +29,28 @@ class DocumentUnitTest {
     }
 
     @Test
+    void ocrPolicy_specimenDependsOnConfig() {
+        OcrResult specimen = new OcrResult(true, true, true, null, List.of());
+        OcrResult real = OcrResult.of(List.of());
+        // allow-specimen=false (mặc định): giấy tờ mẫu bị từ chối
+        OcrPolicy strict = new OcrPolicy(false);
+        assertThat(strict.judge(specimen, "CCCD")).isEqualTo(new OcrPolicy.Verdict(false, "SPECIMEN",
+                "Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.", false));
+        assertThat(strict.judge(real, "CCCD")).isEqualTo(new OcrPolicy.Verdict(true, "OK", null, false));
+        // allow-specimen=true: nhận như thường, đánh dấu để ghi nhật ký; giấy tờ thật không đổi
+        OcrPolicy lenient = new OcrPolicy(true);
+        assertThat(lenient.judge(specimen, "CCCD")).isEqualTo(new OcrPolicy.Verdict(true, "OK", null, true));
+        assertThat(lenient.judge(real, "CCCD")).isEqualTo(new OcrPolicy.Verdict(true, "OK", null, false));
+        // Không đọc được / sai loại vẫn bị từ chối ở cả hai cấu hình, và xét trước giấy tờ mẫu
+        for (OcrPolicy p : List.of(strict, lenient)) {
+            assertThat(p.judge(new OcrResult(false, true, true, "Ảnh bị lóa.", List.of()), "CCCD"))
+                    .isEqualTo(new OcrPolicy.Verdict(false, "BLURRY", "Ảnh bị lóa.", false));
+            assertThat(p.judge(new OcrResult(true, false, true, null, List.of()), "CCCD"))
+                    .isEqualTo(new OcrPolicy.Verdict(false, "WRONG_TYPE", "Tệp không phải CCCD.", false));
+        }
+    }
+
+    @Test
     void quality_orderAndMessages() {
         assertThat(quality.check("a.gif", 60_000, "JPG,PNG,PDF")).isEqualTo(new QualityChecker.Result("GIF", 59, "WRONG_FORMAT",
                 "Định dạng GIF không được chấp nhận (cho phép JPG,PNG,PDF)."));

@@ -43,10 +43,13 @@ class GeminiOcrServiceTest {
         Schema s = GeminiOcrService.schema(DocumentFields.of(4));
         Schema item = s.properties().orElseThrow().get("fields").items().orElseThrow();
         assertThat(item.properties().orElseThrow().get("key").enum_().orElseThrow()).containsExactly("employer", "salary");
-        assertThat(s.required().orElseThrow()).containsExactly("isReadable", "documentMatchesType", "issue", "fields");
+        assertThat(s.required().orElseThrow()).containsExactly("isReadable", "documentMatchesType", "isSpecimen", "issue", "fields");
+        assertThat(s.properties().orElseThrow()).containsKey("isSpecimen");
         String p = GeminiOcrService.prompt("Hợp đồng lao động", DocumentFields.of(4));
         assertThat(p).contains("«Hợp đồng lao động»", "- employer (Đơn vị công tác)", "- salary (Mức lương theo hợp đồng)",
                 "chỉ gồm chữ số", "value = null");
+        // Giấy tờ mẫu báo qua isSpecimen, không dùng isReadable=false
+        assertThat(p).contains("isSpecimen", "\"MẪU\"", "không dùng isReadable = false");
         assertThat(GeminiOcrService.prompt("Sao kê", DocumentFields.of(5))).contains("03 tháng", "avg_income", "salary_bank");
         assertThat(GeminiOcrService.prompt("CCCD", DocumentFields.of(2))).contains("dd/MM/yyyy", "in hoa", "\"Nam\" hoặc \"Nữ\"");
     }
@@ -86,6 +89,18 @@ class GeminiOcrServiceTest {
         assertThat(r.issue()).isEqualTo("Ảnh bị lóa, vui lòng chụp lại.");
         assertThat(GeminiOcrService.parse("{\"isReadable\":true,\"documentMatchesType\":false,\"issue\":null,\"fields\":[]}", 3)
                 .documentMatchesType()).isFalse();
+    }
+
+    @Test
+    void parse_specimen() {
+        OcrResult r = GeminiOcrService.parse("{\"isReadable\":true,\"documentMatchesType\":true,\"isSpecimen\":true,\"issue\":null,"
+                + "\"fields\":[{\"key\":\"address\",\"value\":\"12 Láng Hạ\",\"confidence\":95}]}", 3);
+        assertThat(r.specimen()).isTrue();
+        assertThat(r.readable()).isTrue();
+        assertThat(r.fields()).extracting(OcrResult.Field::value).containsExactly("12 Láng Hạ");
+        // Thiếu isSpecimen (model bỏ sót) → giấy tờ thật, không từ chối nhầm
+        assertThat(GeminiOcrService.parse("{\"isReadable\":true,\"documentMatchesType\":true,\"issue\":null,\"fields\":[]}", 3).specimen())
+                .isFalse();
     }
 
     @Test

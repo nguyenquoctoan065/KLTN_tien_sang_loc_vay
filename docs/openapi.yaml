@@ -403,7 +403,11 @@ paths:
           → REJECTED_QUALITY / CORRUPTED, “Tệp bị hỏng hoặc không mở được, vui lòng xuất/chụp lại và tải lên lần nữa.”,
           không gửi máy đọc, không có `previewUrl` / `fileUrl`. Lỗi khác của kho (khóa sai, mạng, hết hạn mức) vẫn là 500.
         - Gửi máy đọc (Gemini): báo không đọc được → REJECTED_QUALITY / BLURRY, `qualityMessage` là lời nhắc
-          của máy đọc; báo không đúng loại giấy tờ → REJECTED_QUALITY / WRONG_TYPE, “Tệp không phải <tên giấy tờ>.”.
+          của máy đọc; báo không đúng loại giấy tờ → REJECTED_QUALITY / WRONG_TYPE, “Tệp không phải <tên giấy tờ>.”;
+          báo ảnh rõ nhưng là giấy tờ mẫu (specimen, có dấu “MẪU”, “không có giá trị”) → REJECTED_QUALITY / SPECIMEN,
+          “Tệp là giấy tờ mẫu, không có giá trị, vui lòng tải giấy tờ thật.”. Riêng môi trường thử nghiệm (backend cấu hình
+          `app.ocr.allow-specimen=true`, mặc định false) giấy tờ mẫu vẫn được đọc và nhận như thường (UPLOADED / OK) và ghi nhật ký
+          “Chấp nhận giấy tờ mẫu (môi trường thử nghiệm)”.
         - Đạt → status UPLOADED, qualityStatus OK, sinh `fields` (OCR) chờ khách hàng xác nhận.
         - Máy đọc lỗi (mạng, hết hạn mức, kết quả sai định dạng) → vẫn UPLOADED / OK, `qualityMessage`
           “Chưa đọc được thông tin tự động, vui lòng nhập tay”, `fields` đủ các trường của loại giấy tờ với `ocrValue` rỗng,
@@ -1624,7 +1628,7 @@ components:
         fileSize: { type: number, nullable: true, description: KB }
         versionNo: { type: integer, description: Tăng mỗi lần tải lên }
         issuedDate: { type: string, format: date, nullable: true }
-        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE, WRONG_TYPE, CORRUPTED], nullable: true, description: 'WRONG_TYPE: máy đọc báo tệp không đúng loại giấy tờ (chỉ backend thật). CORRUPTED: tệp hỏng hoặc không mở được (kho lưu tệp từ chối, ví dụ Cloudinary "Invalid PDF file"; mock kiểm tra chữ ký đầu tệp)' }
+        qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE, WRONG_TYPE, CORRUPTED, SPECIMEN], nullable: true, description: 'WRONG_TYPE: máy đọc báo tệp không đúng loại giấy tờ (chỉ backend thật). SPECIMEN: máy đọc báo ảnh rõ nhưng là giấy tờ mẫu, không có giá trị (backend thật; mock nhận biết qua tên tệp chứa “specimen” hoặc kết thúc bằng “-mau.<đuôi>” / “_mau.<đuôi>” – chỉ để thử giao diện). CORRUPTED: tệp hỏng hoặc không mở được (kho lưu tệp từ chối, ví dụ Cloudinary "Invalid PDF file"; mock kiểm tra chữ ký đầu tệp)' }
         qualityMessage: { type: string, nullable: true }
         uploadedAt: { type: string, format: date-time, nullable: true }
         previewUrl: { type: string, nullable: true, description: 'Đường dẫn xem trước ký có hạn (mặc định 10 phút, sinh mới mỗi lần trả hồ sơ); chỉ có với tệp đã đạt chất lượng. Kho cục bộ: /api/files/local?… (chỉ ảnh); Cloudinary: /api/files/cloud?… (ảnh thu nhỏ rộng 480 px, PDF là ảnh trang đầu)' }
