@@ -1,0 +1,4526 @@
+{
+  "dataset": {
+    "applications": [
+      {
+        "key": "HT0001",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 70,
+        "status": "CANCELLED",
+        "createdAt": "2026-05-04T03:00:00.000Z",
+        "updatedAt": "2026-05-06T04:00:00.000Z",
+        "screeningAt": "2026-05-03T08:00:00.000Z",
+        "planAt": "2026-05-04T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-05-04T03:00:00.000Z"
+          },
+          {
+            "status": "CANCELLED",
+            "at": "2026-05-06T04:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0002",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 60,
+        "status": "DRAFTING",
+        "createdAt": "2026-05-12T03:00:00.000Z",
+        "updatedAt": "2026-05-12T03:00:00.000Z",
+        "screeningAt": "2026-05-11T08:00:00.000Z",
+        "planAt": "2026-05-12T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-05-12T03:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0003",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 48,
+        "status": "EXPIRED",
+        "createdAt": "2026-05-19T03:00:00.000Z",
+        "updatedAt": "2026-06-19T02:00:00.000Z",
+        "screeningAt": "2026-05-18T08:00:00.000Z",
+        "planAt": "2026-05-19T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-05-19T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-05-20T02:30:00.000Z"
+          },
+          {
+            "status": "EXPIRED",
+            "at": "2026-06-19T02:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0004",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 80,
+        "status": "DISBURSED",
+        "createdAt": "2026-06-02T03:00:00.000Z",
+        "updatedAt": "2026-06-08T10:05:00.000Z",
+        "screeningAt": "2026-06-01T08:00:00.000Z",
+        "planAt": "2026-06-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-06-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-06-07T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-06-08T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-06-08T10:05:00.000Z",
+          "disbursedAmount": 120000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0005",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 85,
+        "status": "DISBURSED",
+        "createdAt": "2026-06-05T03:00:00.000Z",
+        "updatedAt": "2026-06-10T10:05:00.000Z",
+        "screeningAt": "2026-06-04T08:00:00.000Z",
+        "planAt": "2026-06-05T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-05T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-06T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-06-07T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-06-09T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-06-10T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-06-10T10:05:00.000Z",
+          "disbursedAmount": 200000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0006",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 40,
+        "status": "REJECTED",
+        "createdAt": "2026-06-08T03:00:00.000Z",
+        "updatedAt": "2026-06-12T09:20:00.000Z",
+        "screeningAt": "2026-06-07T08:00:00.000Z",
+        "planAt": "2026-06-08T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-08T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-09T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-06-10T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-06-12T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-06-12T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Lịch sử tín dụng (CIC) có nợ cần chú ý"
+        }
+      },
+      {
+        "key": "HT0007",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 35,
+        "status": "REJECTED",
+        "createdAt": "2026-06-11T03:00:00.000Z",
+        "updatedAt": "2026-06-14T09:20:00.000Z",
+        "screeningAt": "2026-06-10T08:00:00.000Z",
+        "planAt": "2026-06-11T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-11T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-12T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-06-13T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-06-14T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-06-14T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Lịch sử tín dụng (CIC) có nợ cần chú ý"
+        }
+      },
+      {
+        "key": "HT0008",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 62,
+        "status": "DISBURSED",
+        "createdAt": "2026-06-15T03:00:00.000Z",
+        "updatedAt": "2026-06-22T10:05:00.000Z",
+        "screeningAt": "2026-06-14T08:00:00.000Z",
+        "planAt": "2026-06-15T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-15T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-16T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-06-17T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-06-21T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-06-22T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-06-22T10:05:00.000Z",
+          "disbursedAmount": 80000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0009",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 58,
+        "status": "REJECTED",
+        "createdAt": "2026-06-20T03:00:00.000Z",
+        "updatedAt": "2026-06-23T09:20:00.000Z",
+        "screeningAt": "2026-06-19T08:00:00.000Z",
+        "planAt": "2026-06-20T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-20T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-21T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-06-22T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-06-23T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-06-23T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Vượt room tín dụng của chi nhánh trong kỳ"
+        }
+      },
+      {
+        "key": "HT0010",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 70,
+        "status": "EXPIRED",
+        "createdAt": "2026-06-24T03:00:00.000Z",
+        "updatedAt": "2026-07-25T02:00:00.000Z",
+        "screeningAt": "2026-06-23T08:00:00.000Z",
+        "planAt": "2026-06-24T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-06-24T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-06-25T02:30:00.000Z"
+          },
+          {
+            "status": "EXPIRED",
+            "at": "2026-07-25T02:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0011",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 75,
+        "status": "DISBURSED",
+        "createdAt": "2026-07-03T03:00:00.000Z",
+        "updatedAt": "2026-07-09T10:05:00.000Z",
+        "screeningAt": "2026-07-02T08:00:00.000Z",
+        "planAt": "2026-07-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-05T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-07-08T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-07-09T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-07-09T10:05:00.000Z",
+          "disbursedAmount": 150000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0012",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 70,
+        "status": "DISBURSED",
+        "createdAt": "2026-07-06T03:00:00.000Z",
+        "updatedAt": "2026-07-11T10:05:00.000Z",
+        "screeningAt": "2026-07-05T08:00:00.000Z",
+        "planAt": "2026-07-06T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-06T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-07T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-08T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-07-10T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-07-11T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-07-11T10:05:00.000Z",
+          "disbursedAmount": 40000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0013",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 47,
+        "status": "DISBURSED",
+        "createdAt": "2026-07-09T03:00:00.000Z",
+        "updatedAt": "2026-07-15T10:05:00.000Z",
+        "screeningAt": "2026-07-08T08:00:00.000Z",
+        "planAt": "2026-07-09T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-09T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-10T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-11T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-07-14T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-07-15T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-07-15T10:05:00.000Z",
+          "disbursedAmount": 60000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0014",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 50,
+        "status": "DISBURSED",
+        "createdAt": "2026-07-12T03:00:00.000Z",
+        "updatedAt": "2026-07-19T10:05:00.000Z",
+        "screeningAt": "2026-07-11T08:00:00.000Z",
+        "planAt": "2026-07-12T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-12T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-13T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-14T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-07-18T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-07-19T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-07-19T10:05:00.000Z",
+          "disbursedAmount": 90000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0015",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 52,
+        "status": "DISBURSED",
+        "createdAt": "2026-07-15T03:00:00.000Z",
+        "updatedAt": "2026-07-20T10:05:00.000Z",
+        "screeningAt": "2026-07-14T08:00:00.000Z",
+        "planAt": "2026-07-15T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-15T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-16T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-17T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-07-19T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-07-20T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-07-20T10:05:00.000Z",
+          "disbursedAmount": 30000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0016",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 53,
+        "status": "DISBURSED",
+        "createdAt": "2026-07-18T03:00:00.000Z",
+        "updatedAt": "2026-07-24T10:05:00.000Z",
+        "screeningAt": "2026-07-17T08:00:00.000Z",
+        "planAt": "2026-07-18T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-18T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-19T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-20T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-07-23T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-07-24T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-07-24T10:05:00.000Z",
+          "disbursedAmount": 25000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0017",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 48,
+        "status": "REJECTED",
+        "createdAt": "2026-07-21T03:00:00.000Z",
+        "updatedAt": "2026-07-25T09:20:00.000Z",
+        "screeningAt": "2026-07-20T08:00:00.000Z",
+        "planAt": "2026-07-21T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-21T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-22T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-07-23T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-07-25T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-07-25T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Lịch sử tín dụng (CIC) có nợ cần chú ý"
+        }
+      },
+      {
+        "key": "HT0018",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 70,
+        "status": "EXPIRED",
+        "createdAt": "2026-07-27T03:00:00.000Z",
+        "updatedAt": "2026-08-27T02:00:00.000Z",
+        "screeningAt": "2026-07-26T08:00:00.000Z",
+        "planAt": "2026-07-27T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-07-27T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-07-28T02:30:00.000Z"
+          },
+          {
+            "status": "EXPIRED",
+            "at": "2026-08-27T02:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0019",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 90,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-02T03:00:00.000Z",
+        "updatedAt": "2026-08-07T10:05:00.000Z",
+        "screeningAt": "2026-08-01T08:00:00.000Z",
+        "planAt": "2026-08-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-06T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-07T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-07T10:05:00.000Z",
+          "disbursedAmount": 300000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0020",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 82,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-04T03:00:00.000Z",
+        "updatedAt": "2026-08-10T10:05:00.000Z",
+        "screeningAt": "2026-08-03T08:00:00.000Z",
+        "planAt": "2026-08-04T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-04T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-05T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-06T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-09T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-10T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-10T10:05:00.000Z",
+          "disbursedAmount": 210000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0021",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 78,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-06T03:00:00.000Z",
+        "updatedAt": "2026-08-13T10:05:00.000Z",
+        "screeningAt": "2026-08-05T08:00:00.000Z",
+        "planAt": "2026-08-06T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-06T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-07T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-08T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-12T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-13T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-13T10:05:00.000Z",
+          "disbursedAmount": 180000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0022",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 66,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-08T03:00:00.000Z",
+        "updatedAt": "2026-08-14T10:05:00.000Z",
+        "screeningAt": "2026-08-07T08:00:00.000Z",
+        "planAt": "2026-08-08T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-08T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-09T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-10T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-13T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-14T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-14T10:05:00.000Z",
+          "disbursedAmount": 100000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0023",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 72,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-10T03:00:00.000Z",
+        "updatedAt": "2026-08-15T10:05:00.000Z",
+        "screeningAt": "2026-08-09T08:00:00.000Z",
+        "planAt": "2026-08-10T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-10T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-11T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-12T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-14T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-15T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-15T10:05:00.000Z",
+          "disbursedAmount": 50000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0024",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 60,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-12T03:00:00.000Z",
+        "updatedAt": "2026-08-20T10:05:00.000Z",
+        "screeningAt": "2026-08-11T08:00:00.000Z",
+        "planAt": "2026-08-12T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-12T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-13T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-14T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-19T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-20T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-20T10:05:00.000Z",
+          "disbursedAmount": 70000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0025",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 68,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-14T03:00:00.000Z",
+        "updatedAt": "2026-08-20T10:05:00.000Z",
+        "screeningAt": "2026-08-13T08:00:00.000Z",
+        "planAt": "2026-08-14T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-14T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-15T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-16T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-19T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-20T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-20T10:05:00.000Z",
+          "disbursedAmount": 110000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0026",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 88,
+        "status": "DISBURSED",
+        "createdAt": "2026-08-16T03:00:00.000Z",
+        "updatedAt": "2026-08-23T10:05:00.000Z",
+        "screeningAt": "2026-08-15T08:00:00.000Z",
+        "planAt": "2026-08-16T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-16T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-17T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-18T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-08-22T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-08-23T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-08-23T10:05:00.000Z",
+          "disbursedAmount": 250000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0027",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 58,
+        "status": "REJECTED",
+        "createdAt": "2026-08-03T03:00:00.000Z",
+        "updatedAt": "2026-08-07T09:20:00.000Z",
+        "screeningAt": "2026-08-02T08:00:00.000Z",
+        "planAt": "2026-08-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-05T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-08-07T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-08-07T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Thu nhập thực tế không đủ đáp ứng nghĩa vụ trả nợ"
+        }
+      },
+      {
+        "key": "HT0028",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 60,
+        "status": "REJECTED",
+        "createdAt": "2026-08-05T03:00:00.000Z",
+        "updatedAt": "2026-08-10T09:20:00.000Z",
+        "screeningAt": "2026-08-04T08:00:00.000Z",
+        "planAt": "2026-08-05T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-05T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-06T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-07T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-08-10T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-08-10T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Thu nhập thực tế không đủ đáp ứng nghĩa vụ trả nợ"
+        }
+      },
+      {
+        "key": "HT0029",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 65,
+        "status": "REJECTED",
+        "createdAt": "2026-08-07T03:00:00.000Z",
+        "updatedAt": "2026-08-11T09:20:00.000Z",
+        "screeningAt": "2026-08-06T08:00:00.000Z",
+        "planAt": "2026-08-07T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-07T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-08T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-09T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-08-11T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-08-11T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Lịch sử tín dụng (CIC) có nợ cần chú ý"
+        }
+      },
+      {
+        "key": "HT0030",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 56,
+        "status": "REJECTED",
+        "createdAt": "2026-08-09T03:00:00.000Z",
+        "updatedAt": "2026-08-15T09:20:00.000Z",
+        "screeningAt": "2026-08-08T08:00:00.000Z",
+        "planAt": "2026-08-09T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-09T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-10T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-11T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-08-15T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-08-15T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Thu nhập thực tế không đủ đáp ứng nghĩa vụ trả nợ"
+        }
+      },
+      {
+        "key": "HT0031",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 63,
+        "status": "REJECTED",
+        "createdAt": "2026-08-11T03:00:00.000Z",
+        "updatedAt": "2026-08-16T09:20:00.000Z",
+        "screeningAt": "2026-08-10T08:00:00.000Z",
+        "planAt": "2026-08-11T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-11T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-08-12T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-08-13T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-08-16T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-08-16T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Vượt room tín dụng của chi nhánh trong kỳ"
+        }
+      },
+      {
+        "key": "HT0032",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 58,
+        "status": "CANCELLED",
+        "createdAt": "2026-08-20T03:00:00.000Z",
+        "updatedAt": "2026-08-22T04:00:00.000Z",
+        "screeningAt": "2026-08-19T08:00:00.000Z",
+        "planAt": "2026-08-20T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-08-20T03:00:00.000Z"
+          },
+          {
+            "status": "CANCELLED",
+            "at": "2026-08-22T04:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0033",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 50,
+        "status": "DISBURSED",
+        "createdAt": "2026-09-02T03:00:00.000Z",
+        "updatedAt": "2026-09-07T10:05:00.000Z",
+        "screeningAt": "2026-09-01T08:00:00.000Z",
+        "planAt": "2026-09-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-09-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-09-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-09-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-09-06T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-09-07T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-09-07T10:05:00.000Z",
+          "disbursedAmount": 45000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0034",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 52,
+        "status": "DISBURSED",
+        "createdAt": "2026-09-03T03:00:00.000Z",
+        "updatedAt": "2026-09-11T10:05:00.000Z",
+        "screeningAt": "2026-09-02T08:00:00.000Z",
+        "planAt": "2026-09-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-09-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-09-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-09-05T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-09-10T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-09-11T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-09-11T10:05:00.000Z",
+          "disbursedAmount": 95000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0035",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 30,
+        "status": "REJECTED",
+        "createdAt": "2026-09-08T03:00:00.000Z",
+        "updatedAt": "2026-09-12T09:20:00.000Z",
+        "screeningAt": "2026-09-07T08:00:00.000Z",
+        "planAt": "2026-09-08T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-09-08T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-09-09T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-09-10T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-09-12T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-09-12T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Thu nhập thực tế không đủ đáp ứng nghĩa vụ trả nợ"
+        }
+      },
+      {
+        "key": "HT0036",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 90,
+        "status": "NEED_MORE",
+        "createdAt": "2026-09-18T03:00:00.000Z",
+        "updatedAt": "2026-09-20T07:00:00.000Z",
+        "screeningAt": "2026-09-17T08:00:00.000Z",
+        "planAt": "2026-09-18T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-09-18T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-09-19T02:30:00.000Z"
+          },
+          {
+            "status": "NEED_MORE",
+            "at": "2026-09-20T07:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0037",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 92,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-01T03:00:00.000Z",
+        "updatedAt": "2026-10-06T10:05:00.000Z",
+        "screeningAt": "2026-09-30T08:00:00.000Z",
+        "planAt": "2026-10-01T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-01T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-02T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-03T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-05T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-06T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-06T10:05:00.000Z",
+          "disbursedAmount": 320000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0038",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 86,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-01T03:00:00.000Z",
+        "updatedAt": "2026-10-05T10:05:00.000Z",
+        "screeningAt": "2026-09-30T08:00:00.000Z",
+        "planAt": "2026-10-01T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-01T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-02T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-03T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-04T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-05T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-05T10:05:00.000Z",
+          "disbursedAmount": 260000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0039",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 79,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-02T03:00:00.000Z",
+        "updatedAt": "2026-10-07T10:05:00.000Z",
+        "screeningAt": "2026-10-01T08:00:00.000Z",
+        "planAt": "2026-10-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-06T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-07T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-07T10:05:00.000Z",
+          "disbursedAmount": 140000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0040",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 74,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-02T03:00:00.000Z",
+        "updatedAt": "2026-10-06T10:05:00.000Z",
+        "screeningAt": "2026-10-01T08:00:00.000Z",
+        "planAt": "2026-10-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-05T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-06T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-06T10:05:00.000Z",
+          "disbursedAmount": 130000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0041",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 81,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-03T03:00:00.000Z",
+        "updatedAt": "2026-10-08T10:05:00.000Z",
+        "screeningAt": "2026-10-02T08:00:00.000Z",
+        "planAt": "2026-10-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-05T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-07T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-08T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-08T10:05:00.000Z",
+          "disbursedAmount": 220000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0042",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 76,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-03T03:00:00.000Z",
+        "updatedAt": "2026-10-06T10:05:00.000Z",
+        "screeningAt": "2026-10-02T08:00:00.000Z",
+        "planAt": "2026-10-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-05T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-05T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-06T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-06T10:05:00.000Z",
+          "disbursedAmount": 35000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0043",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 69,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-04T03:00:00.000Z",
+        "updatedAt": "2026-10-08T10:05:00.000Z",
+        "screeningAt": "2026-10-03T08:00:00.000Z",
+        "planAt": "2026-10-04T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-04T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-05T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-06T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-07T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-08T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-08T10:05:00.000Z",
+          "disbursedAmount": 105000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0044",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 91,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-04T03:00:00.000Z",
+        "updatedAt": "2026-10-08T10:05:00.000Z",
+        "screeningAt": "2026-10-03T08:00:00.000Z",
+        "planAt": "2026-10-04T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-04T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-05T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-06T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-07T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-08T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-08T10:05:00.000Z",
+          "disbursedAmount": 280000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0045",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 84,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-05T03:00:00.000Z",
+        "updatedAt": "2026-10-10T10:05:00.000Z",
+        "screeningAt": "2026-10-04T08:00:00.000Z",
+        "planAt": "2026-10-05T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-05T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-06T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-07T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-09T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-10T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-10T10:05:00.000Z",
+          "disbursedAmount": 190000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0046",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 77,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-05T03:00:00.000Z",
+        "updatedAt": "2026-10-09T10:05:00.000Z",
+        "screeningAt": "2026-10-04T08:00:00.000Z",
+        "planAt": "2026-10-05T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-05T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-06T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-07T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-08T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-09T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-09T10:05:00.000Z",
+          "disbursedAmount": 160000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0047",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 73,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-06T03:00:00.000Z",
+        "updatedAt": "2026-10-11T10:05:00.000Z",
+        "screeningAt": "2026-10-05T08:00:00.000Z",
+        "planAt": "2026-10-06T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-06T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-07T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-08T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-10T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-11T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-11T10:05:00.000Z",
+          "disbursedAmount": 120000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0048",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 67,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-06T03:00:00.000Z",
+        "updatedAt": "2026-10-10T10:05:00.000Z",
+        "screeningAt": "2026-10-05T08:00:00.000Z",
+        "planAt": "2026-10-06T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-06T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-07T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-08T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-09T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-10T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-10T10:05:00.000Z",
+          "disbursedAmount": 90000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0049",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 71,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-07T03:00:00.000Z",
+        "updatedAt": "2026-10-10T10:05:00.000Z",
+        "screeningAt": "2026-10-06T08:00:00.000Z",
+        "planAt": "2026-10-07T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-07T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-08T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-09T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-09T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-10T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-10T10:05:00.000Z",
+          "disbursedAmount": 28000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0050",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 89,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-07T03:00:00.000Z",
+        "updatedAt": "2026-10-11T10:05:00.000Z",
+        "screeningAt": "2026-10-06T08:00:00.000Z",
+        "planAt": "2026-10-07T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-07T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-08T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-09T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-10T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-11T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-11T10:05:00.000Z",
+          "disbursedAmount": 240000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0051",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 64,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-02T03:00:00.000Z",
+        "updatedAt": "2026-10-05T10:05:00.000Z",
+        "screeningAt": "2026-10-01T08:00:00.000Z",
+        "planAt": "2026-10-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-04T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-05T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-05T10:05:00.000Z",
+          "disbursedAmount": 20000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0052",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 70,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-02T03:00:00.000Z",
+        "updatedAt": "2026-10-05T10:05:00.000Z",
+        "screeningAt": "2026-10-01T08:00:00.000Z",
+        "planAt": "2026-10-02T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-02T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-03T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-04T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-04T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-05T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-05T10:05:00.000Z",
+          "disbursedAmount": 32000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0053",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 78,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-03T03:00:00.000Z",
+        "updatedAt": "2026-10-06T10:05:00.000Z",
+        "screeningAt": "2026-10-02T08:00:00.000Z",
+        "planAt": "2026-10-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-05T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-05T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-06T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-06T10:05:00.000Z",
+          "disbursedAmount": 26000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0054",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 82,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-03T03:00:00.000Z",
+        "updatedAt": "2026-10-06T10:05:00.000Z",
+        "screeningAt": "2026-10-02T08:00:00.000Z",
+        "planAt": "2026-10-03T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-03T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-04T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-05T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-05T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-06T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-06T10:05:00.000Z",
+          "disbursedAmount": 41000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0055",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 66,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-04T03:00:00.000Z",
+        "updatedAt": "2026-10-07T10:05:00.000Z",
+        "screeningAt": "2026-10-03T08:00:00.000Z",
+        "planAt": "2026-10-04T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-04T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-05T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-06T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-06T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-07T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-07T10:05:00.000Z",
+          "disbursedAmount": 18000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0056",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 74,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-04T03:00:00.000Z",
+        "updatedAt": "2026-10-07T10:05:00.000Z",
+        "screeningAt": "2026-10-03T08:00:00.000Z",
+        "planAt": "2026-10-04T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-04T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-05T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-06T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-06T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-07T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-07T10:05:00.000Z",
+          "disbursedAmount": 33000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0057",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 88,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-05T03:00:00.000Z",
+        "updatedAt": "2026-10-08T10:05:00.000Z",
+        "screeningAt": "2026-10-04T08:00:00.000Z",
+        "planAt": "2026-10-05T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-05T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-06T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-07T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-07T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-08T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-08T10:05:00.000Z",
+          "disbursedAmount": 45000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0058",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 69,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-05T03:00:00.000Z",
+        "updatedAt": "2026-10-08T10:05:00.000Z",
+        "screeningAt": "2026-10-04T08:00:00.000Z",
+        "planAt": "2026-10-05T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-05T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-06T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-07T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-07T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-08T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-08T10:05:00.000Z",
+          "disbursedAmount": 22000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0059",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 61,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-06T03:00:00.000Z",
+        "updatedAt": "2026-10-09T10:05:00.000Z",
+        "screeningAt": "2026-10-05T08:00:00.000Z",
+        "planAt": "2026-10-06T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-06T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-07T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-08T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-08T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-09T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-09T10:05:00.000Z",
+          "disbursedAmount": 15000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0060",
+        "branchId": 2,
+        "productCode": "TC",
+        "score": 80,
+        "status": "DISBURSED",
+        "createdAt": "2026-10-06T03:00:00.000Z",
+        "updatedAt": "2026-10-09T10:05:00.000Z",
+        "screeningAt": "2026-10-05T08:00:00.000Z",
+        "planAt": "2026-10-06T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-06T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-07T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-08T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-08T03:15:00.000Z"
+          },
+          {
+            "status": "DISBURSED",
+            "at": "2026-10-09T10:05:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-09T10:05:00.000Z",
+          "disbursedAmount": 38000000,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0061",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 33,
+        "status": "REJECTED",
+        "createdAt": "2026-10-08T03:00:00.000Z",
+        "updatedAt": "2026-10-10T09:20:00.000Z",
+        "screeningAt": "2026-10-07T08:00:00.000Z",
+        "planAt": "2026-10-08T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-08T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-09T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-10T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-10-10T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-10-10T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Lịch sử tín dụng (CIC) có nợ cần chú ý"
+        }
+      },
+      {
+        "key": "HT0062",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 36,
+        "status": "REJECTED",
+        "createdAt": "2026-10-08T03:00:00.000Z",
+        "updatedAt": "2026-10-10T09:20:00.000Z",
+        "screeningAt": "2026-10-07T08:00:00.000Z",
+        "planAt": "2026-10-08T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-08T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-09T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-10T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-10-10T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-10-10T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Vượt room tín dụng của chi nhánh trong kỳ"
+        }
+      },
+      {
+        "key": "HT0063",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 41,
+        "status": "REJECTED",
+        "createdAt": "2026-10-09T03:00:00.000Z",
+        "updatedAt": "2026-10-12T09:20:00.000Z",
+        "screeningAt": "2026-10-08T08:00:00.000Z",
+        "planAt": "2026-10-09T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-09T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-10T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-11T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-10-12T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-10-12T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Lịch sử tín dụng (CIC) có nợ cần chú ý"
+        }
+      },
+      {
+        "key": "HT0064",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 37,
+        "status": "REJECTED",
+        "createdAt": "2026-10-09T03:00:00.000Z",
+        "updatedAt": "2026-10-11T09:20:00.000Z",
+        "screeningAt": "2026-10-08T08:00:00.000Z",
+        "planAt": "2026-10-09T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-09T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-10T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-11T08:45:00.000Z"
+          },
+          {
+            "status": "REJECTED",
+            "at": "2026-10-11T09:20:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "REJECTED",
+          "recordedAt": "2026-10-11T09:20:00.000Z",
+          "disbursedAmount": null,
+          "reason": "Vượt room tín dụng của chi nhánh trong kỳ"
+        }
+      },
+      {
+        "key": "HT0065",
+        "branchId": 1,
+        "productCode": "TD",
+        "score": 68,
+        "status": "WAITING_VERIFY",
+        "createdAt": "2026-10-12T03:00:00.000Z",
+        "updatedAt": "2026-10-13T02:30:00.000Z",
+        "screeningAt": "2026-10-11T08:00:00.000Z",
+        "planAt": "2026-10-12T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-12T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-13T02:30:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0066",
+        "branchId": 2,
+        "productCode": "TD",
+        "score": 57,
+        "status": "DRAFTING",
+        "createdAt": "2026-10-13T03:00:00.000Z",
+        "updatedAt": "2026-10-13T03:00:00.000Z",
+        "screeningAt": "2026-10-12T08:00:00.000Z",
+        "planAt": "2026-10-13T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-13T03:00:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0067",
+        "branchId": 3,
+        "productCode": "TC",
+        "score": 72,
+        "status": "VERIFIED",
+        "createdAt": "2026-10-14T03:00:00.000Z",
+        "updatedAt": "2026-10-16T08:45:00.000Z",
+        "screeningAt": "2026-10-13T08:00:00.000Z",
+        "planAt": "2026-10-14T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-14T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-15T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-16T08:45:00.000Z"
+          }
+        ],
+        "approval": null
+      },
+      {
+        "key": "HT0068",
+        "branchId": 3,
+        "productCode": "TD",
+        "score": 95,
+        "status": "APPROVED",
+        "createdAt": "2026-10-16T03:00:00.000Z",
+        "updatedAt": "2026-10-19T03:15:00.000Z",
+        "screeningAt": "2026-10-15T08:00:00.000Z",
+        "planAt": "2026-10-16T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-16T03:00:00.000Z"
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "at": "2026-10-17T02:30:00.000Z"
+          },
+          {
+            "status": "VERIFIED",
+            "at": "2026-10-18T08:45:00.000Z"
+          },
+          {
+            "status": "APPROVED",
+            "at": "2026-10-19T03:15:00.000Z"
+          }
+        ],
+        "approval": {
+          "resultType": "APPROVED",
+          "recordedAt": "2026-10-19T03:15:00.000Z",
+          "disbursedAmount": null,
+          "reason": null
+        }
+      },
+      {
+        "key": "HT0069",
+        "branchId": 1,
+        "productCode": "TC",
+        "score": 49,
+        "status": "DRAFTING",
+        "createdAt": "2026-10-20T03:00:00.000Z",
+        "updatedAt": "2026-10-20T03:00:00.000Z",
+        "screeningAt": "2026-10-19T08:00:00.000Z",
+        "planAt": "2026-10-20T02:15:00.000Z",
+        "history": [
+          {
+            "status": "DRAFTING",
+            "at": "2026-10-20T03:00:00.000Z"
+          }
+        ],
+        "approval": null
+      }
+    ],
+    "extraScreenings": [
+      "2026-05-02T02:00:00.000Z",
+      "2026-06-30T03:00:00.000Z",
+      "2026-07-30T04:00:00.000Z",
+      "2026-08-31T05:00:00.000Z",
+      "2026-09-01T06:00:00.000Z",
+      "2026-09-20T07:00:00.000Z",
+      "2026-10-01T08:00:00.000Z",
+      "2026-10-21T09:00:00.000Z"
+    ],
+    "extraPlans": [
+      "2026-06-30T10:00:00.000Z",
+      "2026-09-20T10:00:00.000Z",
+      "2026-10-21T10:00:00.000Z"
+    ]
+  },
+  "cases": [
+    {
+      "name": "Thống kê toàn bộ",
+      "path": "/admin/stats?from=2026-05-01&to=2026-10-31",
+      "expected": {
+        "from": "2026-05-01",
+        "to": "2026-10-31",
+        "totals": {
+          "screenings": 77,
+          "plans": 72,
+          "applications": 69,
+          "submitted": 64,
+          "verified": 59,
+          "approved": 44,
+          "disbursed": 43,
+          "rejected": 14,
+          "cancelled": 2,
+          "expired": 3
+        },
+        "byStatus": [
+          {
+            "status": "DRAFTING",
+            "count": 3
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "count": 1
+          },
+          {
+            "status": "NEED_MORE",
+            "count": 1
+          },
+          {
+            "status": "VERIFIED",
+            "count": 1
+          },
+          {
+            "status": "APPROVED",
+            "count": 1
+          },
+          {
+            "status": "DISBURSED",
+            "count": 43
+          },
+          {
+            "status": "REJECTED",
+            "count": 14
+          },
+          {
+            "status": "CANCELLED",
+            "count": 2
+          },
+          {
+            "status": "EXPIRED",
+            "count": 3
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "count": 44,
+            "amount": 4270000000
+          },
+          {
+            "productCode": "TC",
+            "count": 25,
+            "amount": 543000000
+          }
+        ],
+        "byBranch": [
+          {
+            "branchName": "Chi nhánh Hà Nội",
+            "count": 23,
+            "approved": 14,
+            "rejected": 5
+          },
+          {
+            "branchName": "Chi nhánh Hồ Chí Minh",
+            "count": 25,
+            "approved": 17,
+            "rejected": 3
+          },
+          {
+            "branchName": "Chi nhánh Đà Nẵng",
+            "count": 21,
+            "approved": 13,
+            "rejected": 6
+          }
+        ],
+        "byMonth": [
+          {
+            "month": "2026-05",
+            "created": 3,
+            "disbursed": 0,
+            "rejected": 0
+          },
+          {
+            "month": "2026-06",
+            "created": 7,
+            "disbursed": 3,
+            "rejected": 3
+          },
+          {
+            "month": "2026-07",
+            "created": 8,
+            "disbursed": 6,
+            "rejected": 1
+          },
+          {
+            "month": "2026-08",
+            "created": 14,
+            "disbursed": 8,
+            "rejected": 5
+          },
+          {
+            "month": "2026-09",
+            "created": 4,
+            "disbursed": 2,
+            "rejected": 1
+          },
+          {
+            "month": "2026-10",
+            "created": 33,
+            "disbursed": 24,
+            "rejected": 4
+          }
+        ],
+        "avgProcessingDays": 3.8,
+        "disbursedAmount": 4813000000
+      }
+    },
+    {
+      "name": "Thống kê một chi nhánh",
+      "path": "/admin/stats?from=2026-05-01&to=2026-10-31&branchId=2",
+      "expected": {
+        "from": "2026-05-01",
+        "to": "2026-10-31",
+        "totals": {
+          "screenings": 28,
+          "plans": 26,
+          "applications": 25,
+          "submitted": 22,
+          "verified": 20,
+          "approved": 17,
+          "disbursed": 17,
+          "rejected": 3,
+          "cancelled": 1,
+          "expired": 1
+        },
+        "byStatus": [
+          {
+            "status": "DRAFTING",
+            "count": 2
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "count": 0
+          },
+          {
+            "status": "NEED_MORE",
+            "count": 1
+          },
+          {
+            "status": "VERIFIED",
+            "count": 0
+          },
+          {
+            "status": "APPROVED",
+            "count": 0
+          },
+          {
+            "status": "DISBURSED",
+            "count": 17
+          },
+          {
+            "status": "REJECTED",
+            "count": 3
+          },
+          {
+            "status": "CANCELLED",
+            "count": 1
+          },
+          {
+            "status": "EXPIRED",
+            "count": 1
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "count": 15,
+            "amount": 1860000000
+          },
+          {
+            "productCode": "TC",
+            "count": 10,
+            "amount": 309000000
+          }
+        ],
+        "byBranch": [
+          {
+            "branchName": "Chi nhánh Hồ Chí Minh",
+            "count": 25,
+            "approved": 17,
+            "rejected": 3
+          }
+        ],
+        "byMonth": [
+          {
+            "month": "2026-05",
+            "created": 1,
+            "disbursed": 0,
+            "rejected": 0
+          },
+          {
+            "month": "2026-06",
+            "created": 2,
+            "disbursed": 2,
+            "rejected": 0
+          },
+          {
+            "month": "2026-07",
+            "created": 3,
+            "disbursed": 2,
+            "rejected": 0
+          },
+          {
+            "month": "2026-08",
+            "created": 5,
+            "disbursed": 3,
+            "rejected": 1
+          },
+          {
+            "month": "2026-09",
+            "created": 3,
+            "disbursed": 1,
+            "rejected": 1
+          },
+          {
+            "month": "2026-10",
+            "created": 11,
+            "disbursed": 9,
+            "rejected": 1
+          }
+        ],
+        "avgProcessingDays": 3.8,
+        "disbursedAmount": 2169000000
+      }
+    },
+    {
+      "name": "Thống kê khoảng hẹp, chi nhánh 3",
+      "path": "/admin/stats?from=2026-08-10&to=2026-09-15&branchId=3",
+      "expected": {
+        "from": "2026-08-10",
+        "to": "2026-09-15",
+        "totals": {
+          "screenings": 2,
+          "plans": 2,
+          "applications": 2,
+          "submitted": 2,
+          "verified": 2,
+          "approved": 2,
+          "disbursed": 2,
+          "rejected": 0,
+          "cancelled": 0,
+          "expired": 0
+        },
+        "byStatus": [
+          {
+            "status": "DRAFTING",
+            "count": 0
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "count": 0
+          },
+          {
+            "status": "NEED_MORE",
+            "count": 0
+          },
+          {
+            "status": "VERIFIED",
+            "count": 0
+          },
+          {
+            "status": "APPROVED",
+            "count": 0
+          },
+          {
+            "status": "DISBURSED",
+            "count": 2
+          },
+          {
+            "status": "REJECTED",
+            "count": 0
+          },
+          {
+            "status": "CANCELLED",
+            "count": 0
+          },
+          {
+            "status": "EXPIRED",
+            "count": 0
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "count": 2,
+            "amount": 165000000
+          },
+          {
+            "productCode": "TC",
+            "count": 0,
+            "amount": 0
+          }
+        ],
+        "byBranch": [
+          {
+            "branchName": "Chi nhánh Đà Nẵng",
+            "count": 2,
+            "approved": 2,
+            "rejected": 0
+          }
+        ],
+        "byMonth": [
+          {
+            "month": "2026-08",
+            "created": 1,
+            "disbursed": 1,
+            "rejected": 0
+          },
+          {
+            "month": "2026-09",
+            "created": 1,
+            "disbursed": 1,
+            "rejected": 0
+          }
+        ],
+        "avgProcessingDays": 7.3,
+        "disbursedAmount": 165000000
+      }
+    },
+    {
+      "name": "Thống kê khoảng hẹp",
+      "path": "/admin/stats?from=2026-08-28&to=2026-09-10",
+      "expected": {
+        "from": "2026-08-28",
+        "to": "2026-09-10",
+        "totals": {
+          "screenings": 5,
+          "plans": 3,
+          "applications": 3,
+          "submitted": 3,
+          "verified": 3,
+          "approved": 2,
+          "disbursed": 2,
+          "rejected": 1,
+          "cancelled": 0,
+          "expired": 0
+        },
+        "byStatus": [
+          {
+            "status": "DRAFTING",
+            "count": 0
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "count": 0
+          },
+          {
+            "status": "NEED_MORE",
+            "count": 0
+          },
+          {
+            "status": "VERIFIED",
+            "count": 0
+          },
+          {
+            "status": "APPROVED",
+            "count": 0
+          },
+          {
+            "status": "DISBURSED",
+            "count": 2
+          },
+          {
+            "status": "REJECTED",
+            "count": 1
+          },
+          {
+            "status": "CANCELLED",
+            "count": 0
+          },
+          {
+            "status": "EXPIRED",
+            "count": 0
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "count": 2,
+            "amount": 95000000
+          },
+          {
+            "productCode": "TC",
+            "count": 1,
+            "amount": 45000000
+          }
+        ],
+        "byBranch": [
+          {
+            "branchName": "Chi nhánh Hà Nội",
+            "count": 0,
+            "approved": 0,
+            "rejected": 0
+          },
+          {
+            "branchName": "Chi nhánh Hồ Chí Minh",
+            "count": 2,
+            "approved": 1,
+            "rejected": 1
+          },
+          {
+            "branchName": "Chi nhánh Đà Nẵng",
+            "count": 1,
+            "approved": 1,
+            "rejected": 0
+          }
+        ],
+        "byMonth": [
+          {
+            "month": "2026-08",
+            "created": 0,
+            "disbursed": 0,
+            "rejected": 0
+          },
+          {
+            "month": "2026-09",
+            "created": 3,
+            "disbursed": 2,
+            "rejected": 1
+          }
+        ],
+        "avgProcessingDays": 5,
+        "disbursedAmount": 140000000
+      }
+    },
+    {
+      "name": "Thống kê khoảng trống",
+      "path": "/admin/stats?from=2026-01-01&to=2026-02-15",
+      "expected": {
+        "from": "2026-01-01",
+        "to": "2026-02-15",
+        "totals": {
+          "screenings": 0,
+          "plans": 0,
+          "applications": 0,
+          "submitted": 0,
+          "verified": 0,
+          "approved": 0,
+          "disbursed": 0,
+          "rejected": 0,
+          "cancelled": 0,
+          "expired": 0
+        },
+        "byStatus": [
+          {
+            "status": "DRAFTING",
+            "count": 0
+          },
+          {
+            "status": "WAITING_VERIFY",
+            "count": 0
+          },
+          {
+            "status": "NEED_MORE",
+            "count": 0
+          },
+          {
+            "status": "VERIFIED",
+            "count": 0
+          },
+          {
+            "status": "APPROVED",
+            "count": 0
+          },
+          {
+            "status": "DISBURSED",
+            "count": 0
+          },
+          {
+            "status": "REJECTED",
+            "count": 0
+          },
+          {
+            "status": "CANCELLED",
+            "count": 0
+          },
+          {
+            "status": "EXPIRED",
+            "count": 0
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "count": 0,
+            "amount": 0
+          },
+          {
+            "productCode": "TC",
+            "count": 0,
+            "amount": 0
+          }
+        ],
+        "byBranch": [
+          {
+            "branchName": "Chi nhánh Hà Nội",
+            "count": 0,
+            "approved": 0,
+            "rejected": 0
+          },
+          {
+            "branchName": "Chi nhánh Hồ Chí Minh",
+            "count": 0,
+            "approved": 0,
+            "rejected": 0
+          },
+          {
+            "branchName": "Chi nhánh Đà Nẵng",
+            "count": 0,
+            "approved": 0,
+            "rejected": 0
+          }
+        ],
+        "byMonth": [
+          {
+            "month": "2026-01",
+            "created": 0,
+            "disbursed": 0,
+            "rejected": 0
+          },
+          {
+            "month": "2026-02",
+            "created": 0,
+            "disbursed": 0,
+            "rejected": 0
+          }
+        ],
+        "avgProcessingDays": 0,
+        "disbursedAmount": 0
+      }
+    },
+    {
+      "name": "Độ chính xác ngưỡng mặc định",
+      "path": "/admin/model-accuracy",
+      "expected": {
+        "threshold": 55,
+        "sample": 58,
+        "matrix": {
+          "tp": 38,
+          "fp": 6,
+          "tn": 8,
+          "fn": 6
+        },
+        "accuracy": 79.3,
+        "precision": 86.4,
+        "recall": 86.4,
+        "byBand": [
+          {
+            "band": "< 45",
+            "total": 7,
+            "approved": 0,
+            "rate": 0
+          },
+          {
+            "band": "45 – 55",
+            "total": 7,
+            "approved": 6,
+            "rate": 85.7
+          },
+          {
+            "band": "55 – 65",
+            "total": 9,
+            "approved": 4,
+            "rate": 44.4
+          },
+          {
+            "band": "65 – 75",
+            "total": 14,
+            "approved": 13,
+            "rate": 92.9
+          },
+          {
+            "band": "75 – 85",
+            "total": 12,
+            "approved": 12,
+            "rate": 100
+          },
+          {
+            "band": "≥ 85",
+            "total": 9,
+            "approved": 9,
+            "rate": 100
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "sample": 38,
+            "accuracy": 78.9
+          },
+          {
+            "productCode": "TC",
+            "sample": 20,
+            "accuracy": 80
+          }
+        ]
+      }
+    },
+    {
+      "name": "Độ chính xác ngưỡng không phải số",
+      "path": "/admin/model-accuracy?threshold=abc",
+      "expected": {
+        "threshold": 55,
+        "sample": 58,
+        "matrix": {
+          "tp": 38,
+          "fp": 6,
+          "tn": 8,
+          "fn": 6
+        },
+        "accuracy": 79.3,
+        "precision": 86.4,
+        "recall": 86.4,
+        "byBand": [
+          {
+            "band": "< 45",
+            "total": 7,
+            "approved": 0,
+            "rate": 0
+          },
+          {
+            "band": "45 – 55",
+            "total": 7,
+            "approved": 6,
+            "rate": 85.7
+          },
+          {
+            "band": "55 – 65",
+            "total": 9,
+            "approved": 4,
+            "rate": 44.4
+          },
+          {
+            "band": "65 – 75",
+            "total": 14,
+            "approved": 13,
+            "rate": 92.9
+          },
+          {
+            "band": "75 – 85",
+            "total": 12,
+            "approved": 12,
+            "rate": 100
+          },
+          {
+            "band": "≥ 85",
+            "total": 9,
+            "approved": 9,
+            "rate": 100
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "sample": 38,
+            "accuracy": 78.9
+          },
+          {
+            "productCode": "TC",
+            "sample": 20,
+            "accuracy": 80
+          }
+        ]
+      }
+    },
+    {
+      "name": "Độ chính xác ngưỡng 60",
+      "path": "/admin/model-accuracy?threshold=60",
+      "expected": {
+        "threshold": 60,
+        "sample": 58,
+        "matrix": {
+          "tp": 38,
+          "fp": 3,
+          "tn": 11,
+          "fn": 6
+        },
+        "accuracy": 84.5,
+        "precision": 92.7,
+        "recall": 86.4,
+        "byBand": [
+          {
+            "band": "< 45",
+            "total": 7,
+            "approved": 0,
+            "rate": 0
+          },
+          {
+            "band": "45 – 55",
+            "total": 7,
+            "approved": 6,
+            "rate": 85.7
+          },
+          {
+            "band": "55 – 65",
+            "total": 9,
+            "approved": 4,
+            "rate": 44.4
+          },
+          {
+            "band": "65 – 75",
+            "total": 14,
+            "approved": 13,
+            "rate": 92.9
+          },
+          {
+            "band": "75 – 85",
+            "total": 12,
+            "approved": 12,
+            "rate": 100
+          },
+          {
+            "band": "≥ 85",
+            "total": 9,
+            "approved": 9,
+            "rate": 100
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "sample": 38,
+            "accuracy": 84.2
+          },
+          {
+            "productCode": "TC",
+            "sample": 20,
+            "accuracy": 85
+          }
+        ]
+      }
+    },
+    {
+      "name": "Độ chính xác ngưỡng 45",
+      "path": "/admin/model-accuracy?threshold=45",
+      "expected": {
+        "threshold": 45,
+        "sample": 58,
+        "matrix": {
+          "tp": 44,
+          "fp": 7,
+          "tn": 7,
+          "fn": 0
+        },
+        "accuracy": 87.9,
+        "precision": 86.3,
+        "recall": 100,
+        "byBand": [
+          {
+            "band": "< 45",
+            "total": 7,
+            "approved": 0,
+            "rate": 0
+          },
+          {
+            "band": "45 – 55",
+            "total": 7,
+            "approved": 6,
+            "rate": 85.7
+          },
+          {
+            "band": "55 – 65",
+            "total": 9,
+            "approved": 4,
+            "rate": 44.4
+          },
+          {
+            "band": "65 – 75",
+            "total": 14,
+            "approved": 13,
+            "rate": 92.9
+          },
+          {
+            "band": "75 – 85",
+            "total": 12,
+            "approved": 12,
+            "rate": 100
+          },
+          {
+            "band": "≥ 85",
+            "total": 9,
+            "approved": 9,
+            "rate": 100
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "sample": 38,
+            "accuracy": 84.2
+          },
+          {
+            "productCode": "TC",
+            "sample": 20,
+            "accuracy": 95
+          }
+        ]
+      }
+    },
+    {
+      "name": "Độ chính xác ngưỡng 52.5",
+      "path": "/admin/model-accuracy?threshold=52.5",
+      "expected": {
+        "threshold": 52.5,
+        "sample": 58,
+        "matrix": {
+          "tp": 39,
+          "fp": 6,
+          "tn": 8,
+          "fn": 5
+        },
+        "accuracy": 81,
+        "precision": 86.7,
+        "recall": 88.6,
+        "byBand": [
+          {
+            "band": "< 45",
+            "total": 7,
+            "approved": 0,
+            "rate": 0
+          },
+          {
+            "band": "45 – 55",
+            "total": 7,
+            "approved": 6,
+            "rate": 85.7
+          },
+          {
+            "band": "55 – 65",
+            "total": 9,
+            "approved": 4,
+            "rate": 44.4
+          },
+          {
+            "band": "65 – 75",
+            "total": 14,
+            "approved": 13,
+            "rate": 92.9
+          },
+          {
+            "band": "75 – 85",
+            "total": 12,
+            "approved": 12,
+            "rate": 100
+          },
+          {
+            "band": "≥ 85",
+            "total": 9,
+            "approved": 9,
+            "rate": 100
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "sample": 38,
+            "accuracy": 78.9
+          },
+          {
+            "productCode": "TC",
+            "sample": 20,
+            "accuracy": 85
+          }
+        ]
+      }
+    },
+    {
+      "name": "Độ chính xác ngưỡng 88",
+      "path": "/admin/model-accuracy?threshold=88",
+      "expected": {
+        "threshold": 88,
+        "sample": 58,
+        "matrix": {
+          "tp": 7,
+          "fp": 0,
+          "tn": 14,
+          "fn": 37
+        },
+        "accuracy": 36.2,
+        "precision": null,
+        "recall": 15.9,
+        "byBand": [
+          {
+            "band": "< 45",
+            "total": 7,
+            "approved": 0,
+            "rate": 0
+          },
+          {
+            "band": "45 – 55",
+            "total": 7,
+            "approved": 6,
+            "rate": 85.7
+          },
+          {
+            "band": "55 – 65",
+            "total": 9,
+            "approved": 4,
+            "rate": 44.4
+          },
+          {
+            "band": "65 – 75",
+            "total": 14,
+            "approved": 13,
+            "rate": 92.9
+          },
+          {
+            "band": "75 – 85",
+            "total": 12,
+            "approved": 12,
+            "rate": 100
+          },
+          {
+            "band": "≥ 85",
+            "total": 9,
+            "approved": 9,
+            "rate": 100
+          }
+        ],
+        "byProduct": [
+          {
+            "productCode": "TD",
+            "sample": 38,
+            "accuracy": 44.7
+          },
+          {
+            "productCode": "TC",
+            "sample": 20,
+            "accuracy": 20
+          }
+        ]
+      }
+    },
+    {
+      "name": "MB14 tháng 2026-05",
+      "path": "/admin/reports/mb14?month=2026-05",
+      "expected": {
+        "period": "2026-05",
+        "generatedAt": "2026-10-23T03:00:00.000Z",
+        "stats": {
+          "from": "2026-05-01",
+          "to": "2026-05-31",
+          "totals": {
+            "screenings": 4,
+            "plans": 3,
+            "applications": 3,
+            "submitted": 1,
+            "verified": 0,
+            "approved": 0,
+            "disbursed": 0,
+            "rejected": 0,
+            "cancelled": 1,
+            "expired": 1
+          },
+          "byStatus": [
+            {
+              "status": "DRAFTING",
+              "count": 1
+            },
+            {
+              "status": "WAITING_VERIFY",
+              "count": 0
+            },
+            {
+              "status": "NEED_MORE",
+              "count": 0
+            },
+            {
+              "status": "VERIFIED",
+              "count": 0
+            },
+            {
+              "status": "APPROVED",
+              "count": 0
+            },
+            {
+              "status": "DISBURSED",
+              "count": 0
+            },
+            {
+              "status": "REJECTED",
+              "count": 0
+            },
+            {
+              "status": "CANCELLED",
+              "count": 1
+            },
+            {
+              "status": "EXPIRED",
+              "count": 1
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "count": 2,
+              "amount": 0
+            },
+            {
+              "productCode": "TC",
+              "count": 1,
+              "amount": 0
+            }
+          ],
+          "byBranch": [
+            {
+              "branchName": "Chi nhánh Hà Nội",
+              "count": 1,
+              "approved": 0,
+              "rejected": 0
+            },
+            {
+              "branchName": "Chi nhánh Hồ Chí Minh",
+              "count": 1,
+              "approved": 0,
+              "rejected": 0
+            },
+            {
+              "branchName": "Chi nhánh Đà Nẵng",
+              "count": 1,
+              "approved": 0,
+              "rejected": 0
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2026-05",
+              "created": 3,
+              "disbursed": 0,
+              "rejected": 0
+            }
+          ],
+          "avgProcessingDays": 0,
+          "disbursedAmount": 0
+        },
+        "accuracy": {
+          "threshold": 55,
+          "sample": 0,
+          "matrix": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 0,
+            "fn": 0
+          },
+          "accuracy": null,
+          "precision": null,
+          "recall": null,
+          "byBand": [
+            {
+              "band": "< 45",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "45 – 55",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "55 – 65",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "65 – 75",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "75 – 85",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "≥ 85",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "sample": 0,
+              "accuracy": 0
+            },
+            {
+              "productCode": "TC",
+              "sample": 0,
+              "accuracy": 0
+            }
+          ]
+        },
+        "proposals": [
+          {
+            "id": "no-data",
+            "title": "Chưa đủ dữ liệu để đề xuất hiệu chỉnh",
+            "detail": "Chưa có hồ sơ nào có kết quả ngân hàng đến cuối kỳ.",
+            "paramKey": null,
+            "productCode": null,
+            "currentValue": null,
+            "proposedValue": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "MB14 tháng 2026-06",
+      "path": "/admin/reports/mb14?month=2026-06",
+      "expected": {
+        "period": "2026-06",
+        "generatedAt": "2026-10-23T03:00:00.000Z",
+        "stats": {
+          "from": "2026-06-01",
+          "to": "2026-06-30",
+          "totals": {
+            "screenings": 8,
+            "plans": 8,
+            "applications": 7,
+            "submitted": 7,
+            "verified": 6,
+            "approved": 3,
+            "disbursed": 3,
+            "rejected": 3,
+            "cancelled": 0,
+            "expired": 1
+          },
+          "byStatus": [
+            {
+              "status": "DRAFTING",
+              "count": 0
+            },
+            {
+              "status": "WAITING_VERIFY",
+              "count": 0
+            },
+            {
+              "status": "NEED_MORE",
+              "count": 0
+            },
+            {
+              "status": "VERIFIED",
+              "count": 0
+            },
+            {
+              "status": "APPROVED",
+              "count": 0
+            },
+            {
+              "status": "DISBURSED",
+              "count": 3
+            },
+            {
+              "status": "REJECTED",
+              "count": 3
+            },
+            {
+              "status": "CANCELLED",
+              "count": 0
+            },
+            {
+              "status": "EXPIRED",
+              "count": 1
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "count": 4,
+              "amount": 400000000
+            },
+            {
+              "productCode": "TC",
+              "count": 3,
+              "amount": 0
+            }
+          ],
+          "byBranch": [
+            {
+              "branchName": "Chi nhánh Hà Nội",
+              "count": 3,
+              "approved": 1,
+              "rejected": 1
+            },
+            {
+              "branchName": "Chi nhánh Hồ Chí Minh",
+              "count": 2,
+              "approved": 2,
+              "rejected": 0
+            },
+            {
+              "branchName": "Chi nhánh Đà Nẵng",
+              "count": 2,
+              "approved": 0,
+              "rejected": 2
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2026-06",
+              "created": 7,
+              "disbursed": 3,
+              "rejected": 3
+            }
+          ],
+          "avgProcessingDays": 4,
+          "disbursedAmount": 400000000
+        },
+        "accuracy": {
+          "threshold": 55,
+          "sample": 6,
+          "matrix": {
+            "tp": 3,
+            "fp": 1,
+            "tn": 2,
+            "fn": 0
+          },
+          "accuracy": 83.3,
+          "precision": null,
+          "recall": null,
+          "byBand": [
+            {
+              "band": "< 45",
+              "total": 2,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "45 – 55",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "55 – 65",
+              "total": 2,
+              "approved": 1,
+              "rate": 50
+            },
+            {
+              "band": "65 – 75",
+              "total": 0,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "75 – 85",
+              "total": 1,
+              "approved": 1,
+              "rate": 100
+            },
+            {
+              "band": "≥ 85",
+              "total": 1,
+              "approved": 1,
+              "rate": 100
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "sample": 4,
+              "accuracy": 100
+            },
+            {
+              "productCode": "TC",
+              "sample": 2,
+              "accuracy": 50
+            }
+          ]
+        },
+        "proposals": [
+          {
+            "id": "keep-low-data",
+            "title": "Giữ nguyên tham số (dữ liệu còn ít: 6 hồ sơ có kết quả, cần thêm để đánh giá chính xác)",
+            "detail": "Chưa đủ hồ sơ có kết quả để kết luận độ nhạy, độ chính xác dương; giữ nguyên tham số cho đến khi có thêm dữ liệu.",
+            "paramKey": null,
+            "productCode": null,
+            "currentValue": null,
+            "proposedValue": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "MB14 tháng 2026-07",
+      "path": "/admin/reports/mb14?month=2026-07",
+      "expected": {
+        "period": "2026-07",
+        "generatedAt": "2026-10-23T03:00:00.000Z",
+        "stats": {
+          "from": "2026-07-01",
+          "to": "2026-07-31",
+          "totals": {
+            "screenings": 9,
+            "plans": 8,
+            "applications": 8,
+            "submitted": 8,
+            "verified": 7,
+            "approved": 6,
+            "disbursed": 6,
+            "rejected": 1,
+            "cancelled": 0,
+            "expired": 1
+          },
+          "byStatus": [
+            {
+              "status": "DRAFTING",
+              "count": 0
+            },
+            {
+              "status": "WAITING_VERIFY",
+              "count": 0
+            },
+            {
+              "status": "NEED_MORE",
+              "count": 0
+            },
+            {
+              "status": "VERIFIED",
+              "count": 0
+            },
+            {
+              "status": "APPROVED",
+              "count": 0
+            },
+            {
+              "status": "DISBURSED",
+              "count": 6
+            },
+            {
+              "status": "REJECTED",
+              "count": 1
+            },
+            {
+              "status": "CANCELLED",
+              "count": 0
+            },
+            {
+              "status": "EXPIRED",
+              "count": 1
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "count": 5,
+              "amount": 300000000
+            },
+            {
+              "productCode": "TC",
+              "count": 3,
+              "amount": 95000000
+            }
+          ],
+          "byBranch": [
+            {
+              "branchName": "Chi nhánh Hà Nội",
+              "count": 3,
+              "approved": 2,
+              "rejected": 1
+            },
+            {
+              "branchName": "Chi nhánh Hồ Chí Minh",
+              "count": 3,
+              "approved": 2,
+              "rejected": 0
+            },
+            {
+              "branchName": "Chi nhánh Đà Nẵng",
+              "count": 2,
+              "approved": 2,
+              "rejected": 0
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2026-07",
+              "created": 8,
+              "disbursed": 6,
+              "rejected": 1
+            }
+          ],
+          "avgProcessingDays": 4.9,
+          "disbursedAmount": 395000000
+        },
+        "accuracy": {
+          "threshold": 55,
+          "sample": 13,
+          "matrix": {
+            "tp": 5,
+            "fp": 1,
+            "tn": 3,
+            "fn": 4
+          },
+          "accuracy": 61.5,
+          "precision": null,
+          "recall": 55.6,
+          "byBand": [
+            {
+              "band": "< 45",
+              "total": 2,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "45 – 55",
+              "total": 5,
+              "approved": 4,
+              "rate": 80
+            },
+            {
+              "band": "55 – 65",
+              "total": 2,
+              "approved": 1,
+              "rate": 50
+            },
+            {
+              "band": "65 – 75",
+              "total": 1,
+              "approved": 1,
+              "rate": 100
+            },
+            {
+              "band": "75 – 85",
+              "total": 2,
+              "approved": 2,
+              "rate": 100
+            },
+            {
+              "band": "≥ 85",
+              "total": 1,
+              "approved": 1,
+              "rate": 100
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "sample": 8,
+              "accuracy": 75
+            },
+            {
+              "productCode": "TC",
+              "sample": 5,
+              "accuracy": 40
+            }
+          ]
+        },
+        "proposals": [
+          {
+            "id": "dti-up",
+            "title": "Nới ngưỡng DTI tối đa",
+            "detail": "Tỷ lệ bỏ sót hồ sơ được duyệt cao (độ nhạy 55.6%), nhóm điểm 45–55 vẫn được duyệt 80%. Đề xuất tăng DTI tối đa thêm 2 điểm phần trăm.",
+            "paramKey": "DTI_MAX",
+            "productCode": null,
+            "currentValue": "70",
+            "proposedValue": "72"
+          },
+          {
+            "id": "tc-weight",
+            "title": "Xem lại ma trận trọng số vay thấu chi",
+            "detail": "Độ chính xác của gói thấu chi (40%) thấp hơn mức chung (61.5%). Cân nhắc tăng trọng số “Ngân hàng nhận lương” và “CBNV ABBANK”.",
+            "paramKey": null,
+            "productCode": "TC",
+            "currentValue": null,
+            "proposedValue": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "MB14 tháng 2026-08",
+      "path": "/admin/reports/mb14?month=2026-08",
+      "expected": {
+        "period": "2026-08",
+        "generatedAt": "2026-10-23T03:00:00.000Z",
+        "stats": {
+          "from": "2026-08-01",
+          "to": "2026-08-31",
+          "totals": {
+            "screenings": 15,
+            "plans": 14,
+            "applications": 14,
+            "submitted": 13,
+            "verified": 13,
+            "approved": 8,
+            "disbursed": 8,
+            "rejected": 5,
+            "cancelled": 1,
+            "expired": 0
+          },
+          "byStatus": [
+            {
+              "status": "DRAFTING",
+              "count": 0
+            },
+            {
+              "status": "WAITING_VERIFY",
+              "count": 0
+            },
+            {
+              "status": "NEED_MORE",
+              "count": 0
+            },
+            {
+              "status": "VERIFIED",
+              "count": 0
+            },
+            {
+              "status": "APPROVED",
+              "count": 0
+            },
+            {
+              "status": "DISBURSED",
+              "count": 8
+            },
+            {
+              "status": "REJECTED",
+              "count": 5
+            },
+            {
+              "status": "CANCELLED",
+              "count": 1
+            },
+            {
+              "status": "EXPIRED",
+              "count": 0
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "count": 12,
+              "amount": 1220000000
+            },
+            {
+              "productCode": "TC",
+              "count": 2,
+              "amount": 50000000
+            }
+          ],
+          "byBranch": [
+            {
+              "branchName": "Chi nhánh Hà Nội",
+              "count": 5,
+              "approved": 3,
+              "rejected": 2
+            },
+            {
+              "branchName": "Chi nhánh Hồ Chí Minh",
+              "count": 5,
+              "approved": 3,
+              "rejected": 1
+            },
+            {
+              "branchName": "Chi nhánh Đà Nẵng",
+              "count": 4,
+              "approved": 2,
+              "rejected": 2
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2026-08",
+              "created": 14,
+              "disbursed": 8,
+              "rejected": 5
+            }
+          ],
+          "avgProcessingDays": 5,
+          "disbursedAmount": 1270000000
+        },
+        "accuracy": {
+          "threshold": 55,
+          "sample": 26,
+          "matrix": {
+            "tp": 13,
+            "fp": 6,
+            "tn": 3,
+            "fn": 4
+          },
+          "accuracy": 61.5,
+          "precision": 68.4,
+          "recall": 76.5,
+          "byBand": [
+            {
+              "band": "< 45",
+              "total": 2,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "45 – 55",
+              "total": 5,
+              "approved": 4,
+              "rate": 80
+            },
+            {
+              "band": "55 – 65",
+              "total": 7,
+              "approved": 2,
+              "rate": 28.6
+            },
+            {
+              "band": "65 – 75",
+              "total": 5,
+              "approved": 4,
+              "rate": 80
+            },
+            {
+              "band": "75 – 85",
+              "total": 4,
+              "approved": 4,
+              "rate": 100
+            },
+            {
+              "band": "≥ 85",
+              "total": 3,
+              "approved": 3,
+              "rate": 100
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "sample": 20,
+              "accuracy": 65
+            },
+            {
+              "productCode": "TC",
+              "sample": 6,
+              "accuracy": 50
+            }
+          ]
+        },
+        "proposals": [
+          {
+            "id": "dti-down",
+            "title": "Siết ngưỡng DTI tối đa",
+            "detail": "Độ chính xác dương thấp (68.4%): nhiều hồ sơ hệ thống đánh giá đạt nhưng bị từ chối. Đề xuất giảm DTI tối đa 2 điểm phần trăm.",
+            "paramKey": "DTI_MAX",
+            "productCode": null,
+            "currentValue": "70",
+            "proposedValue": "68"
+          },
+          {
+            "id": "tc-weight",
+            "title": "Xem lại ma trận trọng số vay thấu chi",
+            "detail": "Độ chính xác của gói thấu chi (50%) thấp hơn mức chung (61.5%). Cân nhắc tăng trọng số “Ngân hàng nhận lương” và “CBNV ABBANK”.",
+            "paramKey": null,
+            "productCode": "TC",
+            "currentValue": null,
+            "proposedValue": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "MB14 tháng 2026-09",
+      "path": "/admin/reports/mb14?month=2026-09",
+      "expected": {
+        "period": "2026-09",
+        "generatedAt": "2026-10-23T03:00:00.000Z",
+        "stats": {
+          "from": "2026-09-01",
+          "to": "2026-09-30",
+          "totals": {
+            "screenings": 8,
+            "plans": 5,
+            "applications": 4,
+            "submitted": 4,
+            "verified": 3,
+            "approved": 2,
+            "disbursed": 2,
+            "rejected": 1,
+            "cancelled": 0,
+            "expired": 0
+          },
+          "byStatus": [
+            {
+              "status": "DRAFTING",
+              "count": 0
+            },
+            {
+              "status": "WAITING_VERIFY",
+              "count": 0
+            },
+            {
+              "status": "NEED_MORE",
+              "count": 1
+            },
+            {
+              "status": "VERIFIED",
+              "count": 0
+            },
+            {
+              "status": "APPROVED",
+              "count": 0
+            },
+            {
+              "status": "DISBURSED",
+              "count": 2
+            },
+            {
+              "status": "REJECTED",
+              "count": 1
+            },
+            {
+              "status": "CANCELLED",
+              "count": 0
+            },
+            {
+              "status": "EXPIRED",
+              "count": 0
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "count": 3,
+              "amount": 95000000
+            },
+            {
+              "productCode": "TC",
+              "count": 1,
+              "amount": 45000000
+            }
+          ],
+          "byBranch": [
+            {
+              "branchName": "Chi nhánh Hà Nội",
+              "count": 0,
+              "approved": 0,
+              "rejected": 0
+            },
+            {
+              "branchName": "Chi nhánh Hồ Chí Minh",
+              "count": 3,
+              "approved": 1,
+              "rejected": 1
+            },
+            {
+              "branchName": "Chi nhánh Đà Nẵng",
+              "count": 1,
+              "approved": 1,
+              "rejected": 0
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2026-09",
+              "created": 4,
+              "disbursed": 2,
+              "rejected": 1
+            }
+          ],
+          "avgProcessingDays": 5,
+          "disbursedAmount": 140000000
+        },
+        "accuracy": {
+          "threshold": 55,
+          "sample": 29,
+          "matrix": {
+            "tp": 13,
+            "fp": 6,
+            "tn": 4,
+            "fn": 6
+          },
+          "accuracy": 58.6,
+          "precision": 68.4,
+          "recall": 68.4,
+          "byBand": [
+            {
+              "band": "< 45",
+              "total": 3,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "45 – 55",
+              "total": 7,
+              "approved": 6,
+              "rate": 85.7
+            },
+            {
+              "band": "55 – 65",
+              "total": 7,
+              "approved": 2,
+              "rate": 28.6
+            },
+            {
+              "band": "65 – 75",
+              "total": 5,
+              "approved": 4,
+              "rate": 80
+            },
+            {
+              "band": "75 – 85",
+              "total": 4,
+              "approved": 4,
+              "rate": 100
+            },
+            {
+              "band": "≥ 85",
+              "total": 3,
+              "approved": 3,
+              "rate": 100
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "sample": 22,
+              "accuracy": 63.6
+            },
+            {
+              "productCode": "TC",
+              "sample": 7,
+              "accuracy": 42.9
+            }
+          ]
+        },
+        "proposals": [
+          {
+            "id": "weights-review",
+            "title": "Xem lại ma trận trọng số",
+            "detail": "Độ nhạy (68.4%) và độ chính xác dương (68.4%) cùng thấp hơn 75%: đổi ngưỡng DTI chưa giải quyết được. Cân nhắc xem lại ma trận trọng số điểm tương thích của các gói.",
+            "paramKey": null,
+            "productCode": null,
+            "currentValue": null,
+            "proposedValue": null
+          },
+          {
+            "id": "living-up",
+            "title": "Tăng chi phí sinh hoạt định mức",
+            "detail": "4/10 hồ sơ bị từ chối vì thu nhập thực tế không đủ trả nợ. Đề xuất tăng chi phí sinh hoạt định mức 500.000 đ để hạn mức an toàn thận trọng hơn.",
+            "paramKey": "LIVING_COST_BASE",
+            "productCode": null,
+            "currentValue": "4000000",
+            "proposedValue": "4500000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MB14 tháng 2026-10",
+      "path": "/admin/reports/mb14?month=2026-10",
+      "expected": {
+        "period": "2026-10",
+        "generatedAt": "2026-10-23T03:00:00.000Z",
+        "stats": {
+          "from": "2026-10-01",
+          "to": "2026-10-31",
+          "totals": {
+            "screenings": 33,
+            "plans": 34,
+            "applications": 33,
+            "submitted": 31,
+            "verified": 30,
+            "approved": 25,
+            "disbursed": 24,
+            "rejected": 4,
+            "cancelled": 0,
+            "expired": 0
+          },
+          "byStatus": [
+            {
+              "status": "DRAFTING",
+              "count": 2
+            },
+            {
+              "status": "WAITING_VERIFY",
+              "count": 1
+            },
+            {
+              "status": "NEED_MORE",
+              "count": 0
+            },
+            {
+              "status": "VERIFIED",
+              "count": 1
+            },
+            {
+              "status": "APPROVED",
+              "count": 1
+            },
+            {
+              "status": "DISBURSED",
+              "count": 24
+            },
+            {
+              "status": "REJECTED",
+              "count": 4
+            },
+            {
+              "status": "CANCELLED",
+              "count": 0
+            },
+            {
+              "status": "EXPIRED",
+              "count": 0
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "count": 18,
+              "amount": 2255000000
+            },
+            {
+              "productCode": "TC",
+              "count": 15,
+              "amount": 353000000
+            }
+          ],
+          "byBranch": [
+            {
+              "branchName": "Chi nhánh Hà Nội",
+              "count": 11,
+              "approved": 8,
+              "rejected": 1
+            },
+            {
+              "branchName": "Chi nhánh Hồ Chí Minh",
+              "count": 11,
+              "approved": 9,
+              "rejected": 1
+            },
+            {
+              "branchName": "Chi nhánh Đà Nẵng",
+              "count": 11,
+              "approved": 8,
+              "rejected": 2
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2026-10",
+              "created": 33,
+              "disbursed": 24,
+              "rejected": 4
+            }
+          ],
+          "avgProcessingDays": 2.8,
+          "disbursedAmount": 2608000000
+        },
+        "accuracy": {
+          "threshold": 55,
+          "sample": 58,
+          "matrix": {
+            "tp": 38,
+            "fp": 6,
+            "tn": 8,
+            "fn": 6
+          },
+          "accuracy": 79.3,
+          "precision": 86.4,
+          "recall": 86.4,
+          "byBand": [
+            {
+              "band": "< 45",
+              "total": 7,
+              "approved": 0,
+              "rate": 0
+            },
+            {
+              "band": "45 – 55",
+              "total": 7,
+              "approved": 6,
+              "rate": 85.7
+            },
+            {
+              "band": "55 – 65",
+              "total": 9,
+              "approved": 4,
+              "rate": 44.4
+            },
+            {
+              "band": "65 – 75",
+              "total": 14,
+              "approved": 13,
+              "rate": 92.9
+            },
+            {
+              "band": "75 – 85",
+              "total": 12,
+              "approved": 12,
+              "rate": 100
+            },
+            {
+              "band": "≥ 85",
+              "total": 9,
+              "approved": 9,
+              "rate": 100
+            }
+          ],
+          "byProduct": [
+            {
+              "productCode": "TD",
+              "sample": 38,
+              "accuracy": 78.9
+            },
+            {
+              "productCode": "TC",
+              "sample": 20,
+              "accuracy": 80
+            }
+          ]
+        },
+        "proposals": [
+          {
+            "id": "keep",
+            "title": "Giữ nguyên tham số",
+            "detail": "Các chỉ số trong kỳ ổn định, chưa cần hiệu chỉnh.",
+            "paramKey": null,
+            "productCode": null,
+            "currentValue": null,
+            "proposedValue": null
+          }
+        ]
+      }
+    }
+  ]
+}

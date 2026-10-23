@@ -108,6 +108,22 @@ function StatsTab() {
   );
 }
 
+const NO_DATA = 'Chưa đủ dữ liệu';
+
+/** Chỉ số tỷ lệ %; null = chưa đủ mẫu thì hiện chữ thay vì 0%. Tiêu đề có thể xuống dòng, giá trị luôn nằm cùng một hàng dưới đáy ô. */
+function Indicator({ title, value }: { title: string; value: number | null }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ color: 'rgba(0,0,0,.45)', fontSize: 14, lineHeight: '22px' }}>{title}</div>
+      <div style={{ marginTop: 'auto', height: 40, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+        {value === null
+          ? <span style={{ fontSize: 15, color: '#64748b' }}>{NO_DATA}</span>
+          : <Statistic value={value} suffix="%" decimalSeparator="," valueStyle={{ lineHeight: '40px' }} />}
+      </div>
+    </div>
+  );
+}
+
 function AccuracyView({ a }: { a: AccuracyResponse }) {
   const m = a.matrix;
   return (
@@ -122,12 +138,12 @@ function AccuracyView({ a }: { a: AccuracyResponse }) {
             </tbody>
           </table>
           <Row gutter={16} style={{ marginTop: 16 }}>
-            <Col span={8}><Statistic title="Độ chính xác" value={a.accuracy} suffix="%" decimalSeparator="," /></Col>
-            <Col span={8}><Statistic title="Độ chính xác dương" value={a.precision} suffix="%" decimalSeparator="," /></Col>
-            <Col span={8}><Statistic title="Độ nhạy" value={a.recall} suffix="%" decimalSeparator="," /></Col>
+            <Col span={8}><Indicator title="Độ chính xác" value={a.accuracy} /></Col>
+            <Col span={8}><Indicator title="Độ chính xác dương" value={a.precision} /></Col>
+            <Col span={8}><Indicator title="Độ nhạy" value={a.recall} /></Col>
           </Row>
           <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginTop: 12, marginBottom: 0 }}>
-            Độ chính xác dương: trong số hồ sơ hệ thống đánh giá đạt, tỷ lệ được ngân hàng duyệt. Độ nhạy: trong số hồ sơ được duyệt, tỷ lệ hệ thống đã đánh giá đạt.
+            Độ chính xác dương: trong số hồ sơ hệ thống đánh giá đạt, tỷ lệ được ngân hàng duyệt. Độ nhạy: trong số hồ sơ được duyệt, tỷ lệ hệ thống đã đánh giá đạt. Hiện “Chưa đủ dữ liệu” khi có dưới 10 hồ sơ làm căn cứ.
           </Typography.Paragraph>
         </Card>
       </Col>
@@ -176,7 +192,7 @@ function exportCsv(r: ReportResponse) {
     ['Chỉ tiêu', 'Giá trị'], ...Object.entries(r.stats.totals).map(([k, v]) => [k, v]),
     ['Thời gian xử lý trung bình (ngày)', r.stats.avgProcessingDays], ['Số tiền giải ngân', r.stats.disbursedAmount], [],
     ['Chi nhánh', 'Hồ sơ', 'Phê duyệt', 'Từ chối'], ...r.stats.byBranch.map(b => [b.branchName, b.count, b.approved, b.rejected]), [],
-    ['Độ chính xác (%)', r.accuracy.accuracy], ['Độ chính xác dương (%)', r.accuracy.precision], ['Độ nhạy (%)', r.accuracy.recall], [],
+    ['Độ chính xác (%)', r.accuracy.accuracy ?? NO_DATA], ['Độ chính xác dương (%)', r.accuracy.precision ?? NO_DATA], ['Độ nhạy (%)', r.accuracy.recall ?? NO_DATA], [],
     ['Nhóm điểm', 'Hồ sơ', 'Được duyệt', 'Tỷ lệ (%)'], ...r.accuracy.byBand.map(b => [b.band, b.total, b.approved, b.rate]), [],
     ['Đề xuất', 'Chi tiết', 'Tham số', 'Hiện tại', 'Đề xuất'], ...r.proposals.map(p => [p.title, p.detail, p.paramKey ?? '', p.currentValue ?? '', p.proposedValue ?? ''])];
   const csv = '﻿' + rows.map(x => x.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');

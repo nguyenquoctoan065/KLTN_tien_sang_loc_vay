@@ -193,5 +193,30 @@ Backend dùng `@Scheduled` của Spring; API `POST /admin/jobs/{code}/run` để
 - Mẫu: hồ sơ đã có kết quả ngân hàng (`DISBURSED`, `APPROVED` coi là duyệt; `REJECTED` là từ chối).
 - Hệ thống đánh giá “đạt” khi điểm tương thích lúc nộp ≥ ngưỡng (mặc định 55, tham số `threshold`).
 - Ma trận nhầm lẫn 2×2; độ chính xác = (TP+TN)/n; độ chính xác dương = TP/(TP+FP); độ nhạy = TP/(TP+FN).
+- **Đủ dữ liệu**: một chỉ số chỉ có giá trị khi đủ mẫu (`MIN_SAMPLE` = 10), thiếu thì trả `null` và giao diện hiện “Chưa đủ dữ liệu” (không hiện 0%):
+  độ chính xác `null` khi chưa có hồ sơ nào có kết quả; độ nhạy `null` khi có dưới 10 hồ sơ có kết quả; độ chính xác dương `null` khi có dưới 10 hồ sơ được hệ thống đánh giá đạt (TP+FP < 10).
 - Nhóm điểm: <45, 45–55, 55–65, 65–75, 75–85, ≥85 – số hồ sơ và tỷ lệ được duyệt mỗi nhóm.
-- Đề xuất hiệu chỉnh MB14 (gợi ý, quản trị viên quyết định): nếu ≥ 30% hồ sơ bị từ chối vì thu nhập không đủ trả nợ → đề xuất tăng `LIVING_COST_BASE` 500.000 đ; nếu độ nhạy < 75% và nhóm 45–55 có tỷ lệ duyệt ≥ 40% → đề xuất nới DTI tối đa thêm 2 điểm % (không quá 80%); nếu gói thấu chi có ≥ 5 hồ sơ và độ chính xác thấp hơn mức chung quá 5 điểm % → xem lại trọng số của gói. “Tạo bản nháp tham số” nhân bản phiên bản hiện hành kèm các thay đổi đề xuất.
+- Ngày, tháng (lọc khoảng ngày tạo hồ sơ, tháng của sự kiện, “đến cuối kỳ”) tính theo lịch giờ Việt Nam.
+- Đề xuất hiệu chỉnh MB14 (gợi ý, quản trị viên quyết định); mọi chỉ số tính lũy kế đến hết ngày cuối tháng báo cáo
+  (hồ sơ đã có kết quả, cập nhật lần cuối không muộn hơn ngày đó; ngưỡng 55). Xét theo thứ tự:
+  0. chưa có hồ sơ nào có kết quả → chỉ có một mục “Chưa đủ dữ liệu để đề xuất hiệu chỉnh”, dừng;
+  1. độ nhạy và độ chính xác dương **cùng** có giá trị và **cùng** < 75% → không đề xuất đổi DTI, chỉ đề xuất “Xem lại ma trận trọng số” (chung các gói, không kèm tham số);
+  2. ngược lại, mỗi hướng DTI chỉ xét khi chỉ số của nó đủ dữ liệu:
+     - độ nhạy < 75% (cần ≥ 10 hồ sơ có kết quả) và nhóm 45–55 có tỷ lệ duyệt ≥ 40% → nới `DTI_MAX` thêm 2 điểm % (không quá 80%; đang ≥ 80% thì không đề xuất);
+     - độ chính xác dương < 75% (cần ≥ 10 hồ sơ được đánh giá đạt) → siết `DTI_MAX` bớt 2 điểm % (không dưới 65%; đang ≤ 65% thì không đề xuất);
+  3. có ít nhất 10 hồ sơ bị từ chối (lũy kế đến cuối kỳ) và ≥ 30% trong số đó có lý do chứa “Thu nhập” (thu nhập thực tế không đủ trả nợ) → tăng `LIVING_COST_BASE` 500.000 đ (độc lập với bước 1–2; dưới 10 hồ sơ bị từ chối thì không đề xuất);
+  4. gói thấu chi có ≥ 5 hồ sơ và độ chính xác thấp hơn mức chung quá 5 điểm % → xem lại trọng số của gói (không kèm tham số); bỏ qua khi đã có đề xuất ở bước 1;
+  không có đề xuất nào → “Giữ nguyên tham số”; nếu khi đó số hồ sơ có kết quả còn dưới 10 thì ghi “Giữ nguyên tham số (dữ liệu còn ít: n hồ sơ có kết quả, cần thêm để đánh giá chính xác)”. “Tạo bản nháp tham số” nhân bản phiên bản hiện hành kèm các thay đổi đề xuất.
+
+Ngưỡng mẫu tối thiểu của từng quy tắc đề xuất (tất cả tính lũy kế đến hết ngày cuối tháng báo cáo):
+
+| Quy tắc (mã đề xuất) | Mẫu cần có | Ngưỡng | Dưới ngưỡng |
+|---|---|---|---|
+| Xem lại ma trận trọng số – chung các gói (`weights-review`) | hồ sơ có kết quả **và** hồ sơ được đánh giá đạt (để cả độ nhạy lẫn độ chính xác dương có giá trị) | ≥ 10 và ≥ 10 | không xét; xét tiếp từng hướng DTI theo chỉ số nào có giá trị |
+| Nới `DTI_MAX` (`dti-up`) | hồ sơ có kết quả (để có độ nhạy) | ≥ 10 | độ nhạy `null`, không đề xuất |
+| Siết `DTI_MAX` (`dti-down`) | hồ sơ được hệ thống đánh giá đạt, đã có kết quả (TP + FP, để có độ chính xác dương) | ≥ 10 | độ chính xác dương `null`, không đề xuất |
+| Tăng `LIVING_COST_BASE` (`living-up`) | hồ sơ bị từ chối (mọi lý do) | ≥ 10 | không đề xuất |
+| Xem lại trọng số gói thấu chi (`tc-weight`) | hồ sơ gói thấu chi đã có kết quả | ≥ 5 | không đề xuất |
+
+Không có hồ sơ nào có kết quả → `no-data`; có nhưng dưới 10 và không có đề xuất nào → `keep-low-data`.
+

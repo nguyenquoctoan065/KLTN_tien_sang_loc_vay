@@ -1235,9 +1235,10 @@ paths:
       parameters:
         - { name: from, in: query, schema: { type: string, format: date }, description: Mặc định 180 ngày trước }
         - { name: to, in: query, schema: { type: string, format: date }, description: Mặc định hôm nay }
-        - { name: branchId, in: query, schema: { type: integer, format: int64 }, description: Lọc theo chi nhánh (bỏ trống = toàn hệ thống) }
+        - { name: branchId, in: query, schema: { type: integer, format: int64 }, description: "Lọc theo chi nhánh (bỏ trống hoặc 0 = toàn hệ thống). Ngày sai định dạng, khoảng quá 10 năm → 400" }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StatsResponse' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /admin/model-accuracy:
     get:
@@ -1246,7 +1247,7 @@ paths:
       summary: 8.2 Đánh giá độ chính xác mô hình chấm điểm trên hồ sơ đã có kết quả (APPROVED, DISBURSED, REJECTED)
       x-roles: [ADMIN]
       parameters:
-        - { name: threshold, in: query, schema: { type: number, default: 55 }, description: Ngưỡng điểm dự báo "được duyệt" }
+        - { name: threshold, in: query, schema: { type: number, default: 55 }, description: 'Ngưỡng điểm dự báo "được duyệt" (thiếu, không phải số hoặc 0 → 55)' }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccuracyResponse' } } } }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -1257,9 +1258,10 @@ paths:
       summary: 8.3 Báo cáo thống kê và đề xuất hiệu chỉnh tham số (MB14) theo tháng
       x-roles: [ADMIN]
       parameters:
-        - { name: month, in: query, schema: { type: string, pattern: '^\d{4}-\d{2}$', example: '2026-10' }, description: Mặc định tháng hiện tại }
+        - { name: month, in: query, schema: { type: string, pattern: '^\d{4}-\d{2}$', example: '2026-10' }, description: "Mặc định tháng hiện tại (giờ Việt Nam); sai định dạng → 400" }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ReportResponse' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
 components:
@@ -2110,9 +2112,9 @@ components:
         matrix:
           type: object
           properties: { tp: { type: integer }, fp: { type: integer }, tn: { type: integer }, fn: { type: integer } }
-        accuracy: { type: number }
-        precision: { type: number }
-        recall: { type: number }
+        accuracy: { type: number, nullable: true, description: 'null = chưa có hồ sơ nào có kết quả' }
+        precision: { type: number, nullable: true, description: 'null = dưới 10 hồ sơ được hệ thống đánh giá đạt' }
+        recall: { type: number, nullable: true, description: 'null = dưới 10 hồ sơ đã có kết quả' }
         byBand:
           type: array
           items: { type: object, properties: { band: { type: string, example: '55 – 65' }, total: { type: integer }, approved: { type: integer }, rate: { type: number } } }

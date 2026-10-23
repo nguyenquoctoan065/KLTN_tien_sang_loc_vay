@@ -541,9 +541,10 @@ export interface AccuracyResponse {
   threshold: number;
   sample: number;
   matrix: { tp: number; fp: number; tn: number; fn: number };
-  accuracy: number;
-  precision: number;
-  recall: number;
+  /** null = chưa đủ dữ liệu (xem docs/quy-tac-tinh-toan.md mục 15) */
+  accuracy: number | null;
+  precision: number | null;
+  recall: number | null;
   byBand: { band: string; total: number; approved: number; rate: number }[];
   byProduct: { productCode: ProductCode; sample: number; accuracy: number }[];
 }

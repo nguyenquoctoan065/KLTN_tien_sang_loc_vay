@@ -5,6 +5,11 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+  # Dữ liệu lịch sử cho báo cáo (db/dev/V1000__dev_history.sql) chỉ chạy ở profile dev. out-of-order để các migration chính
+  # V11, V12… thêm sau này vẫn áp dụng được trên DB dev đã có V1000.
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+    out-of-order: true
 app:
   otp:
     fixed-code: "123456"
