@@ -163,7 +163,8 @@ export const adminHandlers = [
     else if (params.action === 'unlock') acc.status = 'ACTIVE';
     else if (params.action === 'reset-password') acc.password = '123456';
     else return err(404, 'Thao tác không hợp lệ.');
-    if (params.action === 'lock') for (const [t, id] of Object.entries(db.tokens)) if (id === acc.id) delete db.tokens[t];
+    // khóa và đặt lại mật khẩu đều thu hồi mọi phiên của tài khoản (backend thu hồi auth_session)
+    if (params.action === 'lock' || params.action === 'reset-password') for (const [t, id] of Object.entries(db.tokens)) if (id === acc.id) delete db.tokens[t];
     log(u, 'Quản lý tài khoản nhân viên', `${({ lock: 'Khóa', unlock: 'Mở khóa', 'reset-password': 'Đặt lại mật khẩu' } as Record<string, string>)[params.action as string]} ${acc.username}`);
     persist();
     return HttpResponse.json({ ...staffOut(acc), tempPassword: params.action === 'reset-password' ? '123456' : undefined });
@@ -201,20 +202,25 @@ export const adminHandlers = [
     if (!br) return err(404, 'Không tìm thấy chi nhánh.');
     const b = (await request.json().catch(() => ({}))) as { transferToBranchId?: number };
     const open = db.applications.filter(a => a.branchId === br.id && [...OPEN_STATUSES, 'VERIFIED', 'APPROVED'].includes(a.status));
-    if (open.length) {
+    // nhân viên chi nhánh chuyển cùng hồ sơ sang chi nhánh nhận (đã chốt 23/10/2026)
+    const people = db.accounts.filter(a => a.kind === 'STAFF' && a.role === 'BRANCH_STAFF' && a.branchId === br.id);
+    if (open.length || people.length) {
       const to = db.branches.find(x => x.id === b.transferToBranchId && x.status === 'ACTIVE' && x.id !== br.id);
-      if (!to) return err(409, `Chi nhánh còn ${open.length} hồ sơ đang xử lý; chọn chi nhánh nhận chuyển.`);
+      if (!to) return err(409, open.length
+        ? `Chi nhánh còn ${open.length} hồ sơ đang xử lý; chọn chi nhánh nhận chuyển.`
+        : `Chi nhánh còn ${people.length} nhân viên; chọn chi nhánh nhận chuyển.`);
       for (const a of open) {
         a.branchId = to.id; a.updatedAt = nowIso();
         a.history.push({ status: a.status, at: nowIso(), actor: u.name, note: `Chuyển từ ${br.name} sang ${to.name}` });
         notify({ customerId: a.customerId }, 'Hồ sơ được chuyển chi nhánh', `Hồ sơ ${a.code} được chuyển sang ${to.name} (${to.address}).`, `/ho-so/${a.id}`);
         notify({ branchId: to.id }, 'Nhận hồ sơ chuyển chi nhánh', `${a.code} từ ${br.name}`, `/noi-bo/ho-so/${a.id}`);
       }
+      for (const p of people) p.branchId = to.id;
     }
     br.status = 'INACTIVE';
-    log(u, 'Ngừng hoạt động chi nhánh', `${br.name}${open.length ? `, chuyển ${open.length} hồ sơ` : ''}`);
+    log(u, 'Ngừng hoạt động chi nhánh', `${br.name}${open.length ? `, chuyển ${open.length} hồ sơ` : ''}${people.length ? `, chuyển ${people.length} nhân viên` : ''}`);
     persist();
-    return HttpResponse.json({ ...br, transferred: open.length });
+    return HttpResponse.json({ ...br, transferred: open.length, transferredStaff: people.length });
   }),
   http.post(`${API}/admin/branches/:id/activate`, ({ params, request }) => {
     const u = admin(request); if (!u) return forbid();
@@ -253,6 +259,7 @@ export const adminHandlers = [
             Object.assign(d, { status: 'MISSING', fileName: null, previewUrl: null, fileUrl: null, fields: [] }); n++;
           }
           a.personal = { ...a.personal, nationalId: '', address: '' };
+          a.requestForm = null; // giấy đề nghị có CCCD, địa chỉ (backend xóa loan_request_form như khi rút đồng ý)
         }
       }
       result = `Xóa ${n} tài liệu của hồ sơ đã đóng quá ${months} tháng.`;

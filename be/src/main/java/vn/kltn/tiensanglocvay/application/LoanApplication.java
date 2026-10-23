@@ -139,6 +139,11 @@ public class LoanApplication {
         return branchId;
     }
 
+    /** Chỉ dùng khi quản trị ngừng hoạt động chi nhánh và chuyển hồ sơ sang chi nhánh khác (1.6). */
+    public void setBranchId(Integer branchId) {
+        this.branchId = branchId;
+    }
+
     public Long getConsentId() {
         return consentId;
     }

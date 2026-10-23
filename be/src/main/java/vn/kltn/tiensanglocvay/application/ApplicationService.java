@@ -145,8 +145,10 @@ public class ApplicationService {
         if (apps.existsByPlanIdAndStatusNot(plan.getId(), ApplicationStatus.CANCELLED)) {
             throw new ApiException(HttpStatus.CONFLICT, "Phương án này đã có hồ sơ.");
         }
-        Branch branch = b.branchId() == null ? null : branches.findById(b.branchId().intValue())
-                .filter(x -> "ACTIVE".equals(x.getStatus())).orElse(null);
+        // Khóa dòng chi nhánh (FOR UPDATE) đến hết giao dịch rồi mới kiểm tra ACTIVE: ngừng hoạt động chi nhánh (AdminBranchService.deactivate)
+        // khóa cùng dòng này, nên hồ sơ mới không thể vào chi nhánh vừa bị ngừng và cũng không lọt khỏi danh sách hồ sơ được chuyển.
+        Branch branch = b.branchId() == null ? null : branches.findByIdForUpdate(b.branchId().intValue())
+                .filter(Branch::isActive).orElse(null);
         if (branch == null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Chi nhánh không hợp lệ.");
         }

@@ -35,6 +35,18 @@ public class ScoringWeight {
     protected ScoringWeight() {
     }
 
+    public ScoringWeight(Integer versionId, Integer productId, String criterion, BigDecimal weight, BigDecimal adjustFactor) {
+        this.versionId = versionId;
+        this.productId = productId;
+        this.criterion = criterion;
+        this.weight = weight;
+        this.adjustFactor = adjustFactor;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
+    }
+
     public Long getId() {
         return id;
     }

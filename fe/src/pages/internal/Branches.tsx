@@ -6,7 +6,7 @@ import { adminApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
 import type { Branch } from '../../api/types';
 
-/** 1.6 Quản lý danh mục chi nhánh; ngừng hoạt động thì chuyển hồ sơ đang xử lý sang chi nhánh khác */
+/** 1.6 Quản lý danh mục chi nhánh; ngừng hoạt động thì chuyển hồ sơ đang xử lý và nhân viên sang chi nhánh khác */
 export default function Branches() {
   const qc = useQueryClient();
   const { message } = App.useApp();
@@ -22,7 +22,11 @@ export default function Branches() {
   });
   const close = useMutation({
     mutationFn: () => adminApi.deactivateBranch(closing!.id, target),
-    onSuccess: r => { refresh(); setClosing(null); message.success(r.transferred ? `Đã ngừng hoạt động và chuyển ${r.transferred} hồ sơ` : 'Đã ngừng hoạt động chi nhánh'); },
+    onSuccess: r => {
+      refresh(); setClosing(null);
+      const moved = [r.transferred ? `${r.transferred} hồ sơ` : '', r.transferredStaff ? `${r.transferredStaff} nhân viên` : ''].filter(Boolean).join(' và ');
+      message.success(moved ? `Đã ngừng hoạt động và chuyển ${moved}` : 'Đã ngừng hoạt động chi nhánh');
+    },
   });
   const reopen = useMutation({ mutationFn: adminApi.activateBranch, onSuccess: () => { refresh(); message.success('Đã mở lại chi nhánh'); } });
   return (
@@ -61,12 +65,13 @@ export default function Branches() {
       <Modal open={!!closing} title={`Ngừng hoạt động ${closing?.name}?`} okText="Ngừng hoạt động" okButtonProps={{ danger: true }} cancelText="Hủy"
         onCancel={() => setClosing(null)} onOk={() => close.mutate()} confirmLoading={close.isPending}>
         {closing?.openApplications ? (
-          <>
-            <Alert type="warning" showIcon style={{ marginBottom: 12 }} message={`Chi nhánh còn ${closing.openApplications} hồ sơ đang xử lý. Chọn chi nhánh nhận chuyển; khách hàng và chi nhánh mới sẽ nhận thông báo.`} />
-            <Select style={{ width: '100%' }} placeholder="Chi nhánh nhận hồ sơ" value={target} onChange={setTarget}
-              options={q.data?.filter(b => b.status === 'ACTIVE' && b.id !== closing.id).map(b => ({ value: b.id, label: b.name }))} />
-          </>
-        ) : <Typography.Text>Chi nhánh không còn hồ sơ đang xử lý; khách hàng sẽ không chọn được chi nhánh này khi lập hồ sơ.</Typography.Text>}
+          <Alert type="warning" showIcon style={{ marginBottom: 12 }} message={`Chi nhánh còn ${closing.openApplications} hồ sơ đang xử lý. Chọn chi nhánh nhận chuyển; khách hàng và chi nhánh mới sẽ nhận thông báo.`} />
+        ) : <Typography.Paragraph>Chi nhánh không còn hồ sơ đang xử lý; khách hàng sẽ không chọn được chi nhánh này khi lập hồ sơ.</Typography.Paragraph>}
+        <Typography.Paragraph type="secondary">Nhân viên của chi nhánh (nếu có) được chuyển sang chi nhánh nhận.</Typography.Paragraph>
+        {closing && (
+          <Select style={{ width: '100%' }} allowClear placeholder="Chi nhánh nhận hồ sơ và nhân viên" value={target} onChange={setTarget}
+            options={q.data?.filter(b => b.status === 'ACTIVE' && b.id !== closing.id).map(b => ({ value: b.id, label: b.name }))} />
+        )}
         {close.isError && <Alert style={{ marginTop: 12 }} type="error" message={errorMessage(close.error)} />}
       </Modal>
     </div>

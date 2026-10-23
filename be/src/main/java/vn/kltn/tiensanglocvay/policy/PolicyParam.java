@@ -33,6 +33,18 @@ public class PolicyParam {
     protected PolicyParam() {
     }
 
+    public PolicyParam(Integer versionId, Integer productId, String key, String value, String unit) {
+        this.versionId = versionId;
+        this.productId = productId;
+        this.key = key;
+        this.value = value;
+        this.unit = unit;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     public Long getId() {
         return id;
     }

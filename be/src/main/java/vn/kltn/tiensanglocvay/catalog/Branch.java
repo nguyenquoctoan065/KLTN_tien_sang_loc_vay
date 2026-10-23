@@ -12,6 +12,9 @@ import jakarta.persistence.Table;
 @Table(name = "branch")
 public class Branch {
 
+    public static final String ACTIVE = "ACTIVE";
+    public static final String INACTIVE = "INACTIVE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -31,6 +34,19 @@ public class Branch {
     private String status;
 
     protected Branch() {
+    }
+
+    /** Chi nhánh mới (1.6) ở trạng thái ACTIVE. */
+    public Branch(String code, String name, String address, String phone) {
+        update(code, name, address, phone);
+        this.status = ACTIVE;
+    }
+
+    public void update(String code, String name, String address, String phone) {
+        this.code = code;
+        this.name = name;
+        this.address = address;
+        this.phone = phone;
     }
 
     public Integer getId() {
@@ -55,5 +71,13 @@ public class Branch {
 
     public String getStatus() {
         return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isActive() {
+        return ACTIVE.equals(status);
     }
 }

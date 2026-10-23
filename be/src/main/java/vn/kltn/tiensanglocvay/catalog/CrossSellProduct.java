@@ -38,6 +38,21 @@ public class CrossSellProduct {
     protected CrossSellProduct() {
     }
 
+    public CrossSellProduct(String name, String productType, BigDecimal estCost, BigDecimal scoreBonus, BigDecimal rateDiscount,
+                            String status) {
+        update(name, productType, estCost, scoreBonus, rateDiscount, status);
+    }
+
+    public void update(String name, String productType, BigDecimal estCost, BigDecimal scoreBonus, BigDecimal rateDiscount,
+                       String status) {
+        this.name = name;
+        this.productType = productType;
+        this.estCost = estCost;
+        this.scoreBonus = scoreBonus;
+        this.rateDiscount = rateDiscount;
+        this.status = status;
+    }
+
     public Integer getId() {
         return id;
     }

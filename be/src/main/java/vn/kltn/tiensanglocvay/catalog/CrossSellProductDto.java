@@ -4,7 +4,7 @@ package vn.kltn.tiensanglocvay.catalog;
 public record CrossSellProductDto(int id, String name, String productType, long estCost, double scoreBonus, double rateDiscount,
                                   String status) {
 
-    static CrossSellProductDto of(CrossSellProduct c) {
+    public static CrossSellProductDto of(CrossSellProduct c) {
         return new CrossSellProductDto(c.getId(), c.getName(), c.getProductType(),
                 c.getEstCost() == null ? 0 : c.getEstCost().longValueExact(),
                 c.getScoreBonus() == null ? 0 : c.getScoreBonus().doubleValue(),

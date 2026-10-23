@@ -293,6 +293,12 @@ export interface Branch {
   openApplications?: number;
 }
 
+/** Kết quả ngừng hoạt động chi nhánh: số hồ sơ và số nhân viên đã chuyển sang chi nhánh nhận */
+export interface BranchDeactivateResult extends Branch {
+  transferred: number;
+  transferredStaff: number;
+}
+
 /** NHÂN VIÊN (staff) */
 export interface StaffAccount {
   id: number;

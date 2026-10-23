@@ -37,6 +37,18 @@ public class DocumentType {
     protected DocumentType() {
     }
 
+    public DocumentType(String name, String group, String allowedFormats, Integer validityDays, String status) {
+        update(name, group, allowedFormats, validityDays, status);
+    }
+
+    public void update(String name, String group, String allowedFormats, Integer validityDays, String status) {
+        this.name = name;
+        this.group = group;
+        this.allowedFormats = allowedFormats;
+        this.validityDays = validityDays;
+        this.status = status;
+    }
+
     public Integer getId() {
         return id;
     }

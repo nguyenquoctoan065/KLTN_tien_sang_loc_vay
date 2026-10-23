@@ -931,8 +931,8 @@ paths:
       operationId: createStaff
       summary: 1.5 Tạo tài khoản nhân viên (trả mật khẩu tạm)
       description: |
-        400 nếu email không hợp lệ hoặc BRANCH_STAFF không chọn chi nhánh; 409 nếu email đã dùng.
-        ADMIN luôn có branchId = null.
+        400 nếu email không hợp lệ hoặc BRANCH_STAFF không chọn chi nhánh (hoặc chi nhánh không tồn tại / đã ngừng hoạt động);
+        409 nếu email đã dùng. ADMIN luôn có branchId = null. Mật khẩu tạm do backend sinh ngẫu nhiên 10 ký tự, chỉ trả một lần.
       x-roles: [ADMIN]
       requestBody:
         required: true
@@ -967,7 +967,7 @@ paths:
     post:
       tags: [Quản trị hệ thống]
       operationId: lockStaff
-      summary: Khóa tài khoản nhân viên (status → LOCKED, thu hồi mọi token)
+      summary: Khóa tài khoản nhân viên (status → LOCKED, thu hồi mọi phiên)
       description: 409 nếu tự khóa tài khoản của mình.
       x-roles: [ADMIN]
       parameters: [{ $ref: '#/components/parameters/Id' }]
@@ -991,7 +991,7 @@ paths:
     post:
       tags: [Quản trị hệ thống]
       operationId: resetStaffPassword
-      summary: Đặt lại mật khẩu nhân viên (trả `tempPassword`)
+      summary: Đặt lại mật khẩu nhân viên (trả `tempPassword` ngẫu nhiên 10 ký tự, thu hồi mọi phiên)
       x-roles: [ADMIN]
       parameters: [{ $ref: '#/components/parameters/Id' }]
       responses:
@@ -1049,9 +1049,10 @@ paths:
       operationId: deactivateBranch
       summary: 1.6 Ngừng hoạt động chi nhánh (chuyển hồ sơ đang xử lý sang chi nhánh khác)
       description: |
-        Nếu chi nhánh còn hồ sơ đang xử lý (DRAFTING, WAITING_VERIFY, NEED_MORE, VERIFIED, APPROVED) thì bắt buộc
-        `transferToBranchId` là một chi nhánh ACTIVE khác (409 nếu thiếu/không hợp lệ). Hồ sơ được chuyển giữ nguyên trạng thái,
-        thêm dòng lịch sử, thông báo khách hàng và chi nhánh nhận. Trả về chi nhánh (INACTIVE) và số hồ sơ đã chuyển.
+        Nếu chi nhánh còn hồ sơ đang xử lý (DRAFTING, WAITING_VERIFY, NEED_MORE, VERIFIED, APPROVED) hoặc còn nhân viên chi nhánh
+        (BRANCH_STAFF) thì bắt buộc `transferToBranchId` là một chi nhánh ACTIVE khác (409 nếu thiếu/không hợp lệ). Hồ sơ được chuyển
+        giữ nguyên trạng thái, thêm dòng lịch sử, thông báo khách hàng và chi nhánh nhận; nhân viên chuyển sang chi nhánh nhận.
+        Trả về chi nhánh (INACTIVE), số hồ sơ và số nhân viên đã chuyển.
       x-roles: [ADMIN]
       parameters: [{ $ref: '#/components/parameters/Id' }]
       requestBody:
@@ -1095,13 +1096,14 @@ paths:
         - EXPIRE_DOCUMENTS: hồ sơ WAITING_VERIFY / NEED_MORE có `expiresAt` đã qua → EXPIRED, thông báo khách hàng (tác nhân SYSTEM).
         - PURGE_RETENTION: xóa tệp giấy tờ, số CCCD, địa chỉ của hồ sơ REJECTED / CANCELLED / EXPIRED cập nhật lần cuối quá RETENTION_MONTHS tháng.
         - REMIND_DRAFTS: nhắc khách hàng có hồ sơ DRAFTING không cập nhật quá 3 ngày.
-        Trả về tác vụ với `lastRunAt`, `lastResult` mới. 404 nếu không có tác vụ.
+        Trả về tác vụ với `lastRunAt`, `lastResult` mới. 404 nếu không có tác vụ; 409 nếu tác vụ đang chạy (theo lịch hoặc lần bấm trước).
       x-roles: [ADMIN]
       parameters: [{ $ref: '#/components/parameters/JobCode' }]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/JobInfo' } } } }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 
   # ============================ Quản trị: danh mục ============================
   /admin/catalog:
@@ -1918,6 +1920,7 @@ components:
         - type: object
           properties:
             transferred: { type: integer, description: Số hồ sơ đã chuyển }
+            transferredStaff: { type: integer, description: Số nhân viên chi nhánh đã chuyển sang chi nhánh nhận }
     StaffAccount:
       description: NHÂN VIÊN (staff)
       type: object
@@ -1957,7 +1960,7 @@ components:
       properties:
         code: { type: string, example: EXPIRE_DOCUMENTS }
         name: { type: string }
-        schedule: { type: string }
+        schedule: { type: string, description: 'Sinh từ cron cấu hình (app.jobs.*), ví dụ "Hằng ngày lúc 01:00", "Ngày 1 hằng tháng lúc 02:00"' }
         lastRunAt: { type: string, format: date-time, nullable: true }
         lastResult: { type: string, nullable: true }
     DocumentType:

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, App, Button, Card, Form, Input, Modal, Dropdown, Select, Space, Table, Tag, Typography } from 'antd';
-import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { CopyOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../api/endpoints';
 import { errorMessage } from '../../api/client';
@@ -14,6 +14,16 @@ export default function StaffAccounts() {
   const q = useQuery({ queryKey: ['admin-staff'], queryFn: adminApi.staff });
   const br = useQuery({ queryKey: ['admin-branches'], queryFn: adminApi.branches });
   const [edit, setEdit] = useState<StaffAccount | 'new' | null>(null);
+  /** Mật khẩu tạm chỉ hiện một lần: đóng Modal là mất (backend không lưu bản rõ) */
+  const [temp, setTemp] = useState<{ title: string; email: string; password: string } | null>(null);
+  const copyTemp = async () => {
+    try {
+      await navigator.clipboard.writeText(temp!.password);
+      message.success('Đã sao chép mật khẩu tạm');
+    } catch {
+      message.error('Không sao chép được, hãy chọn và sao chép thủ công');
+    }
+  };
   const [form] = Form.useForm();
   const role = Form.useWatch('role', form);
   const refresh = () => qc.invalidateQueries({ queryKey: ['admin-staff'] });
@@ -22,7 +32,7 @@ export default function StaffAccounts() {
       edit === 'new' ? adminApi.createStaff(v) : adminApi.updateStaff((edit as StaffAccount).id, v),
     onSuccess: (r: StaffAccount & { tempPassword?: string }) => {
       refresh(); setEdit(null);
-      if (r.tempPassword) modal.info({ title: 'Đã tạo tài khoản', content: `Mật khẩu tạm thời: ${r.tempPassword}. Nhân viên đổi mật khẩu sau lần đăng nhập đầu.` });
+      if (r.tempPassword) setTemp({ title: 'Đã tạo tài khoản', email: r.email, password: r.tempPassword });
       else message.success('Đã lưu');
     },
   });
@@ -30,7 +40,7 @@ export default function StaffAccounts() {
     mutationFn: ({ id, action }: { id: number; action: 'lock' | 'unlock' | 'reset-password' }) => adminApi.staffAction(id, action),
     onSuccess: r => {
       refresh();
-      if (r.tempPassword) modal.info({ title: 'Đã đặt lại mật khẩu', content: `Mật khẩu tạm thời: ${r.tempPassword}` });
+      if (r.tempPassword) setTemp({ title: 'Đã đặt lại mật khẩu', email: r.email, password: r.tempPassword });
       else message.success('Đã cập nhật');
     },
     onError: e => message.error(errorMessage(e)),
@@ -65,6 +75,18 @@ export default function StaffAccounts() {
           },
         ]} />
       </Card>
+      <Modal open={!!temp} title={temp?.title} closable={false} maskClosable={false} keyboard={false} destroyOnClose
+        footer={<Button type="primary" onClick={() => setTemp(null)}>Đã lưu lại, đóng</Button>}>
+        <Typography.Paragraph>Tài khoản <b>{temp?.email}</b></Typography.Paragraph>
+        <Typography.Paragraph style={{ marginBottom: 4 }}>Mật khẩu tạm thời:</Typography.Paragraph>
+        <Space.Compact style={{ width: '100%' }}>
+          <Input readOnly value={temp?.password} aria-label="Mật khẩu tạm thời" style={{ fontFamily: 'monospace', fontSize: 16 }}
+            onFocus={e => e.target.select()} />
+          <Button icon={<CopyOutlined />} onClick={copyTemp}>Sao chép</Button>
+        </Space.Compact>
+        <Alert style={{ marginTop: 16 }} type="warning" showIcon
+          message="Mật khẩu chỉ hiển thị một lần. Hãy sao chép và gửi cho nhân viên; nhân viên đổi mật khẩu sau lần đăng nhập đầu." />
+      </Modal>
       <Modal open={!!edit} title={edit === 'new' ? 'Thêm nhân viên' : 'Sửa tài khoản'} okText="Lưu" cancelText="Hủy" onCancel={() => setEdit(null)}
         onOk={() => form.submit()} confirmLoading={save.isPending} destroyOnClose>
         <Form form={form} layout="vertical" onFinish={save.mutate}>

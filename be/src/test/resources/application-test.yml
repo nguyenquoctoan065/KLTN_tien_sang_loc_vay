@@ -7,3 +7,7 @@ app:
     local-dir: target/test-uploads
   ocr:
     provider: fake
+  jobs:                     # tắt lịch chạy tự động trong test; test gọi POST /admin/jobs/{code}/run
+    expire-documents: "-"
+    purge-retention: "-"
+    remind-drafts: "-"

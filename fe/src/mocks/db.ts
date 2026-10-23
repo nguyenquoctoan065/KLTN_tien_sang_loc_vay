@@ -59,7 +59,7 @@ export interface Db {
   tokens: Record<string, number>;
 }
 
-export const DB_VERSION = 8;
+export const DB_VERSION = 9;
 
 export const PARAM_LABELS: Record<string, string> = {
   DTI_MAX: 'Tỷ lệ DTI tối đa',
@@ -340,8 +340,8 @@ export function seed(): Db {
     consents,
     jobs: [
       { code: 'EXPIRE_DOCUMENTS', name: 'Kiểm tra giấy tờ quá thời hạn hiệu lực', schedule: 'Hằng ngày lúc 01:00', lastRunAt: null, lastResult: null },
-      { code: 'PURGE_RETENTION', name: 'Xóa dữ liệu hết thời hạn lưu trữ', schedule: 'Hằng ngày lúc 02:00', lastRunAt: null, lastResult: null },
-      { code: 'REMIND_DRAFTS', name: 'Nhắc khách hàng hoàn tất hồ sơ đang lập', schedule: 'Hằng ngày lúc 08:00', lastRunAt: null, lastResult: null },
+      { code: 'PURGE_RETENTION', name: 'Xóa dữ liệu hết thời hạn lưu trữ', schedule: 'Ngày 1 hằng tháng lúc 02:00', lastRunAt: null, lastResult: null },
+      { code: 'REMIND_DRAFTS', name: 'Nhắc khách hàng hoàn tất hồ sơ đang lập', schedule: 'Hằng ngày lúc 09:00', lastRunAt: null, lastResult: null },
     ],
     past,
     tokens: {},

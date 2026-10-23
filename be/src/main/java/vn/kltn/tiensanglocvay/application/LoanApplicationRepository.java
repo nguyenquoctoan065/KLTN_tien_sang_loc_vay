@@ -1,6 +1,7 @@
 package vn.kltn.tiensanglocvay.application;
 
 import jakarta.persistence.LockModeType;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,36 @@ public interface LoanApplicationRepository extends JpaRepository<LoanApplication
     List<LoanApplication> searchBranch(@Param("branchId") Integer branchId, @Param("excluded") ApplicationStatus excluded,
                                        @Param("anyStatus") boolean anyStatus, @Param("statuses") Collection<ApplicationStatus> statuses,
                                        @Param("keyword") String keyword, @Param("like") String like, @Param("qr") String qr);
+
+    /** Số hồ sơ có trạng thái thuộc {@code statuses} theo chi nhánh: mỗi dòng {@code [Integer branchId, Long]} (GET /admin/branches). */
+    @Query("select a.branchId, count(a) from LoanApplication a where a.status in :statuses group by a.branchId")
+    List<Object[]> countByBranch(@Param("statuses") Collection<ApplicationStatus> statuses);
+
+    /** Khóa các hồ sơ đang xử lý của một chi nhánh (ngừng hoạt động chi nhánh, chuyển hồ sơ), theo thứ tự tạo. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from LoanApplication a where a.branchId = :branchId and a.status in :statuses order by a.id")
+    List<LoanApplication> findByBranchForUpdate(@Param("branchId") Integer branchId,
+                                                @Param("statuses") Collection<ApplicationStatus> statuses);
+
+    /** Hồ sơ ở các trạng thái {@code statuses}, cập nhật lần cuối trước {@code before} (tác vụ định kỳ), khóa dòng. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from LoanApplication a where a.status in :statuses and a.updatedAt < :before order by a.id")
+    List<LoanApplication> findStaleForUpdate(@Param("statuses") Collection<ApplicationStatus> statuses,
+                                             @Param("before") OffsetDateTime before);
+
+    /** Id hồ sơ ở các trạng thái {@code statuses}, cập nhật lần cuối trước {@code before} (PURGE_RETENTION xử lý từng hồ sơ). */
+    @Query("select a.id from LoanApplication a where a.status in :statuses and a.updatedAt < :before order by a.id")
+    List<Long> findStaleIds(@Param("statuses") Collection<ApplicationStatus> statuses, @Param("before") OffsetDateTime before);
+
+    /** Hồ sơ chờ đối chiếu / cần bổ sung đã quá hạn hiệu lực giấy tờ (EXPIRE_DOCUMENTS), khóa dòng. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from LoanApplication a where a.status in :statuses and a.expiresAt < :now order by a.id")
+    List<LoanApplication> findExpiredForUpdate(@Param("statuses") Collection<ApplicationStatus> statuses,
+                                               @Param("now") OffsetDateTime now);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from LoanApplication a where a.id = :id")
+    Optional<LoanApplication> findByIdForUpdate(@Param("id") Long id);
 
     /** Số hồ sơ theo trạng thái của một chi nhánh: mỗi dòng {@code [ApplicationStatus, Long]}. */
     @Query("select a.status, count(a) from LoanApplication a where a.branchId = :branchId group by a.status")

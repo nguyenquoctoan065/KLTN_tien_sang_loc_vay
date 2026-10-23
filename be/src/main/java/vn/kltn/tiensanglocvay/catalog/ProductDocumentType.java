@@ -30,6 +30,12 @@ public class ProductDocumentType {
     protected ProductDocumentType() {
     }
 
+    public ProductDocumentType(Integer productId, Integer documentTypeId, boolean required) {
+        this.productId = productId;
+        this.documentTypeId = documentTypeId;
+        this.required = required;
+    }
+
     public Integer getProductId() {
         return productId;
     }

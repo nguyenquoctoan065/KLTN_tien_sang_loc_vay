@@ -7,13 +7,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-/** Bảng param_version (PHIÊN BẢN THAM SỐ). Cột test_result (jsonb) được ánh xạ khi làm chạy thử ở B7. */
+/**
+ * Bảng param_version (PHIÊN BẢN THAM SỐ). Chỉ bản DRAFT được sửa (B7); bản ACTIVE/EXPIRED bất biến để lượt sàng lọc cũ
+ * tính lại đúng. {@code testResult} là JSON của schema TestRunResult (chạy thử 7.4), service tự chuyển đổi.
+ */
 @Entity
 @Table(name = "param_version")
 public class ParamVersion {
 
+    public static final String DRAFT = "DRAFT";
     public static final String ACTIVE = "ACTIVE";
+    public static final String EXPIRED = "EXPIRED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +47,20 @@ public class ParamVersion {
     @Column(name = "activated_at")
     private OffsetDateTime activatedAt;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "test_result")
+    private String testResult;
+
     protected ParamVersion() {
+    }
+
+    /** Bản nháp mới (sao chép từ một phiên bản khác). */
+    public ParamVersion(String versionNo, String legalBasis, Integer createdBy, OffsetDateTime createdAt) {
+        this.versionNo = versionNo;
+        this.legalBasis = legalBasis;
+        this.status = DRAFT;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
     }
 
     public Integer getId() {
@@ -55,8 +75,26 @@ public class ParamVersion {
         return legalBasis;
     }
 
+    public void setLegalBasis(String legalBasis) {
+        this.legalBasis = legalBasis;
+    }
+
     public String getStatus() {
         return status;
+    }
+
+    public boolean isDraft() {
+        return DRAFT.equals(status);
+    }
+
+    public void expire() {
+        this.status = EXPIRED;
+    }
+
+    public void activate(Integer by, OffsetDateTime at) {
+        this.status = ACTIVE;
+        this.activatedBy = by;
+        this.activatedAt = at;
     }
 
     public Integer getCreatedBy() {
@@ -73,5 +111,13 @@ public class ParamVersion {
 
     public OffsetDateTime getActivatedAt() {
         return activatedAt;
+    }
+
+    public String getTestResult() {
+        return testResult;
+    }
+
+    public void setTestResult(String testResult) {
+        this.testResult = testResult;
     }
 }

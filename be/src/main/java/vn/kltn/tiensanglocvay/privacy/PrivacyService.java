@@ -17,15 +17,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.kltn.tiensanglocvay.application.ApplicationDocument;
+import vn.kltn.tiensanglocvay.application.ApplicationDataEraser;
 import vn.kltn.tiensanglocvay.application.ApplicationDocumentRepository;
 import vn.kltn.tiensanglocvay.application.ApplicationStateMachine;
 import vn.kltn.tiensanglocvay.application.ApplicationStatus;
 import vn.kltn.tiensanglocvay.application.ApplicationSupport;
-import vn.kltn.tiensanglocvay.application.ExtractedFieldRepository;
 import vn.kltn.tiensanglocvay.application.LoanApplication;
 import vn.kltn.tiensanglocvay.application.LoanApplicationRepository;
-import vn.kltn.tiensanglocvay.application.LoanRequestFormRepository;
 import vn.kltn.tiensanglocvay.audit.ActivityLog;
 import vn.kltn.tiensanglocvay.audit.ActivityLogDto;
 import vn.kltn.tiensanglocvay.audit.ActivityLogRepository;
@@ -37,7 +35,6 @@ import vn.kltn.tiensanglocvay.auth.Staff;
 import vn.kltn.tiensanglocvay.auth.StaffRepository;
 import vn.kltn.tiensanglocvay.catalog.DocumentType;
 import vn.kltn.tiensanglocvay.common.ApiException;
-import vn.kltn.tiensanglocvay.document.StorageService;
 import vn.kltn.tiensanglocvay.document.StoredFile;
 import vn.kltn.tiensanglocvay.notification.NotificationService;
 import vn.kltn.tiensanglocvay.plan.LoanPlanRepository;
@@ -72,8 +69,6 @@ public class PrivacyService {
     private final StaffRepository staff;
     private final LoanApplicationRepository apps;
     private final ApplicationDocumentRepository docs;
-    private final ExtractedFieldRepository fields;
-    private final LoanRequestFormRepository forms;
     private final ConsentRepository consents;
     private final ScreeningRepository screenings;
     private final LoanPlanRepository plans;
@@ -83,21 +78,19 @@ public class PrivacyService {
     private final ApplicationStateMachine states;
     private final ApplicationSupport support;
     private final OtpService otp;
-    private final StorageService storage;
+    private final ApplicationDataEraser eraser;
     private final EntityManager em;
     private final Clock clock;
 
     public PrivacyService(CustomerRepository customers, StaffRepository staff, LoanApplicationRepository apps,
-                          ApplicationDocumentRepository docs, ExtractedFieldRepository fields, LoanRequestFormRepository forms,
+                          ApplicationDocumentRepository docs,
                           ConsentRepository consents, ScreeningRepository screenings, LoanPlanRepository plans, ActivityLogRepository logs,
                           ActivityLogService activity, NotificationService notifications, ApplicationStateMachine states,
-                          ApplicationSupport support, OtpService otp, StorageService storage, EntityManager em, Clock clock) {
+                          ApplicationSupport support, OtpService otp, ApplicationDataEraser eraser, EntityManager em, Clock clock) {
         this.customers = customers;
         this.staff = staff;
         this.apps = apps;
         this.docs = docs;
-        this.fields = fields;
-        this.forms = forms;
         this.consents = consents;
         this.screenings = screenings;
         this.plans = plans;
@@ -107,7 +100,7 @@ public class PrivacyService {
         this.states = states;
         this.support = support;
         this.otp = otp;
-        this.storage = storage;
+        this.eraser = eraser;
         this.em = em;
         this.clock = clock;
     }
@@ -229,30 +222,16 @@ public class PrivacyService {
                 notifications.toBranch(a.getBranchId(), "Hồ sơ đã hủy do khách hàng rút đồng ý", a.getCode(),
                         "/noi-bo/ho-so/" + a.getPublicId());
             }
-            for (ApplicationDocument d : docs.findByApplicationIdOrderById(a.getId())) {
-                if (d.getFileName() != null && d.getDocumentTypeId() != DocumentType.SYSTEM_DOC_TYPE) {
-                    deletedDocuments++;
-                }
-                StoredFile stored = d.stored();
-                if (stored != null) {
-                    toDelete.add(stored);
-                }
-                d.clearFile();
-                fields.deleteByDocument(d.getId());
-            }
-            forms.findByApplicationId(a.getId()).ifPresent(forms::delete);
-            a.setNationalId(null);
-            a.setAddress(null);
+            ApplicationDataEraser.Erased erased = eraser.erase(a);
+            deletedDocuments += erased.documents();
+            toDelete.addAll(erased.files());
             a.setEmail(null);
-            a.setChecks(List.of(), null);
         }
-        for (StoredFile f : toDelete) {
-            try {
-                storage.delete(f);
-            } catch (RuntimeException e) {
-                log.error("Không xóa được tệp {} khi khách hàng rút đồng ý: {}", f.publicId(), e.toString());
-                throw new ApiException(HttpStatus.BAD_GATEWAY, MSG_STORAGE);
-            }
+        try {
+            eraser.deleteFiles(toDelete);
+        } catch (RuntimeException e) {
+            log.error("Không xóa được tệp khi khách hàng rút đồng ý: {}", e.toString());
+            throw new ApiException(HttpStatus.BAD_GATEWAY, MSG_STORAGE);
         }
         markWithdrawn(c, "B", at);
         String message = "Đã xóa " + deletedDocuments + " tài liệu và thông tin định danh của hồ sơ chưa đối chiếu xong."

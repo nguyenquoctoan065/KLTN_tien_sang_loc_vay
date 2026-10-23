@@ -12,7 +12,7 @@ import vn.kltn.tiensanglocvay.catalog.LoanProductRepository;
 
 /**
  * Phiên bản tham số đang hiệu lực ({@code param_version.status = 'ACTIVE'}), nạp một lần rồi giữ trong bộ nhớ.
- * Kích hoạt phiên bản mới (B7) phải gọi {@link #evict()} sau khi giao dịch đã commit.
+ * Kích hoạt phiên bản mới ({@code admin.ParamVersionService.activate}) gọi {@link #evict()} sau khi giao dịch đã commit.
  * {@link #version(int)} đọc một phiên bản bất kỳ (lượt sàng lọc cũ được tính lại theo phiên bản lúc tạo); phiên bản ACTIVE/EXPIRED
  * không sửa được nên giữ trong bộ nhớ là an toàn.
  */
@@ -57,6 +57,11 @@ public class ActivePolicy {
     public void evict() {
         cached = null;
         byId.clear();
+    }
+
+    /** Đọc thẳng một phiên bản, không qua bộ nhớ đệm: dùng cho bản nháp (còn sửa được) khi chạy thử 7.4. */
+    public PolicySnapshot load(int id) {
+        return load(versions.findById(id).orElseThrow(() -> new IllegalStateException("Không có phiên bản tham số #" + id + ".")));
     }
 
     private PolicySnapshot load(ParamVersion v) {

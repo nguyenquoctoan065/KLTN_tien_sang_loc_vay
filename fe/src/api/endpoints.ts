@@ -1,6 +1,6 @@
 import { api } from './client';
 import type {
-  AccuracyResponse, ActivityLog, Application, AppNotification, Branch, CrossSellProduct as CS, DocumentType, JobInfo, LoanProduct as LP,
+  AccuracyResponse, ActivityLog, Application, AppNotification, Branch, BranchDeactivateResult, CrossSellProduct as CS, DocumentType, JobInfo, LoanProduct as LP,
   MyData, PersonalInfo, ProductDocRule, ReportResponse, StaffAccount, StatsResponse, WithdrawConsentResult, ProductCode,
 } from './types';
 import type {
@@ -108,7 +108,7 @@ export const adminApi = {
   createBranch: (b: Omit<Branch, 'id' | 'status'>) => api.post<Branch>('/admin/branches', b).then(r => r.data),
   updateBranch: (id: number, b: Omit<Branch, 'id' | 'status'>) => api.put<Branch>(`/admin/branches/${id}`, b).then(r => r.data),
   deactivateBranch: (id: number, transferToBranchId?: number) =>
-    api.post<Branch & { transferred: number }>(`/admin/branches/${id}/deactivate`, { transferToBranchId }).then(r => r.data),
+    api.post<BranchDeactivateResult>(`/admin/branches/${id}/deactivate`, { transferToBranchId }).then(r => r.data),
   activateBranch: (id: number) => api.post<Branch>(`/admin/branches/${id}/activate`).then(r => r.data),
   jobs: () => api.get<JobInfo[]>('/admin/jobs').then(r => r.data),
   runJob: (code: string) => api.post<JobInfo>(`/admin/jobs/${code}/run`).then(r => r.data),

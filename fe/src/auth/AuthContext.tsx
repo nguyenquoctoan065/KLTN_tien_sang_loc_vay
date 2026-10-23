@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { TOKEN_KEY } from '../api/client';
 import type { AuthUser, LoginResponse, Role } from '../api/types';
 import { Navigate, useLocation } from 'react-router-dom';
+import { Result } from 'antd';
 
 const USER_KEY = 'tsl-user';
 
@@ -45,14 +46,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(Ctx);
 
-/** Chặn trang theo vai trò; chưa đăng nhập thì chuyển tới trang đăng nhập rồi quay lại */
+/**
+ * Chặn trang theo vai trò: chưa đăng nhập thì chuyển tới trang đăng nhập rồi quay lại; đã đăng nhập nhưng sai vai trò thì
+ * hiện lỗi 403 tại chỗ (không chuyển sang trang khác).
+ */
 export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { user } = useAuth();
   const loc = useLocation();
   const internal = roles.some(r => r !== 'CUSTOMER');
-  if (!user || !roles.includes(user.role)) {
+  if (!user) {
     const to = internal ? '/noi-bo/dang-nhap' : '/dang-nhap';
     return <Navigate to={`${to}?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />;
+  }
+  if (!roles.includes(user.role)) {
+    return <Result status="403" title="403" subTitle="Bạn không có quyền truy cập trang này." />;
   }
   return <>{children}</>;
 }

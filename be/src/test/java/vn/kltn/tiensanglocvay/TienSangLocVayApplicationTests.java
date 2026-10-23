@@ -63,8 +63,8 @@ class TienSangLocVayApplicationTests {
         List<String> publicIdTables = jdbc.queryForList("SELECT table_name FROM information_schema.columns WHERE table_schema = 'public' "
                 + "AND column_name = 'public_id' AND data_type = 'uuid' AND is_nullable = 'NO' ORDER BY table_name", String.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8");
-        assertThat(tables).isEqualTo(28); // 24 bảng V1 + auth_session, otp_code (V3) + application_status_history, notification (V6)
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
+        assertThat(tables).isEqualTo(29); // 24 bảng V1 + auth_session, otp_code (V3) + application_status_history, notification (V6) + scheduled_job (V9)
         assertThat(products).isPositive();
         assertThat(publicIdTables).containsExactly("loan_application", "loan_plan", "screening"); // V5
     }

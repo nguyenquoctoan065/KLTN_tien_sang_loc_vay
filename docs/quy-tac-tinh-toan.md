@@ -175,7 +175,7 @@ Nhân viên chỉ thấy hồ sơ thuộc chi nhánh của mình; quản trị v
 | Mã | Lịch đề xuất | Việc làm |
 |---|---|---|
 | `EXPIRE_DOCUMENTS` | 01:00 hằng ngày | Hồ sơ `WAITING_VERIFY`/`NEED_MORE` có `expires_at` < hiện tại → `EXPIRED`, báo khách hàng |
-| `PURGE_RETENTION` | 02:00 ngày 1 hằng tháng | Hồ sơ `REJECTED`/`CANCELLED`/`EXPIRED` cập nhật lần cuối quá `RETENTION_MONTHS` (mặc định 12) tháng: xóa tệp và trường trích xuất, xóa số CCCD và địa chỉ |
+| `PURGE_RETENTION` | 02:00 ngày 1 hằng tháng | Hồ sơ `REJECTED`/`CANCELLED`/`EXPIRED` cập nhật lần cuối quá `RETENTION_MONTHS` (mặc định 12) tháng: xóa tệp (cả trên Cloudinary) và trường trích xuất, giấy đề nghị vay vốn (có CCCD, địa chỉ), số CCCD và địa chỉ |
 | `REMIND_DRAFTS` | 09:00 hằng ngày | Hồ sơ `DRAFTING` không cập nhật quá 3 ngày → gửi thông báo nhắc |
 
 Backend dùng `@Scheduled` của Spring; API `POST /admin/jobs/{code}/run` để chạy tay.

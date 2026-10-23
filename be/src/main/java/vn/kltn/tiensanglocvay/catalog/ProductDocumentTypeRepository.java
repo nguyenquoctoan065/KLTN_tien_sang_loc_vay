@@ -17,4 +17,8 @@ public interface ProductDocumentTypeRepository extends JpaRepository<ProductDocu
             order by r.required desc, t.id
             """)
     List<Object[]> findRulesByProductCode(@Param("code") String code);
+
+    /** Mọi quy tắc (GET /admin/catalog): theo gói, rồi bắt buộc trước, rồi theo mã loại giấy tờ (như checklist). */
+    @Query("select r from ProductDocumentType r order by r.productId, r.required desc, r.documentTypeId")
+    List<ProductDocumentType> findAllOrdered();
 }

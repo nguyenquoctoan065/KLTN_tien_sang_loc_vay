@@ -70,4 +70,12 @@ public class ApplicationStateMachine {
         app.touch(now);
         history.save(new StatusHistory(app.getId(), from, to, actor, note, now));
     }
+
+    /** Dòng lịch sử giữ nguyên trạng thái (mock: chuyển chi nhánh đẩy {@code {status: a.status, note}}), cập nhật {@code updated_at}. */
+    @Transactional
+    public void note(LoanApplication app, Actor actor, String note) {
+        OffsetDateTime now = OffsetDateTime.now(clock);
+        app.touch(now);
+        history.save(new StatusHistory(app.getId(), app.getStatus(), app.getStatus(), actor, note, now));
+    }
 }
