@@ -103,7 +103,7 @@ export const applicationHandlers = [
     };
     db.applications.push(app);
     db.consents.push({ id: nextId(), customerId: u.id, scope: 'B', docVersion: b.consentB.docVersion, agreedAt: nowIso(), withdrawnAt: null, applicationCode: app.code });
-    log(u, 'Tạo hồ sơ vay', `Chi nhánh ${branch.name}`, app);
+    log(u, 'Tạo hồ sơ vay', branch.name, app);
     persist();
     return HttpResponse.json(view(app, u), { status: 201 });
   }),

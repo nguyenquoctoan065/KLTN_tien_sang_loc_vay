@@ -43,7 +43,7 @@ public class CustomerOnlyFilter extends OncePerRequestFilter {
         chain.doFilter(req, res);
     }
 
-    /** Thông báo 401 của thao tác (theo fe/src/mocks/handlers/screening.ts), hoặc null nếu không thuộc nhóm này. */
+    /** Thông báo 401 của thao tác (theo fe/src/mocks/handlers/screening.ts, applications.ts), hoặc null nếu không thuộc nhóm này. */
     static String messageFor(HttpServletRequest req) {
         if (!HttpMethod.POST.matches(req.getMethod())) {
             return null;
@@ -52,7 +52,7 @@ public class CustomerOnlyFilter extends OncePerRequestFilter {
         if (PATHS.match("/plans", path)) {
             return "Cần đăng nhập tài khoản khách hàng để lưu phương án.";
         }
-        if (PATHS.match("/screenings/*/save", path)) {
+        if (PATHS.match("/screenings/*/save", path) || PATHS.match("/applications", path)) {
             return "Cần đăng nhập tài khoản khách hàng.";
         }
         return null;

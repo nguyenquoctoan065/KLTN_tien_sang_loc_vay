@@ -36,6 +36,8 @@ tags:
   - name: Hồ sơ vay (QT03)
     description: Lập hồ sơ, tải giấy tờ, xác nhận MB06, lập giấy đề nghị MB15, nộp/nộp lại bằng OTP, hủy hồ sơ.
   - name: Thông báo
+  - name: Tệp giấy tờ
+    description: Xem tệp giấy tờ qua đường dẫn ký có hạn (AppDocument.previewUrl).
   - name: Dữ liệu cá nhân
   - name: Nhân viên chi nhánh
   - name: Quản trị chính sách (QT07)
@@ -578,6 +580,32 @@ paths:
       responses:
         '200': { $ref: '#/components/responses/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ============================ Tệp giấy tờ ============================
+  /files/local:
+    get:
+      tags: [Tệp giấy tờ]
+      operationId: getLocalFile
+      summary: Tải tệp giấy tờ lưu cục bộ theo đường dẫn ký có hạn (chỉ khi backend dùng kho cục bộ)
+      description: |
+        Chỉ có khi backend chạy `app.storage.provider=local` (phát triển, kiểm thử). Với kho Cloudinary, `previewUrl` trỏ thẳng
+        tới URL ký của Cloudinary và đường dẫn này không tồn tại. Frontend không tự gọi: chỉ dùng nguyên `previewUrl` trong thẻ img.
+        Không cần Bearer (thẻ img không gửi được); quyền được kiểm tra khi cấp `previewUrl` (chỉ người xem được hồ sơ mới nhận),
+        ở đây kiểm tra chữ ký HMAC trên `path` + `exp`. Chữ ký sai, hết hạn hoặc tệp không còn → 404.
+      security: []
+      x-roles: []
+      parameters:
+        - { name: path, in: query, required: true, schema: { type: string }, description: Đường dẫn tệp trong kho }
+        - { name: exp, in: query, required: true, schema: { type: integer, format: int64 }, description: Hạn (epoch giây) }
+        - { name: sig, in: query, required: true, schema: { type: string }, description: Chữ ký HMAC-SHA256 (Base64URL) }
+      responses:
+        '200':
+          description: Nội dung tệp (Cache-Control private, no-store)
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            application/pdf: { schema: { type: string, format: binary } }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   # ============================ Dữ liệu cá nhân ============================
   /me/data:
@@ -1539,7 +1567,7 @@ components:
         qualityStatus: { type: string, enum: [OK, BLURRY, WRONG_FORMAT, TOO_LARGE], nullable: true }
         qualityMessage: { type: string, nullable: true }
         uploadedAt: { type: string, format: date-time, nullable: true }
-        previewUrl: { type: string, nullable: true, description: Đường dẫn xem trước có thời hạn (ảnh) }
+        previewUrl: { type: string, nullable: true, description: 'Đường dẫn xem trước ký có hạn (mặc định 10 phút, sinh mới mỗi lần trả hồ sơ); chỉ có với ảnh đã đạt chất lượng. Kho cục bộ: /api/files/local?…; Cloudinary: URL ký của Cloudinary' }
         fields: { type: array, items: { $ref: '#/components/schemas/ExtractedField' } }
         verifyResult: { type: string, enum: [MATCH, MISMATCH, MISSING], nullable: true, description: Kết quả đối chiếu gần nhất tại chi nhánh }
         verifyReason: { type: string, nullable: true }

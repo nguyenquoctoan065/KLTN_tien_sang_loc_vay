@@ -1,3 +1,9 @@
 app:
   otp:
     fixed-code: "123456"
+  # B4 phần A: chưa nối Cloudinary/Gemini – lưu tệp vào be/data/uploads, OCR giả lập (chép ocrFields của mock).
+  # B4b: bỏ hai khối dưới (hoặc đặt cloudinary/gemini) khi đã có CLOUDINARY_URL, GEMINI_API_KEY.
+  storage:
+    provider: local
+  ocr:
+    provider: fake

@@ -133,6 +133,18 @@ public class LoanPlan {
         this.status = CONFIRMED;
     }
 
+    /** PUT /applications/{id}/plan: điều chỉnh phương án ngay trong hồ sơ (một phương án chỉ có một hồ sơ chưa hủy). */
+    public void adjust(long amount, int termMonths, double refRate, long monthlyPayment, long totalInterest, double dtiAfter,
+                       double score) {
+        this.amount = BigDecimal.valueOf(amount);
+        this.termMonths = termMonths;
+        this.refRate = BigDecimal.valueOf(refRate);
+        this.monthlyPayment = BigDecimal.valueOf(monthlyPayment);
+        this.totalInterest = BigDecimal.valueOf(totalInterest);
+        this.dtiAfter = BigDecimal.valueOf(dtiAfter);
+        this.score = BigDecimal.valueOf(score);
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }

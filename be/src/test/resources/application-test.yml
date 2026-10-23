@@ -3,5 +3,6 @@ app:
     fixed-code: "123456"
   storage:
     provider: local
+    local-dir: target/test-uploads
   ocr:
     provider: fake

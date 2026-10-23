@@ -63,6 +63,10 @@ public class Consent {
         return scope;
     }
 
+    public OffsetDateTime getAgreedAt() {
+        return agreedAt;
+    }
+
     public String getDocVersion() {
         return docVersion;
     }

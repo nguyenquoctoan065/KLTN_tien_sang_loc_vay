@@ -30,7 +30,8 @@ export default function SummarySlip({ app }: { app: Application }) {
           </Col>
           <Col flex="200px" style={{ textAlign: 'center' }}>
             <QRCode value={app.qrToken} size={180} />
-            <Typography.Text code>{app.qrToken}</Typography.Text>
+            <div style={{ marginTop: 8, fontSize: 12, color: '#64748b' }}>Mã tra cứu</div>
+            <Typography.Text code style={{ fontSize: 22, letterSpacing: 2, fontWeight: 700 }}>{app.qrToken}</Typography.Text>
           </Col>
         </Row>
         <Typography.Title level={5}>Bản gốc cần mang theo</Typography.Title>

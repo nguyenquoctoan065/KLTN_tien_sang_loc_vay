@@ -119,6 +119,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
   - Ảnh xem trước dùng biến đổi `w_480,c_limit,q_auto,f_auto`.
   - PDF: trang đầu dùng `pg_1` để làm ảnh xem trước; nút “Mở tệp” dẫn tới URL tải PDF đã ký.
   - Mỗi lần trả hồ sơ thì sinh URL mới. FE dùng thẳng URL này trong thẻ `<img>`, nên không cần endpoint `/files` riêng.
+    (Riêng `LocalStorageService` có `GET /api/files/local?path&exp&sig` – URL ký HMAC mô phỏng URL ký Cloudinary, xem ghi chú B4 phần A.)
 - **PDF**: tài khoản Cloudinary miễn phí mặc định chặn phát tệp PDF. Bật *Settings → Security → Allow delivery of PDF and ZIP files*.
 - **Xóa**: tác vụ `PURGE_RETENTION`, rút đồng ý phạm vi B và tải lại phiên bản mới (tùy chọn giữ bản cũ) đều gọi
   `uploader().destroy(publicId, {type: authenticated, resource_type: rt, invalidate: true})`.
@@ -227,11 +228,11 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] Bật FE với backend thật: chạy luồng sàng lọc → phương án.
 
 ### B4. Hồ sơ vay (QT03, 4.1–4.2)
-- [ ] Migration mới (`V6__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
-- [ ] `/personal`, upload `/documents/{docId}` (QualityChecker → StorageService → OcrService), `/fields`, `CrossCheckService` (mục 10),
+- [x] Migration mới (`V6__…`) cho phần còn lại của 5.7. `/applications` (tạo, consent B, sinh danh mục giấy tờ theo gói), `/me/applications`, `/applications/{id}`.
+- [x] `/personal`, upload `/documents/{docId}` (QualityChecker → StorageService → OcrService), `/fields`, `CrossCheckService` (mục 10),
   `/plan`, `/request-form`, `/submit` (OTP, khóa nội dung mục 11, QR, hạn), `/cancel`.
-- [ ] `NotificationService` + `/notifications`, `/notifications/{id}/read`, `/notifications/read-all`; lịch sử trạng thái.
-- [ ] `CloudinaryStorageService` + URL ký có hạn (5.3), `GeminiOcrService` (5.4); test chạy với `storage.provider=local`, `ocr.provider=fake`.
+- [x] `NotificationService` + `/notifications`, `/notifications/{id}/read`, `/notifications/read-all`; lịch sử trạng thái.
+- [ ] (B4b) `CloudinaryStorageService` + URL ký có hạn (5.3), `GeminiOcrService` (5.4); test chạy với `storage.provider=local`, `ocr.provider=fake`.
 
 ### B5. Chi nhánh (QT04–QT05)
 - [ ] `/staff/applications` (lọc trạng thái nhiều giá trị, từ khóa, chi nhánh của nhân viên), `/staff/applications/by-qr/{token}`, `/staff/summary`.
@@ -394,3 +395,29 @@ app:
   - `python tests\e2e\full_flow.py` trên mock → `ERRORS []` (URL `/ho-so/<uuid>`).
   - Backend thật (dev, Flyway áp V5) + FE `VITE_USE_MOCK=false`: sàng lọc → mô phỏng → lưu/xác nhận phương án (`/phuong-an/<uuid>`) và ẩn danh → “Lưu kết quả” → đăng nhập → tự lưu đều chạy; nhật ký ghi “Phương án #206d167f”, “Lượt #171ebf53”. Lỗi console chỉ là 404 của `/notifications`, `/me/applications` (B4).
   - DB Docker dev lúc chạy được tạo lại từ đầu (Flyway áp cả V1–V5), nên tài khoản `0901234567` / `123456` dùng lại được; khách thử `0977091445` ghi ở B3 không còn.
+
+### B4 phần A – xong 23/10/2026 (chưa nối Cloudinary/Gemini; còn B4b)
+- **Đã có**:
+  - `V6__ho_so_vay.sql`: `loan_application` thêm thông tin cá nhân theo hồ sơ (`full_name, national_id, dob, gender, address, email`; `phone` lấy từ `customer`), `cancel_reason`, `warnings`/`recalc` (jsonb, kết quả đối chiếu lần gần nhất như mock lưu `app.warnings/recalc`); `application_document` bỏ NOT NULL các cột tệp (dòng MISSING tạo sẵn), thêm `status`, `required`, `quality_message`, `storage_resource_type`, `storage_version`, `verify_result`, `verify_reason`, CHECK `quality_status` (gồm `WRONG_TYPE` cho B4b); `extracted_field.label`; bảng `application_status_history`, `notification`. `scheduled_job` để B7.
+  - `application/`: entity + repository, `Dtos` (record trùng schema), `ApplicationStateMachine` (bảng chuyển mục 12 + EXPIRED→NEED_MORE/CANCELLED; chuyển sai là `IllegalStateException`), `CrossCheckService` (chép `crossCheck`/`refreshChecks`/`missingForSubmit`), `RequestFormBuilder` (chép `buildForm`), `ApplicationSupport` (quyền `own`/`canSee`, nạp `AppBundle`, dựng DTO + `can`), `ApplicationService`, `DocumentUploadService`, `ApplicationController`.
+  - `document/`: `StorageService` + `StoredFile`, `LocalStorageService` (`app.storage.provider=local`), `LocalFileController`, `QualityChecker`, `OcrService` + `OcrResult` + `OcrContext`, `FakeOcrService` (`app.ocr.provider=fake`).
+  - `notification/`: `NotificationService.toCustomer/toBranch`, `/notifications` (khách: của mình; nhân viên: của chi nhánh, `customer_id` rỗng; quản trị `[]`; 50 mới nhất), `/read` (của người khác bỏ qua), `/read-all`.
+  - `application-dev.yml` đặt `storage.provider: local`, `ocr.provider: fake` (tệp ở `be/data/uploads`, đã có trong `.gitignore`). **B4b**: bỏ hai khối này khi có `CLOUDINARY_URL`, `GEMINI_API_KEY`. Chạy không có profile dev/test thì thiếu bean `StorageService`/`OcrService` (chưa có Cloudinary/Gemini) nên không khởi động được – B4b thêm hai bean đó.
+- **Thiết kế cho B4b**:
+  - `StorageService` đúng chữ ký 5.3. `OcrService.extract(type, data, mimeType, ctx)` có thêm `OcrContext` (thông tin đã khai) – chỉ `FakeOcrService` dùng để sinh giá trị như mock; `GeminiOcrService` bỏ qua. `OcrResult(readable, documentMatchesType, issue, fields[key,label,value,confidence])`; ánh xạ BLURRY / WRONG_TYPE (“Tệp không phải <tên giấy tờ>.”) đã viết sẵn trong `DocumentUploadService`. Khi bật Gemini cần thêm `WRONG_TYPE` vào enum `qualityStatus` của openapi + FE.
+  - Upload chạy 3 bước: giao dịch chỉ đọc kiểm tra quyền/khóa/giấy tờ/tệp → **ngoài giao dịch** Quality → Storage → OCR (không giữ kết nối DB khi gọi dịch vụ ngoài) → giao dịch ghi (kiểm tra khóa lại). Lỗi DB thì xóa tệp vừa lưu; thành công thì xóa tệp phiên bản cũ sau commit. Tệp không đạt chất lượng **không** lưu kho (theo 5.3) nên không có `previewUrl` (mock vẫn hiện ảnh thu nhỏ của tệp bị từ chối). OCR lỗi → `UPLOADED`, `qualityMessage` “Chưa đọc được thông tin tự động, vui lòng nhập tay”, `fields` rỗng (theo 5.3).
+  - **Khóa trường HĐLĐ**: `FakeOcrService` chép mock dùng `salary`; quy-tac mục 9 ghi `contract_salary`. Cần thống nhất (hỏi người dùng) trước khi viết prompt Gemini.
+- **`previewUrl` cục bộ**: `GET /api/files/local?path&exp&sig` (đã thêm vào openapi, `security: []`, chỉ có khi `provider=local`). Thẻ `<img>` của FE không gửi được Bearer nên dùng URL ký HMAC-SHA256 (`app.storage.local-secret`, để trống thì sinh ngẫu nhiên mỗi lần khởi động) hạn `app.storage.signed-url-minutes`; quyền kiểm tra lúc cấp URL (chỉ chủ hồ sơ, nhân viên chi nhánh tiếp nhận, quản trị mới nhận). Chữ ký sai/hết hạn/đường dẫn ra ngoài thư mục/tệp không còn → 404 “Không tìm thấy.”. Chỉ ảnh có `previewUrl`, PDF `null` như mock.
+- **Khác mock có chủ đích**:
+  - Nhật ký “Tạo hồ sơ vay” ghi tên chi nhánh (mock ghi “Chi nhánh ” + tên, thành “Chi nhánh Chi nhánh Hà Nội”); **đã sửa mock** cho khớp.
+  - Đối chiếu tuổi đọc `MIN_AGE` của gói ở phiên bản đang áp dụng (mock viết cứng 22/19, cùng giá trị dữ liệu mẫu).
+  - `/submit` kiểm tra OTP qua `OtpService` (FE gọi `/auth/otp` trước trong `OtpModal`); mã chỉ bị dùng khi nộp thành công.
+  - `PUT /personal` kiểm tra thêm độ dài (họ tên, email ≤ 100, địa chỉ ≤ 255), `dob` yyyy-MM-dd, `gender` MALE/FEMALE → 400 “Dữ liệu không hợp lệ.” kèm `fields`; trường không gửi giữ nguyên (như mock gộp đối tượng). Xác nhận CCCD chỉ điền sẵn số CCCD khi đủ 12 chữ số (cột 12 ký tự; số sai vẫn bị cảnh báo BLOCKING).
+  - `PUT /plan` sửa thẳng dòng `loan_plan` + `plan_cross_sell` của hồ sơ (một phương án chỉ có một hồ sơ chưa hủy); trang phương án cũng thấy số mới.
+  - `issuedDate` sai định dạng → 400 (mock lưu nguyên chuỗi).
+  - `typeName`, `group`, `allowedFormats` đọc từ `document_type` lúc trả về (mock chép lúc tạo hồ sơ); `required` chụp lúc tạo như mock.
+- **Để B5**: `verifications: []`, `approval: null`; B5 ghi `application_document.verify_result/verify_reason` (bản sao kết quả đối chiếu gần nhất, upload tự xóa) để nộp lại chặn “Cần tải lại: …”. Đổi trạng thái chỉ qua `ApplicationStateMachine.transition`.
+- **Kiểm tra**:
+  - `.\mvnw.cmd verify` → 131 test pass. Mới: 11 `ApplicationApiTest` (lỗi tạo hồ sơ đúng thứ tự mock, danh mục 2,3,4,5,6,1, lịch sử, consent B, quyền xem chủ/nhân viên cùng-khác chi nhánh/quản trị, personal, upload WRONG_FORMAT/TOO_LARGE/BLURRY/OK + giá trị OCR giả lập + previewUrl tải được + chữ ký sai/hết hạn/`..` 404 + xóa tệp cũ, cảnh báo CCCD BLOCKING chặn giấy đề nghị, thu nhập sao kê lệch 5% + recalc, `PUT /plan` 422/400/200, giấy đề nghị 19 ô, OTP sai/chưa gửi, nộp: QR `QR[A-Z0-9]{8}`, băm 64 hex, hạn +30 ngày, thông báo khách + chi nhánh, nộp lại NEED_MORE giữ QR, EXPIRED → NEED_MORE → WAITING_VERIFY và chặn giấy tờ quá 30 ngày, hủy + 409), 1 `NotificationApiTest`, 2 `DocumentUnitTest`, 2 `ApplicationUnitTest`; `TienSangLocVayApplicationTests` sửa Flyway V1–V6, 28 bảng. Redocly lint 0 lỗi (19 cảnh báo như trước).
+  - Backend dev + FE `VITE_USE_MOCK=false` (biến môi trường, **chưa đổi** `fe/.env.development`), Playwright theo bước 53–105 của `tests/e2e/full_flow.py`: đăng nhập 0901234567 → sàng lọc → phương án → tạo hồ sơ CN Hà Nội → thông tin cá nhân → `mo.jpg` hiện “Ảnh có độ phân giải thấp hoặc bị mờ…” → cccd, cutru, hdld, saoke.pdf, hoadon (4 ảnh xem trước tải được qua `/api/files/local`) → xác nhận → lập giấy đề nghị → OTP 123456 → “Chờ đối chiếu tại Chi nhánh Hà Nội” → tab Phiếu tóm tắt có mã QR, mã băm, hạn 22/11/2026. Không lỗi API/console. DB: lịch sử 2 dòng, 2 thông báo, nhật ký đủ hành động, tệp trong `be/data/uploads`.
+  - DB Docker dev còn hồ sơ HS2610-0501 (DRAFTING) của khách `0901234567` từ lần chạy thử đầu bị dừng giữa chừng (lỗi in tiếng Việt của script thử, không phải lỗi backend); hủy trên giao diện hoặc `docker compose down -v` nếu muốn sạch.

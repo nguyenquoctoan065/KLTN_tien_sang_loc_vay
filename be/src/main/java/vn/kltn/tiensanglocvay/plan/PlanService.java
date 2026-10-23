@@ -125,7 +125,7 @@ public class PlanService {
                 .orElseThrow(() -> new IllegalStateException("Thiếu gói vay " + code + " trong loan_product."));
     }
 
-    private LoanPlanDto toDto(LoanPlan p) {
+    public LoanPlanDto toDto(LoanPlan p) {
         ProductCode code = products.findById(p.getProductId()).map(x -> ProductCode.valueOf(x.getCode()))
                 .orElseThrow(() -> new IllegalStateException("Không có gói vay #" + p.getProductId() + "."));
         Map<Integer, CrossSell> cs = simulations.allCrossSells().stream().collect(Collectors.toMap(CrossSell::id, Function.identity()));
