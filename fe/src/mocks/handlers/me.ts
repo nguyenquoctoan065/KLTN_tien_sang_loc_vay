@@ -71,7 +71,7 @@ export const meHandlers = [
             notify({ branchId: a.branchId }, 'Hồ sơ đã hủy do khách hàng rút đồng ý', a.code, `/noi-bo/ho-so/${a.id}`); }
           for (const d of a.documents) {
             if (d.fileName && d.documentTypeId !== SYSTEM_DOC_TYPE) res.deletedDocuments++;
-            Object.assign(d, { status: 'MISSING', fileName: null, fileFormat: null, fileSize: null, previewUrl: null, fields: [], issuedDate: null, qualityStatus: null });
+            Object.assign(d, { status: 'MISSING', fileName: null, fileFormat: null, fileSize: null, previewUrl: null, fileUrl: null, fields: [], issuedDate: null, qualityStatus: null });
           }
           a.personal = { ...a.personal, nationalId: '', address: '', email: '' };
           a.warnings = []; a.recalc = null;

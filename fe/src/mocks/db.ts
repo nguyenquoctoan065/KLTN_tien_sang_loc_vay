@@ -207,7 +207,7 @@ function historical(rnd: () => number, accounts: Account[], branches: Branch[], 
         status: has ? 'CONFIRMED' : 'MISSING', fileName: has ? (t.id === SYSTEM_DOC_TYPE ? 'giay-de-nghi-vay-von.pdf' : `tai-lieu-${t.id}.pdf`) : null,
         fileFormat: has ? 'PDF' : null, fileSize: has ? 300 + Math.floor(rnd() * 900) : null, versionNo: 1,
         issuedDate: has ? iso(addDays(created, -3)).slice(0, 10) : null, qualityStatus: has ? 'OK' : null, qualityMessage: null,
-        uploadedAt: has ? iso(addDays(created, 1)) : null, previewUrl: null,
+        uploadedAt: has ? iso(addDays(created, 1)) : null, previewUrl: null, fileUrl: null,
         fields: [], verifyResult: null, verifyReason: null,
       };
     });

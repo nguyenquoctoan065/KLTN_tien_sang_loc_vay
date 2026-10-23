@@ -63,6 +63,17 @@ export function summary(a: AppRecord): ApplicationSummary {
   };
 }
 
+/**
+ * Tệp gốc vừa tải trong phiên (blob URL, theo mã giấy tờ + phiên bản) cho `fileUrl` / nút “Mở tệp”. Không lưu vào localStorage
+ * (quá lớn), nên sau khi tải lại trang `fileUrl` là null; backend thật trả đường dẫn ký có hạn.
+ */
+const fileUrls = new Map<string, string>();
+const fileKey = (d: AppDocument) => `${d.id}:${d.versionNo}`;
+export function rememberFile(d: AppDocument, file: File | null) {
+  for (const [k, url] of fileUrls) if (k.startsWith(`${d.id}:`)) { URL.revokeObjectURL(url); fileUrls.delete(k); }
+  if (file) fileUrls.set(fileKey(d), URL.createObjectURL(file));
+}
+
 /** Hồ sơ trả về cho người xem, kèm các thao tác được phép */
 export function view(a: AppRecord, viewer: Account): Application {
   const b = branchOf(a.branchId);
@@ -70,6 +81,7 @@ export function view(a: AppRecord, viewer: Account): Application {
   const isStaff = viewer.role === 'BRANCH_STAFF' && viewer.branchId === a.branchId;
   return {
     ...a, branchName: b?.name ?? '', branchAddress: b?.address ?? '',
+    documents: a.documents.map(d => ({ ...d, fileUrl: d.fileName && d.status !== 'REJECTED_QUALITY' ? fileUrls.get(fileKey(d)) ?? null : null })),
     can: {
       edit: isOwner && (a.status === 'DRAFTING' || a.status === 'NEED_MORE' || a.status === 'EXPIRED'),
       submit: isOwner && a.status === 'DRAFTING',

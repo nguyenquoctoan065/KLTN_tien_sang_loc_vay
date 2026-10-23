@@ -1,6 +1,8 @@
 package vn.kltn.tiensanglocvay.application;
 
 import java.time.Duration;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,11 +13,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import vn.kltn.tiensanglocvay.application.Dtos.AppDocument;
 import vn.kltn.tiensanglocvay.application.Dtos.ApplicationPermissions;
+import vn.kltn.tiensanglocvay.application.Dtos.ApprovalResultDto;
 import vn.kltn.tiensanglocvay.application.Dtos.ApplicationSummary;
 import vn.kltn.tiensanglocvay.application.Dtos.ExtractedFieldDto;
 import vn.kltn.tiensanglocvay.application.Dtos.LoanRequestFormDto;
 import vn.kltn.tiensanglocvay.application.Dtos.PersonalInfo;
 import vn.kltn.tiensanglocvay.application.Dtos.StatusEvent;
+import vn.kltn.tiensanglocvay.application.Dtos.VerificationDetailDto;
+import vn.kltn.tiensanglocvay.application.Dtos.VerificationDto;
 import vn.kltn.tiensanglocvay.auth.Customer;
 import vn.kltn.tiensanglocvay.auth.CustomerRepository;
 import vn.kltn.tiensanglocvay.auth.StaffRepository;
@@ -74,6 +79,9 @@ public class ApplicationSupport {
     private final StaffRepository staff;
     private final ActivePolicy policy;
     private final StorageService storage;
+    private final VerificationRepository verifications;
+    private final VerificationDetailRepository verificationDetails;
+    private final ApprovalResultRepository approvals;
     private final Duration previewTtl;
 
     public ApplicationSupport(LoanApplicationRepository apps, ApplicationDocumentRepository docs, ExtractedFieldRepository fields,
@@ -81,7 +89,8 @@ public class ApplicationSupport {
                               LoanPlanRepository plans, PlanCrossSellRepository planCrossSells, PlanService planService,
                               LoanProductRepository products, ScreeningRepository screenings, ScreeningService screeningService,
                               ConsentRepository consents, BranchRepository branches, CustomerRepository customers, StaffRepository staff,
-                              ActivePolicy policy, StorageService storage,
+                              ActivePolicy policy, StorageService storage, VerificationRepository verifications,
+                              VerificationDetailRepository verificationDetails, ApprovalResultRepository approvals,
                               @Value("${app.storage.signed-url-minutes:10}") long signedUrlMinutes) {
         this.apps = apps;
         this.docs = docs;
@@ -101,6 +110,9 @@ public class ApplicationSupport {
         this.staff = staff;
         this.policy = policy;
         this.storage = storage;
+        this.verifications = verifications;
+        this.verificationDetails = verificationDetails;
+        this.approvals = approvals;
         this.previewTtl = Duration.ofMinutes(signedUrlMinutes);
     }
 
@@ -140,8 +152,11 @@ public class ApplicationSupport {
             String name = customers.findById(u.id()).map(ApplicationSupport::customerName).orElse("Khách hàng");
             return new Actor("CUSTOMER", u.id(), name);
         }
-        String name = staff.findById((int) u.id()).map(s -> s.getFullName()).orElse("Nhân viên");
-        return new Actor("STAFF", u.id(), name);
+        return new Actor("STAFF", u.id(), staffName((int) u.id()));
+    }
+
+    String staffName(Integer staffId) {
+        return staffId == null ? "Nhân viên" : staff.findById(staffId).map(s -> s.getFullName()).orElse("Nhân viên");
     }
 
     private static String customerName(Customer c) {
@@ -213,7 +228,37 @@ public class ApplicationSupport {
                 b.screening == null ? "" : b.screening.getPurpose(), personal(b),
                 consents.findById(a.getConsentId()).map(Consent::getAgreedAt).orElse(null), versionNo, a.getContentHash(),
                 a.getLockedAt(), a.getQrToken(), a.getExpiresAt(), a.getCreatedAt(), a.getUpdatedAt(), documents, a.getWarnings(),
-                a.getRecalc(), form, List.of(), null, events, can);
+                a.getRecalc(), form, verifications(b), approval(a), events, can);
+    }
+
+    /** Các phiếu đối chiếu theo thứ tự ghi (mock {@code app.verifications.push}). */
+    private List<VerificationDto> verifications(AppBundle b) {
+        List<Verification> vs = verifications.findByApplicationIdOrderById(b.app.getId());
+        if (vs.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, List<VerificationDetail>> details = verificationDetails.findByVerificationIdIn(vs.stream().map(Verification::getId).toList())
+                .stream().collect(Collectors.groupingBy(VerificationDetail::getVerificationId));
+        Map<Long, ApplicationDocument> docsById = b.docs.stream().collect(Collectors.toMap(ApplicationDocument::getId, Function.identity()));
+        Map<Integer, String> names = new HashMap<>();
+        return vs.stream().map(v -> new VerificationDto(v.getId(), names.computeIfAbsent(v.getStaffId(), this::staffName),
+                v.getOverallResult(), nz(v.getNote()), v.getVerifiedAt(),
+                details.getOrDefault(v.getId(), List.of()).stream()
+                        .sorted(Comparator.comparing(VerificationDetail::getDocumentId))
+                        .map(d -> new VerificationDetailDto(d.getDocumentId(),
+                                docsById.containsKey(d.getDocumentId()) ? b.typeName(docsById.get(d.getDocumentId())) : "",
+                                d.getResult(), nz(d.getReason())))
+                        .toList()))
+                .toList();
+    }
+
+    /** Kết quả xét duyệt mới nhất, hoặc null. */
+    private ApprovalResultDto approval(LoanApplication a) {
+        return approvals.findFirstByApplicationIdOrderByIdDesc(a.getId())
+                .map(r -> new ApprovalResultDto(r.getId(), r.getResultType(), r.getApprovedAmount(), r.getApprovedTerm(), r.getApprovedRate(),
+                        r.getReason(), r.getRecordedAt(), staffName(r.getStaffId()), r.getDisbursedAt(), r.getDisbursedAmount(),
+                        r.getBeneficiary()))
+                .orElse(null);
     }
 
     static PersonalInfo personal(AppBundle b) {
@@ -226,13 +271,14 @@ public class ApplicationSupport {
         DocumentType t = b.types.get(d.getDocumentTypeId());
         StoredFile stored = d.stored();
         String preview = stored != null && stored.isImage() ? storage.signedUrl(stored, previewTtl) : null;
+        String file = stored != null ? storage.fileUrl(stored, previewTtl) : null;
         List<ExtractedFieldDto> fs = b.fieldsOf(d).stream()
                 .map(f -> new ExtractedFieldDto(f.getId(), f.getFieldName(), f.getLabel(), nz(f.getOcrValue()),
                         f.getConfidence() == null ? 0 : f.getConfidence().doubleValue(), f.getConfirmedValue()))
                 .toList();
         return new AppDocument(d.getId(), d.getDocumentTypeId(), t == null ? "" : t.getName(), t == null ? "" : t.getGroup(),
                 d.isRequired(), t == null ? "" : t.getAllowedFormats(), d.getStatus(), d.getFileName(), d.getFileFormat(), d.getFileSize(),
-                d.getVersionNo(), d.getIssuedDate(), d.getQualityStatus(), d.getQualityMessage(), d.getUploadedAt(), preview, fs,
+                d.getVersionNo(), d.getIssuedDate(), d.getQualityStatus(), d.getQualityMessage(), d.getUploadedAt(), preview, file, fs,
                 d.getVerifyResult(), d.getVerifyReason());
     }
 

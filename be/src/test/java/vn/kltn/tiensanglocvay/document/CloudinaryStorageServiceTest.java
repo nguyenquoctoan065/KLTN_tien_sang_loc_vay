@@ -67,4 +67,23 @@ class CloudinaryStorageServiceTest {
         CloudinaryStorageService later = service(NOW.plusSeconds(601));
         assertThat(later.verify(q.get("path"), "image", 1761188400L, "jpg", exp, q.get("sig"))).isEmpty();
     }
+
+    @Test
+    void fileUrl_originalKindIsPartOfSignature() {
+        CloudinaryStorageService s = service(NOW);
+        // URL giao tệp gốc: không biến đổi, giữ định dạng gốc (PDF vẫn là .pdf)
+        assertThat(s.originalDeliveryUrl(PDF)).startsWith("https://res.cloudinary.com/demo/image/authenticated/s--")
+                .contains("/s--").contains("--/v1761188401/tien-sang-loc-vay/test/app-5/doc-14-v1.pdf").doesNotContain("w_480");
+        assertThat(CloudinaryStorageService.contentType("pdf")).isEqualTo("application/pdf");
+        assertThat(CloudinaryStorageService.contentType("PNG")).isEqualTo("image/png");
+
+        Map<String, String> q = query(s.fileUrl(PDF, Duration.ofMinutes(10)));
+        assertThat(q).containsEntry("kind", "original").containsEntry("fmt", "pdf");
+        long exp = Long.parseLong(q.get("exp"));
+        assertThat(s.verify(q.get("path"), "image", 1761188401L, "pdf", true, exp, q.get("sig"))).contains(PDF);
+        // Chữ ký của tệp gốc không dùng được cho ảnh xem trước và ngược lại
+        assertThat(s.verify(q.get("path"), "image", 1761188401L, "pdf", false, exp, q.get("sig"))).isEmpty();
+        Map<String, String> p = query(s.signedUrl(PDF, Duration.ofMinutes(10)));
+        assertThat(s.verify(p.get("path"), "image", 1761188401L, "pdf", true, exp, p.get("sig"))).isEmpty();
+    }
 }

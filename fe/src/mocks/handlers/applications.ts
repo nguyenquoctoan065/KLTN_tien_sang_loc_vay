@@ -2,7 +2,7 @@ import { http, HttpResponse, delay } from 'msw';
 import type { AppDocument, LoanRequestForm, PersonalInfo, SimulationRequest } from '../../api/types';
 import {
   API, db, err, nextId, persist, currentUser, nowIso, log, notify, setStatus, view, summary, canSee, screeningOf,
-  ocrFields, refreshChecks, missingForSubmit, makeQr, sha256, thumbnail, paramValue, activeVersion, paramsOf, weightsOf,
+  ocrFields, refreshChecks, missingForSubmit, makeQr, sha256, thumbnail, rememberFile, paramValue, activeVersion, paramsOf, weightsOf,
   fmtMoney, DEV_OTP, OPEN_STATUSES, STATUS_LABEL,
 } from '../ctx';
 import { SYSTEM_DOC_TYPE, type AppRecord } from '../db';
@@ -93,7 +93,7 @@ export const applicationHandlers = [
       const t = db.docTypes.find(d => d.id === r.documentTypeId)!;
       return { id: nextId(), documentTypeId: t.id, typeName: t.name, group: t.group, required: r.required, allowedFormats: t.allowedFormats,
         status: 'MISSING' as const, fileName: null, fileFormat: null, fileSize: null, versionNo: 0, issuedDate: null, qualityStatus: null, qualityMessage: null,
-        uploadedAt: null, previewUrl: null, fields: [], verifyResult: null, verifyReason: null };
+        uploadedAt: null, previewUrl: null, fileUrl: null, fields: [], verifyResult: null, verifyReason: null };
     }).sort((a, b2) => (a.documentTypeId === SYSTEM_DOC_TYPE ? 1 : 0) - (b2.documentTypeId === SYSTEM_DOC_TYPE ? 1 : 0));
     const app: AppRecord = {
       id: crypto.randomUUID(), code: newCode(), customerId: u.id, status: 'DRAFTING', branchId: branch.id, plan: { ...plan }, purpose: scr?.input.purpose ?? '',
@@ -158,6 +158,7 @@ export const applicationHandlers = [
       d.status = 'UPLOADED'; d.qualityStatus = 'OK'; d.qualityMessage = null;
       d.fields = ocrFields(d.documentTypeId, app, screeningOf(app)?.input ?? null, kb);
     }
+    rememberFile(d, d.status === 'REJECTED_QUALITY' ? null : file);
     if (app.requestForm) app.requestForm = null;
     refreshChecks(app); app.updatedAt = nowIso();
     log(u, 'Tải giấy tờ', `${d.typeName} (phiên bản ${d.versionNo})`, app);

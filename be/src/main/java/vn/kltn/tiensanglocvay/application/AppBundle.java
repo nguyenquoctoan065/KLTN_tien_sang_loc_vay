@@ -47,7 +47,15 @@ public final class AppBundle {
         return fields.getOrDefault(d.getId(), List.of());
     }
 
-    String typeName(ApplicationDocument d) {
+    public LoanApplication app() {
+        return app;
+    }
+
+    public List<ApplicationDocument> docs() {
+        return docs;
+    }
+
+    public String typeName(ApplicationDocument d) {
         DocumentType t = types.get(d.getDocumentTypeId());
         return t == null ? "" : t.getName();
     }

@@ -250,7 +250,7 @@ export const adminHandlers = [
       for (const a of db.applications) {
         if (['REJECTED', 'CANCELLED', 'EXPIRED'].includes(a.status) && Date.parse(a.updatedAt) < limit) {
           for (const d of a.documents) if (d.fileName && d.documentTypeId !== SYSTEM_DOC_TYPE) {
-            Object.assign(d, { status: 'MISSING', fileName: null, previewUrl: null, fields: [] }); n++;
+            Object.assign(d, { status: 'MISSING', fileName: null, previewUrl: null, fileUrl: null, fields: [] }); n++;
           }
           a.personal = { ...a.personal, nationalId: '', address: '' };
         }

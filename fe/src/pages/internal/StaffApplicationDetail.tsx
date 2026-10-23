@@ -3,7 +3,7 @@ import {
   Alert, App, Button, Card, Col, DatePicker, Descriptions, Form, Image, Input, InputNumber, Radio, Result, Row, Skeleton, Space,
   Table, Tabs, Tag, Typography,
 } from 'antd';
-import { ArrowLeftOutlined, AuditOutlined, CheckCircleOutlined, DollarOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, AuditOutlined, CheckCircleOutlined, DollarOutlined, ExportOutlined, FilePdfOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -153,6 +153,7 @@ export default function StaffApplicationDetail() {
                     { title: 'Giấy tờ', dataIndex: 'typeName', render: (v, d) => <div>{v}<div style={{ fontSize: 12, color: '#64748b' }}>{d.fileName ?? 'Chưa tải'}{d.fileName ? ` · v${d.versionNo} · ${dt(d.uploadedAt)}` : ''}</div></div> },
                     { title: 'Trạng thái', render: (_, d) => <Tag color={DOC_STATUS[d.status].color}>{DOC_STATUS[d.status].label}</Tag> },
                     { title: 'Đối chiếu', render: (_, d) => d.verifyResult ? <Tag color={VERIFY_TAG[d.verifyResult].color}>{VERIFY_TAG[d.verifyResult].label}</Tag> : '—' },
+                    { title: 'Tệp', width: 110, render: (_, d) => d.fileUrl ? <Button size="small" icon={<ExportOutlined />} href={d.fileUrl} target="_blank" rel="noopener noreferrer">Mở tệp</Button> : '—' },
                   ]} />
                 ),
               },

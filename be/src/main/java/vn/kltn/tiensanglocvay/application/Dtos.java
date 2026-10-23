@@ -15,13 +15,13 @@ public final class Dtos {
     private Dtos() {
     }
 
-    /** Schema Application. {@code verifications}, {@code approval} có dữ liệu từ B5. */
+    /** Schema Application. {@code verifications}, {@code approval} do nhân viên chi nhánh ghi (B5). */
     public record Application(UUID id, String code, long customerId, ApplicationStatus status, long branchId, String branchName,
                               String branchAddress, LoanPlanDto plan, String purpose, PersonalInfo personal, OffsetDateTime consentBAt,
                               String versionNo, String contentHash, OffsetDateTime lockedAt, String qrToken, OffsetDateTime expiresAt,
                               OffsetDateTime createdAt, OffsetDateTime updatedAt, List<AppDocument> documents,
                               List<CrossCheckWarning> warnings, Recalculation recalc, LoanRequestFormDto requestForm,
-                              List<Object> verifications, Object approval, List<StatusEvent> history, ApplicationPermissions can) {
+                              List<VerificationDto> verifications, ApprovalResultDto approval, List<StatusEvent> history, ApplicationPermissions can) {
     }
 
     public record ApplicationSummary(UUID id, String code, String customerName, String customerPhone, ProductCode productCode,
@@ -41,11 +41,23 @@ public final class Dtos {
     public record AppDocument(long id, long documentTypeId, String typeName, String group, boolean required, String allowedFormats,
                               String status, String fileName, String fileFormat, Integer fileSize, int versionNo, LocalDate issuedDate,
                               String qualityStatus, String qualityMessage, OffsetDateTime uploadedAt, String previewUrl,
-                              List<ExtractedFieldDto> fields, String verifyResult, String verifyReason) {
+                              String fileUrl, List<ExtractedFieldDto> fields, String verifyResult, String verifyReason) {
     }
 
     public record LoanRequestFormDto(String status, List<LoanRequestForm.Item> content, OffsetDateTime createdAt,
                                      OffsetDateTime otpConfirmedAt) {
+    }
+
+    public record VerificationDetailDto(long documentId, String typeName, String result, String reason) {
+    }
+
+    public record VerificationDto(long id, String staffName, String overallResult, String note, OffsetDateTime verifiedAt,
+                                  List<VerificationDetailDto> details) {
+    }
+
+    public record ApprovalResultDto(long id, String resultType, Long approvedAmount, Integer approvedTerm, Double approvedRate,
+                                    String reason, OffsetDateTime recordedAt, String staffName, LocalDate disbursedAt,
+                                    Long disbursedAmount, String beneficiary) {
     }
 
     public record StatusEvent(ApplicationStatus status, OffsetDateTime at, String actor, String note) {

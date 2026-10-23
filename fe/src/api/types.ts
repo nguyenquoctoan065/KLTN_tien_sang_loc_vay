@@ -351,6 +351,8 @@ export interface AppDocument {
   qualityMessage: string | null;
   uploadedAt: string | null;
   previewUrl: string | null;
+  /** đường dẫn mở tệp gốc cỡ đầy đủ (ảnh gốc hoặc PDF), ký có hạn 10 phút; null nếu chưa tải hoặc tệp không đạt */
+  fileUrl: string | null;
   fields: ExtractedField[];
   /** kết quả đối chiếu gần nhất tại chi nhánh */
   verifyResult: 'MATCH' | 'MISMATCH' | 'MISSING' | null;

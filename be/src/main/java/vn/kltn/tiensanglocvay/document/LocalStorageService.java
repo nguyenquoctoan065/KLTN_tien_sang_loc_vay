@@ -67,6 +67,12 @@ public class LocalStorageService implements StorageService {
                 + "&sig=" + signer.sign(path, exp);
     }
 
+    /** Kho cục bộ luôn phát tệp gốc (ảnh hoặc PDF), nên dùng chung URL với {@link #signedUrl}. */
+    @Override
+    public String fileUrl(StoredFile f, Duration ttl) {
+        return signedUrl(f, ttl);
+    }
+
     @Override
     public void delete(StoredFile f) {
         resolve(relative(f.publicId(), f.format())).ifPresent(p -> {

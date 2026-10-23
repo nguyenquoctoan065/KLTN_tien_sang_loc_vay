@@ -153,6 +153,12 @@ public class ApplicationDocument {
         this.status = CONFIRMED;
     }
 
+    /** Kết quả đối chiếu gần nhất tại chi nhánh (mock {@code d.verifyResult = x.result; d.verifyReason = x.reason || null}). */
+    public void recordVerification(String result, String reason) {
+        this.verifyResult = result;
+        this.verifyReason = reason;
+    }
+
     public String getFileName() {
         return fileName;
     }

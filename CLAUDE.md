@@ -1,5 +1,7 @@
 # Hệ thống gợi ý và tiền sàng lọc hồ sơ vay tín chấp – hướng dẫn cho Claude Code
 
+> Luôn trả lời và báo cáo cho người dùng bằng tiếng Việt.
+
 > Máy phát triển: Windows, PowerShell 5.1 – không dùng `&&` (dùng `;` hoặc từng dòng), Maven chạy bằng `.\mvnw.cmd`.
 
 Đồ án tốt nghiệp (ABBANK): khách hàng tự sàng lọc, mô phỏng phương án vay, lập hồ sơ trực tuyến; nhân viên chi nhánh
@@ -51,11 +53,11 @@ Frontend gọi backend thật khi `fe/.env.development` có `VITE_USE_MOCK=false
 
 ## Tài khoản thử (mật khẩu 123456, OTP môi trường dev: 123456)
 
-| Vai trò                             | Đăng nhập         | Tài khoản                                                   |
-| ----------------------------------- | ----------------- | ----------------------------------------------------------- |
-| Khách hàng                          | /dang-nhap        | 0901234567                                                  |
+| Vai trò                             | Đăng nhập         | Tài khoản                                                                           |
+| ----------------------------------- | ----------------- | ----------------------------------------------------------------------------------- |
+| Khách hàng                          | /dang-nhap        | 0901234567                                                                          |
 | Nhân viên CN Hà Nội / HCM / Đà Nẵng | /noi-bo/dang-nhap | nhanvien@tiensangloc.local / nv.hcm@tiensangloc.local / nv.danang@tiensangloc.local |
-| Quản trị viên                       | /noi-bo/dang-nhap | quantri@tiensangloc.local                                           |
+| Quản trị viên                       | /noi-bo/dang-nhap | quantri@tiensangloc.local                                                           |
 
 ## Cách làm việc
 

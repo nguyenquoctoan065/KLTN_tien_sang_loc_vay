@@ -17,6 +17,11 @@ public interface StorageService {
     /** Đường dẫn xem/tải tệp có chữ ký và hết hạn sau {@code ttl}; frontend dùng thẳng trong thẻ img. */
     String signedUrl(StoredFile f, Duration ttl);
 
+    /**
+     * Đường dẫn mở tệp gốc cỡ đầy đủ (ảnh gốc hoặc PDF) có chữ ký và hết hạn sau {@code ttl} (AppDocument.fileUrl, nút “Mở tệp”).
+     */
+    String fileUrl(StoredFile f, Duration ttl);
+
     /** Xóa tệp; không có thì bỏ qua. */
     void delete(StoredFile f);
 }

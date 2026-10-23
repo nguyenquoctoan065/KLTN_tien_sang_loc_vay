@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, App, Button, Card, DatePicker, Image, Input, Space, Table, Tag, Typography, Upload } from 'antd';
-import { UploadOutlined, CheckOutlined, FileTextOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { UploadOutlined, CheckOutlined, FileTextOutlined, FilePdfOutlined, ExportOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Dayjs } from 'dayjs';
 import { appApi } from '../../api/endpoints';
@@ -71,6 +71,7 @@ export default function DocumentCard({ app, doc, editable }: { app: Application;
                     <div>{doc.fileName}</div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>{doc.fileFormat} · {doc.fileSize} KB · phiên bản {doc.versionNo} · {dt(doc.uploadedAt)}</Typography.Text>
                     {doc.issuedDate && <div><Typography.Text type="secondary" style={{ fontSize: 12 }}>Ngày phát hành: {doc.issuedDate.split('-').reverse().join('/')}</Typography.Text></div>}
+                    {doc.fileUrl && <Button size="small" type="link" icon={<ExportOutlined />} href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={{ paddingInline: 0 }}>Mở tệp</Button>}
                   </>
                 ) : <Typography.Text type="secondary">Định dạng cho phép: {doc.allowedFormats}; tối đa 10 MB; ảnh chụp rõ nét, đủ bốn góc.</Typography.Text>}
               </div>

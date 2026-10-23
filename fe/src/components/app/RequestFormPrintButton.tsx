@@ -5,8 +5,11 @@ import RequestFormPrint from './RequestFormPrint';
 
 const PRINTING = 'printing-rfp';
 
-/** Nút “In giấy đề nghị”; chỉ hiện khi hồ sơ đã nộp/khóa và có giấy đề nghị */
-export default function RequestFormPrintButton({ app }: { app: Application }) {
+/**
+ * Nút “In giấy đề nghị”; chỉ hiện khi hồ sơ đã nộp/khóa và có giấy đề nghị.
+ * `sheet={false}` khi trang có nhiều nút: trang tự vẽ một `<RequestFormPrint>` để bản in không bị lặp.
+ */
+export default function RequestFormPrintButton({ app, sheet = true }: { app: Application; sheet?: boolean }) {
   if (!app.lockedAt || !app.requestForm) return null;
   const print = () => {
     document.body.classList.add(PRINTING);
@@ -16,7 +19,7 @@ export default function RequestFormPrintButton({ app }: { app: Application }) {
   return (
     <>
       <Button icon={<PrinterOutlined />} onClick={print} className="no-print">In giấy đề nghị</Button>
-      <RequestFormPrint app={app} />
+      {sheet && <RequestFormPrint app={app} />}
     </>
   );
 }

@@ -120,7 +120,7 @@ Mỗi module: `XxxController` (chỉ nhận/trả DTO, kiểm tra vai trò) → 
     `/files/local`). `CloudFileController` kiểm tra chữ ký rồi tải ảnh bằng URL ký của Cloudinary
     `cloudinary.url().type("authenticated").resourceType(rt).signed(true).version(v)…` và trả về; URL Cloudinary không lộ ra trình duyệt.
   - Ảnh xem trước dùng biến đổi `w_480,c_limit,q_auto,f_auto`.
-  - PDF: trang đầu dùng `pg_1` (đuôi `.jpg`) để làm ảnh xem trước. Nút “Mở tệp” tải PDF gốc chưa làm (DTO chưa có trường).
+  - PDF: trang đầu dùng `pg_1` (đuôi `.jpg`) để làm ảnh xem trước. Tệp gốc cỡ đầy đủ (nút “Mở tệp”) qua `fileUrl` = `/api/files/cloud?…&kind=original` (`kind` nằm trong chữ ký; B5).
   - `LocalStorageService` có `GET /api/files/local?path&exp&sig` (chỉ ảnh, xem ghi chú B4 phần A).
 - **PDF**: tài khoản Cloudinary miễn phí mặc định chặn phát tệp PDF. Bật *Settings → Security → Allow delivery of PDF and ZIP files*.
 - **Xóa**: tác vụ `PURGE_RETENTION`, rút đồng ý phạm vi B và tải lại phiên bản mới (tùy chọn giữ bản cũ) đều gọi
@@ -240,8 +240,8 @@ các trang FE tương ứng chạy được với `VITE_USE_MOCK=false`, và th�
 - [x] (B4b) `CloudinaryStorageService` + URL ký có hạn (5.3), `GeminiOcrService` (5.4); test chạy với `storage.provider=local`, `ocr.provider=fake`.
 
 ### B5. Chi nhánh (QT04–QT05)
-- [ ] `/staff/applications` (lọc trạng thái nhiều giá trị, từ khóa, chi nhánh của nhân viên), `/staff/applications/by-qr/{token}`, `/staff/summary`.
-- [ ] `/verification` (MATCH → VERIFIED, có MISMATCH/MISSING → NEED_MORE, bắt buộc lý do), `/decision`, `/disbursement`.
+- [x] `/staff/applications` (lọc trạng thái nhiều giá trị, từ khóa, chi nhánh của nhân viên), `/staff/applications/by-qr/{token}`, `/staff/summary`.
+- [x] `/verification` (MATCH → VERIFIED, có MISMATCH/MISSING → NEED_MORE, bắt buộc lý do), `/decision`, `/disbursement`.
 
 ### B6. Quyền dữ liệu (QT06)
 - [ ] `/me/data` (dữ liệu, các lần đồng ý, nhật ký truy cập), `/me/consents/withdraw` (mục 14, OTP).
@@ -449,4 +449,30 @@ Profile `test`: `app.storage.provider: local`, `app.ocr.provider: fake`, `app.st
   - Chạy thật: `$env:GEMINI_API_KEY=…; $env:CLOUDINARY_URL=…; .\mvnw.cmd test "-Dtest=GeminiOcrLiveTest,CloudinaryLiveTest"`. Chưa chạy trong phiên này (khóa chỉ có trong `be/.env`, không đọc file đó).
   - `npm run build`, `npx eslint src` (0 lỗi, 4 cảnh báo có sẵn).
   - `.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"` khởi động được (khóa nạp từ `be/.env`), health UP. Người dùng tự thử tải 5 tệp mẫu trên FE với `VITE_USE_MOCK=false`.
-- **Còn tồn đọng**: nút “Mở tệp” tải PDF gốc (cần thêm trường DTO); `PURGE_RETENTION` (B7) và rút đồng ý phạm vi B (B6) phải gọi `StorageService.delete`.
+- **Còn tồn đọng**: ~~nút “Mở tệp” tải PDF gốc~~ (xong ở B5, `AppDocument.fileUrl`); `PURGE_RETENTION` (B7) và rút đồng ý phạm vi B (B6) phải gọi `StorageService.delete`.
+
+### B5 – xong 23/10/2026
+- **Đã có**:
+  - `security/RequireRole` + `RequireRoleInterceptor` (HandlerInterceptor, đăng ký ở `WebConfig`): đặt trên controller hoặc phương thức; kiểm tra **trước khi đọc body**, nên vai trò sai luôn 403 “Không có quyền.” kể cả body hỏng (thứ tự như mock). Chưa đăng nhập vẫn 401 “Chưa đăng nhập.” của SecurityConfig. Các giai đoạn sau (B6 khách, B7 quản trị) dùng lại `@RequireRole(Role.X)`.
+  - `staff/` (`StaffController` gắn `@RequireRole(Role.BRANCH_STAFF)`, `StaffService`, `StaffDtos`); entity `Verification`, `VerificationDetail`, `ApprovalResult` + repository đặt trong `application/` vì `ApplicationSupport.view` dùng (điền `verifications`, `approval` – B4 còn để `[]`/`null`).
+  - `V7__b5_chi_nhanh.sql`: chỉ thêm chỉ mục (`verification.application_id`, `approval_result.application_id`, `loan_application(branch_id, status)`, `loan_application.qr_token`); bảng/cột đã có từ V1, V6.
+- **Hành vi** (chép `handlers/staff.ts`, thông báo lỗi đúng từng chữ, có test):
+  - `GET /staff/applications`: JPQL nối `customer` (số điện thoại), chỉ chi nhánh của nhân viên, trừ DRAFTING; `status` nhiều giá trị phân cách dấu phẩy (giá trị lạ bị bỏ, toàn giá trị lạ → `[]`); `keyword` trim + chữ thường, chứa trong mã/họ tên/số điện thoại (thoát `% _ \`), mã QR khớp đúng không phân biệt hoa thường; sắp `updatedAt` giảm dần.
+  - `by-qr`: 404 “Không tìm thấy hồ sơ theo mã QR.”, khác chi nhánh 403 “Hồ sơ thuộc chi nhánh khác.”. `summary`: đếm theo trạng thái bằng `group by`.
+  - `/verification`, `/decision`, `/disbursement`: hồ sơ khác chi nhánh hoặc mã sai → 404 “Không tìm thấy hồ sơ của chi nhánh.”; khóa dòng hồ sơ `PESSIMISTIC_WRITE` đến hết giao dịch (hai nhân viên không ghi cùng lúc). Ghi chú lịch sử, thông báo khách và nhật ký (“Đối chiếu giấy tờ”, “Cập nhật kết quả xét duyệt” + nhãn trạng thái, “Cập nhật giải ngân”) giống mock; tiền định dạng `JsFormat.vnd`, lãi suất như `String(x)` của JS.
+  - Đối chiếu ghi `verification` + `verification_detail` và chép `verify_result/verify_reason` vào giấy tờ, nên nộp lại bị chặn “Cần tải lại: …” đến khi khách tải lại (upload tự xóa kết quả cũ, đã có từ B4).
+  - Mỗi lần ghi kết quả thêm một dòng `approval_result`; `Application.approval` là dòng mới nhất (tương đương mock ghi đè `app.approval`). Giải ngân cập nhật dòng mới nhất.
+- **Khác mock có chủ đích**:
+  - Chưa đăng nhập → 401 “Chưa đăng nhập.” (mock trả 403 “Không có quyền.” vì `!u`), cho thống nhất với mọi endpoint khác.
+  - Kiểm tra chặt hơn → 400 “Dữ liệu không hợp lệ.” kèm `fields` (chạy sau các kiểm tra có chữ của mock): đối chiếu – `documentId` không thuộc danh sách giấy tờ đã tải/trùng, `result` ngoài MATCH/MISMATCH/MISSING, lý do/ghi chú > 255; xét duyệt – `resultType` sai/thiếu, lãi suất > 999,99 hoặc quá 2 chữ số thập phân, số tiền > 15 chữ số, kỳ hạn > 1200; giải ngân – ngày sai dạng yyyy-MM-dd, bên thụ hưởng > 150. Số tiền/kỳ hạn/lãi suất âm coi như thiếu (mock coi số âm là có).
+  - Lý do/bên thụ hưởng chỉ có khoảng trắng coi như thiếu. Ghi chú lịch sử > 255 và nội dung thông báo > 500 ký tự bị cắt (kèm “…”).
+  - Như B3/B4: body sai định dạng JSON trả 400 trước 404/409 (Spring đọc body trước khi vào service); vai trò vẫn được kiểm tra trước body.
+- **`AppDocument.fileUrl`** (đã thêm vào openapi, `types.ts`, mock): đường dẫn ký HMAC hạn `app.storage.signed-url-minutes` (10 phút) trả **tệp gốc cỡ đầy đủ** (ảnh gốc hoặc PDF), chỉ có với tệp đã lưu kho (đạt chất lượng). `StorageService.fileUrl`: kho cục bộ dùng chung `/files/local` (vốn phát tệp gốc); Cloudinary là `/files/cloud?…&kind=original`, `kind` nằm trong chữ ký (chữ ký ảnh xem trước không mở được tệp gốc và ngược lại), `CloudFileController` tải tệp gốc bằng URL ký của Cloudinary không biến đổi, `Content-Disposition: inline; filename="doc-<id>-v<n>.<đuôi>"`. PDF trên Cloudinary vẫn cần bật *Allow delivery of PDF and ZIP files* (5.3). Chưa thử `kind=original` với Cloudinary thật (chạy thử dùng kho cục bộ); `CloudinaryStorageServiceTest` kiểm tra URL và chữ ký.
+  - Mock: blob URL của tệp vừa tải giữ trong bộ nhớ (`rememberFile` trong `ctx.ts`, không lưu localStorage vì quá lớn), `view()` điền `fileUrl` theo mã giấy tờ + phiên bản; tải lại trang hoặc tệp không đạt → `null`. **Không tăng `DB_VERSION`** (khác kế hoạch): `view()` luôn điền `fileUrl` nên dữ liệu mock cũ vẫn dùng được, không cần xóa.
+  - FE: nút “Mở tệp” (tab mới) ở `DocumentCard` của khách và cột “Tệp” ở bảng giấy tờ của nhân viên.
+- **FE – In giấy đề nghị ở tab “Phiếu tóm tắt”**: `RequestFormPrintButton` thêm `sheet` (mặc định `true`); trang chi tiết hồ sơ của khách vẽ `<RequestFormPrint>` một lần ở cấp trang và hai nút (tab “Hồ sơ và giấy tờ”, tab “Phiếu tóm tắt”) dùng `sheet={false}`, nên bản in không bị lặp khi cả hai tab đã mở.
+- **Kiểm tra**:
+  - `.\mvnw.cmd verify` → 150 test, 0 lỗi, 2 bỏ qua (live test Cloudinary/Gemini). Mới: 5 `StaffApiTest` (khách/quản trị 403 cả khi body hỏng, chưa đăng nhập 401; danh sách: chỉ chi nhánh, không DRAFTING, nhiều trạng thái, trạng thái lạ, từ khóa mã/tên/SĐT/QR, `%`, thứ tự; by-qr chữ thường/404/HCM 403; summary; luồng đầy đủ không khớp → NEED_MORE → chặn nộp lại → tải lại → nộp lại → khớp → các lỗi xét duyệt → duyệt → các lỗi giải ngân → giải ngân, kiểm thông báo, nhật ký, 7 dòng lịch sử; MORE_INFO rồi REJECTED; `fileUrl` ảnh + PDF đúng Content-Type và nội dung), 1 test mới trong `CloudinaryStorageServiceTest`; `TienSangLocVayApplicationTests` sửa Flyway V1–V7.
+  - `npm run build`, `npx eslint src` (0 lỗi, 4 cảnh báo có sẵn); redocly lint 0 lỗi (19 cảnh báo như trước).
+  - Backend `dev,local` + FE `VITE_USE_MOCK=false`, Playwright: khách 0901234567 lập hồ sơ HS2610-0505 tại CN Hà Nội, “Mở tệp” sao kê → 200 `application/pdf` → nộp; tab Phiếu tóm tắt có nút “In giấy đề nghị”, chỉ một bản in; NV HCM nhập mã QR → “Hồ sơ thuộc chi nhánh khác.”; NV Hà Nội nhập mã (chữ thường) → “Mở tệp” CCCD → 200 `image/jpeg`; sao kê “Không khớp” → khách thấy “Chi nhánh ghi nhận: …”, tải lại, nộp lại OTP → NV khớp toàn bộ → phê duyệt → giải ngân (“Đã giải ngân”, “Phiếu đối chiếu (2)”). Lỗi API duy nhất là 403 by-qr của NV HCM (đúng ý). `python tests\e2e\full_flow.py` trên mock → `ERRORS []`.
+  - Lúc thử, cổng 8080 đang có một backend cũ của dự án (profile `dev`, mã trước B5) nên tôi chạy bản mới ở cổng 8081 với một cấu hình Vite tạm (đã xóa); không tắt tiến trình cũ. Tiến trình đó vẫn chạy mã cũ, cần khởi động lại để có B5. DB Docker dev đã áp V7 và có thêm hồ sơ thử HS2610-0505 (đã giải ngân).

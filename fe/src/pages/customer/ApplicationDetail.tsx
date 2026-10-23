@@ -16,6 +16,7 @@ import PlanAdjust from '../../components/app/PlanAdjust';
 import RequestFormPanel from '../../components/app/RequestFormPanel';
 import SummarySlip from '../../components/app/SummarySlip';
 import RequestFormPrintButton from '../../components/app/RequestFormPrintButton';
+import RequestFormPrint from '../../components/app/RequestFormPrint';
 import { dt, money, pct } from '../../utils/format';
 
 /** Hồ sơ vay của khách hàng: 4.1, 4.2, 5.4, 6.2 */
@@ -77,11 +78,16 @@ export default function ApplicationDetail() {
               </Row>
               <WarningsPanel app={a} extra={editable && a.recalc && !a.recalc.ok ? <PlanAdjust app={a} /> : null} />
               <RequestFormPanel app={a} />
-              {a.lockedAt && !editable && <div style={{ marginBottom: 16 }}><RequestFormPrintButton app={a} /></div>}
+              {a.lockedAt && !editable && <div style={{ marginBottom: 16 }}><RequestFormPrintButton app={a} sheet={false} /></div>}
             </div>
           ),
         },
-        { key: 'phieu', label: 'Phiếu tóm tắt', disabled: !a.qrToken, children: <SummarySlip app={a} /> },
+        {
+          key: 'phieu', label: 'Phiếu tóm tắt', disabled: !a.qrToken, children: <>
+            <div style={{ marginBottom: 12 }}><RequestFormPrintButton app={a} sheet={false} /></div>
+            <SummarySlip app={a} />
+          </>,
+        },
         {
           key: 'theo-doi', label: 'Theo dõi trạng thái', children: (
             <Row gutter={16}>
@@ -112,6 +118,7 @@ export default function ApplicationDetail() {
           ),
         },
       ]} />
+      {a.lockedAt && a.requestForm && <RequestFormPrint app={a} />}
       <Modal open={cancelOpen} title={`Hủy hồ sơ ${a.code}?`} okText="Hủy hồ sơ" okButtonProps={{ danger: true }} cancelText="Không"
         confirmLoading={cancel.isPending} onOk={() => cancel.mutate()} onCancel={() => setCancelOpen(false)}>
         <Typography.Paragraph>Hồ sơ sẽ chuyển trạng thái “Đã hủy” và chi nhánh được thông báo. Thao tác không hoàn tác được.</Typography.Paragraph>
